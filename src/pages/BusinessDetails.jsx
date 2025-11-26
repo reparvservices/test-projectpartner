@@ -15,8 +15,6 @@ export default function BusinessDetails() {
   const [cities, setCities] = useState([]);
   const [userData, setUserData] = useState({
     whatsappNumber: "",
-    businessHeading: "",
-    businessDescription: "",
     businessAddress: "",
     businessState: "",
     businessCity: "",
@@ -173,7 +171,7 @@ export default function BusinessDetails() {
   }, [userData.businessState]);
 
   return (
-    <div className="w-full h-screen bg-white py-8 px-4 sm:px-8 border border-[#cfcfcf33] rounded-lg">
+    <div className="w-full mx-auto max-w-4xl h-screen bg-white py-8 px-4 sm:px-8 border border-[#cfcfcf33] rounded-lg">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-[20px] font-semibold">
           Enter Your Business Details
@@ -183,10 +181,7 @@ export default function BusinessDetails() {
         onSubmit={handleSubmit}
         className="w-full p-1 pb-10 max-h-[85vh] overflow-scroll scrollbar-hide"
       >
-        <h2 className="text-[15px] font-semibold mb-2">
-          Step: 1 Business Details
-        </h2>
-        <div className="w-full grid gap-4 place-items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-4">
+        <div className="w-full grid gap-4 place-items-center grid-cols-1 md:grid-cols-2 mb-4">
           <input
             type="hidden"
             value={userData.id || ""}
@@ -215,83 +210,9 @@ export default function BusinessDetails() {
                   });
                 }
               }}
-              className="w-full mt-2 text-[16px] font-medium p-4 border border-[#00000033] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0BB501] placeholder:text-black"
+              className="w-full mt-1 text-[16px] font-medium p-3 border border-[#00000033] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0BB501] placeholder:text-black"
             />
           </div>
-          <div className="w-full col-span-1 md:col-span-1 lg:col-span-2 xl:col-span-3">
-            <label
-              className={`${
-                userData.businessHeading ? "text-green-600" : "text-[#00000066]"
-              } block text-sm leading-4 font-medium`}
-            >
-              Business Heading <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Enter About You Heading"
-              value={userData.businessHeading}
-              onChange={(e) => {
-                setUserData({
-                  ...userData,
-                  businessHeading: e.target.value,
-                });
-              }}
-              className="w-full mt-2 text-[16px] font-medium p-4 border border-[#00000033] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0BB501] placeholder:text-black"
-            />
-          </div>
-          <div className="w-full col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4">
-            <label
-              className={`${
-                userData.businessDescription
-                  ? "text-green-600"
-                  : "text-[#00000066]"
-              } block text-sm leading-4 font-medium`}
-            >
-              Business Description <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Enter About You Description"
-              value={userData.businessDescription}
-              onChange={(e) => {
-                setUserData({
-                  ...userData,
-                  businessDescription: e.target.value,
-                });
-              }}
-              className="w-full mt-2 text-[16px] font-medium p-4 border border-[#00000033] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0BB501] placeholder:text-black"
-            />
-          </div>
-        </div>
-        <h2 className="text-[15px] font-semibold mb-2">
-          Step: 2 Address Details
-        </h2>
-        <div className="w-full grid gap-4 place-items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-4">
-          <div className="w-full">
-            <label
-              className={`${
-                userData.businessAddress ? "text-green-600" : "text-[#00000066]"
-              } block text-sm leading-4 font-medium`}
-            >
-              Address <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Enter Address"
-              value={userData.businessAddress}
-              onChange={(e) => {
-                setUserData({
-                  ...userData,
-                  businessAddress: e.target.value,
-                });
-              }}
-              className="w-full mt-2 text-[16px] font-medium p-4 border border-[#00000033] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0BB501] placeholder:text-black"
-            />
-          </div>
-
           {/* State Select Input */}
           <div className="w-full">
             <label
@@ -303,7 +224,7 @@ export default function BusinessDetails() {
             </label>
             <select
               required
-              className="w-full mt-[10px] text-[16px] font-medium p-4 border border-[#00000033] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0BB501] appearance-none bg-transparent placeholder:text-black"
+              className="w-full mt-1 text-[16px] font-medium p-3 border border-[#00000033] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0BB501] appearance-none bg-transparent placeholder:text-black"
               style={{ backgroundImage: "none" }}
               value={userData.businessState}
               onChange={(e) =>
@@ -333,7 +254,7 @@ export default function BusinessDetails() {
             </label>
             <select
               required
-              className="w-full mt-[10px] text-[16px] font-medium p-4 border border-[#00000033] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0BB501] appearance-none bg-transparent placeholder:text-black"
+              className="w-full mt-1 text-[16px] font-medium p-3 border border-[#00000033] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0BB501] appearance-none bg-transparent placeholder:text-black"
               style={{ backgroundImage: "none" }}
               value={userData.businessCity}
               onChange={(e) =>
@@ -371,18 +292,34 @@ export default function BusinessDetails() {
                   setUserData({ ...userData, businessPincode: input });
                 }
               }}
-              className="w-full mt-2 text-[16px] font-medium p-4 border border-[#00000033] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0BB501] placeholder:text-black"
+              className="w-full mt-1 text-[16px] font-medium p-3 border border-[#00000033] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0BB501] placeholder:text-black"
+            />
+          </div>
+          <div className="w-full md:col-span-2">
+            <label
+              className={`${
+                userData.businessAddress ? "text-green-600" : "text-[#00000066]"
+              } block text-sm leading-4 font-medium`}
+            >
+              Address <span className="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="Enter Address"
+              value={userData.businessAddress}
+              onChange={(e) => {
+                setUserData({
+                  ...userData,
+                  businessAddress: e.target.value,
+                });
+              }}
+              className="w-full mt-1 text-[16px] font-medium p-3 border border-[#00000033] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0BB501] placeholder:text-black"
             />
           </div>
         </div>
 
-        <h2 className="flex flex-wrap items-center gap-2 text-[15px] font-semibold pb-4">
-          <span>Step: 3 Other Details & Business Logo Image</span>{" "}
-          <span className="sm:ml-2 text-red-600 text-xs">
-            ( Max Image size 1MB )
-          </span>
-        </h2>
-        <div className="w-full grid gap-4 place-items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-4">
+        <div className="w-full grid gap-4 place-items-center grid-cols-1 md:grid-cols-2 mb-4">
           {/* Business Logo Image Upload */}
           <div className="w-full">
             {userData?.businessLogo && (
@@ -404,7 +341,10 @@ export default function BusinessDetails() {
                   : "text-[#00000066]"
               } block text-sm leading-4 font-medium`}
             >
-              Upload Business Logo
+              Upload Business Logo{" "}
+              <span className="sm:ml-2 text-red-600 text-xs">
+                ( Max Image size 1MB )
+              </span>
             </label>
 
             <div className="w-full mt-2">
