@@ -7,6 +7,7 @@ import { IoMdClose } from "react-icons/io";
 import { FaEdit } from "react-icons/fa";
 import { IoCheckmarkDoneCircleSharp } from "react-icons/io5";
 import { Link } from "react-router-dom";
+import { CgWebsite } from "react-icons/cg";
 
 const Profile = () => {
   const { showProfile, setShowProfile, setLoading, URI } = useAuth();
@@ -183,9 +184,22 @@ const Profile = () => {
           <h2 className="text-[18px] leading-5 font-semibold text-[#076300]">
             {user?.fullname}
           </h2>
-          <h3 className="text-sm leading-4 font-medium text-[#000000]">
-            {user?.role}
-          </h3>
+          <div className="flex gap-2 items-center">
+            <span className="text-sm leading-4 font-medium text-[#000000]">{user?.role}{" "}</span>
+            <CgWebsite
+              onClick={() => {
+                if (user?.contact) {
+                  window.open(
+                    `https://www.reparv.in/project-partner/${user?.contact}`,
+                    "_blank"
+                  );
+                } else {
+                  alert("Please Login Again!");
+                }
+              }}
+              className="w-7 h-7 text-[#5E23DC] cursor-pointer"
+            />
+          </div>
         </div>
 
         <Link

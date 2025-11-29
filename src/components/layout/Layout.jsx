@@ -20,7 +20,7 @@ import LogoutButton from "../LogoutButton";
 import { FaUserCircle } from "react-icons/fa";
 import Agreement from "../Agreement";
 import SuccessScreen from "../SuccessScreen";
-import { IoDiamondOutline } from "react-icons/io5";
+import { CgWebsite } from "react-icons/cg";
 import { useNavigate } from "react-router-dom";
 
 function Layout() {
@@ -227,6 +227,19 @@ function Layout() {
       <div className="md:hidden flex items-center justify-between px-5 py-3 bg-white shadow-sm">
         <img src={reparvMainLogo} alt="Reparv Logo" className="h-10" />
         <div className="ButtonContainer flex gap-4 items-center justify-center">
+          <CgWebsite
+            onClick={() => {
+              if (user?.contact) {
+                window.open(
+                  `https://www.reparv.in/project-partner/${user?.contact}`,
+                  "_blank"
+                );
+              } else {
+                alert("Please Login Again!");
+              }
+            }}
+            className="w-7 h-7 text-[#5E23DC] cursor-pointer"
+          />
           <FaUserCircle
             onClick={() => {
               setShowProfile("true");
@@ -268,12 +281,18 @@ function Layout() {
             <p>{heading}</p>
           </div>
           <div className="right-heading w-[170px] h-[40px] flex items-center justify-between mr-8">
-            <IoDiamondOutline
+            <CgWebsite
               onClick={() => {
-                getHeading("Subscription");
-                navigate("/subscription");
+                if (user?.contact) {
+                  window.open(
+                    `https://www.reparv.in/project-partner/${user?.contact}`,
+                    "_blank"
+                  );
+                } else {
+                  alert("Please Login Again!");
+                }
               }}
-              className="w-7 h-7 text-[#FF4646] cursor-pointer"
+              className="w-7 h-7 text-[#5E23DC] cursor-pointer"
             />
             <FaUserCircle
               onClick={() => {
@@ -307,7 +326,9 @@ function Layout() {
             {[
               { to: "/dashboard", icon: overviewIcon, label: "Dashboard" },
               { to: "/customers", icon: customersIcon, label: "Customers" },
+
               { to: "/enquirers", icon: enquirersIcon, label: "Enquirers" },
+              { to: "/messages", icon: customersIcon, label: "Messages" },
               { to: "/properties", icon: enquirersIcon, label: "Properties" },
               { to: "/map", icon: mapIcon, label: "Map" },
               { to: "/calender", icon: calenderIcon, label: "Calendar" },

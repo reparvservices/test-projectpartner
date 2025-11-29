@@ -23,7 +23,7 @@ import Employee from "./pages/Employee.jsx";
 import Role from "./pages/Role.jsx";
 import Department from "./pages/Department.jsx";
 import Slider from "./pages/Slider.jsx";
-
+import Messages from "./pages/Messages.jsx";
 
 const App = () => {
   return (
@@ -52,7 +52,8 @@ const App = () => {
           <Route path="/role" element={<Role />} />
           <Route path="/department" element={<Department />} />
           <Route path="/slider" element={<Slider />} />
-           {/*<Route path="/brand-accessories" element={<BrandAccessories />} />*/}
+          <Route path="/messages" element={<Messages />} />
+          {/*<Route path="/brand-accessories" element={<BrandAccessories />} />*/}
           <Route path="/marketing-content" element={<MarketingContent />} />
         </Route>
         <Route path="*" element={<ErrorPage />}></Route>
