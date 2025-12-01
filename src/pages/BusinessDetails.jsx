@@ -330,7 +330,7 @@ export default function BusinessDetails() {
                   }}
                   src={URI + userData?.businessLogo}
                   alt="Old Image"
-                  className="w-full max-w-[150px] max-h-[60px] object-cover rounded-lg border border-gray-300 cursor-pointer"
+                  className="w-full max-w-[100px] max-h-[100px] object-cover rounded-lg border border-gray-300 cursor-pointer"
                 />
               </div>
             )}
@@ -343,7 +343,7 @@ export default function BusinessDetails() {
             >
               Upload Business Logo{" "}
               <span className="sm:ml-2 text-red-600 text-xs">
-                ( Max Image size 1MB )
+                ( Max Image size 1MB in Square 1:1 )
               </span>
             </label>
 
@@ -399,7 +399,7 @@ export default function BusinessDetails() {
                   <img
                     src={URL.createObjectURL(selectedImage)}
                     alt="Logo Preview"
-                    className="w-full max-w-[300px] max-h-[120px] object-cover rounded-lg border border-gray-300"
+                    className="w-full max-w-[300px] max-h-[300px] object-cover rounded-lg border border-gray-300"
                   />
                   <button
                     type="button"
