@@ -11,6 +11,7 @@ import partnerIcon from "../../assets/layout/partnerIcon.svg";
 import employeeIcon from "../../assets/layout/employeeIcon.svg";
 import ticketingIcon from "../../assets/layout/ticketingIcon.svg";
 import marketingIcon from "../../assets/layout/marketingIcon.svg";
+//import APKDownloadIcon from "../../assets/salesAPKLogo.jpeg";
 import { Outlet } from "react-router-dom";
 import { IoMenu } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
@@ -35,6 +36,8 @@ function Layout() {
     showProfile,
     setShowProfile,
     successScreen,
+    iActiveSubacription,
+    setIsActiveSubacription,
     showSubscription,
     setShowSubscription,
     giveAccess,
@@ -217,8 +220,31 @@ function Layout() {
     }
   };
 
+  // Fetch Subscription Status
+  const fetchSubscription = async () => {
+    try {
+      const response = await fetch(
+        `${URI}/project-partner/subscription/user/${user?.id}`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!response.ok) throw new Error("Failed to fetch Agreement.");
+      const data = await response.json();
+      console.log(data);
+      setIsActiveSubacription(data.active);
+    } catch (err) {
+      console.error("Error fetching:", err);
+    }
+  };
+
   useEffect(() => {
     fetchAgreement();
+    fetchSubscription();
   }, []);
 
   return (
@@ -352,6 +378,11 @@ function Layout() {
                 to: "/marketing-content",
                 icon: marketingIcon,
                 label: "Marketing Content",
+              },
+              {
+                to: "/subscription",
+                icon: enquirersIcon,
+                label: "Subscription",
               },
             ].map(({ to, icon, label }) => (
               <NavLink

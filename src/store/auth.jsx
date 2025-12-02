@@ -28,8 +28,9 @@ export const AuthProvider = ({ children }) => {
     label: "Thank You For Registering!",
     description: "Our Representative will call you shortly",
   });
-  const [showSubscription, setShowSubscription] = useState(false);
 
+  const [isActiveSubscription, setIsActiveSubacription] = useState(false);
+  const [showSubscription, setShowSubscription] = useState(false);
   const [dashboardFilter, setDashboardFilter] = useState("Booked");
   const [showProfile, setShowProfile] = useState(false);
   const [showRoleForm, setShowRoleForm] = useState(false);
@@ -111,6 +112,8 @@ export const AuthProvider = ({ children }) => {
         setAction,
         showProfile,
         setShowProfile,
+        isActiveSubscription,
+        setIsActiveSubacription,
         showRoleForm,
         setShowRoleForm,
         showDepartmentForm,

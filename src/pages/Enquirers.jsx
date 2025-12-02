@@ -21,6 +21,7 @@ const Enquirers = () => {
   const {
     URI,
     setLoading,
+    isActiveSubscription,
     showAssignSalesForm,
     setShowAssignSalesForm,
     showEnquiryStatusForm,
@@ -987,7 +988,7 @@ const Enquirers = () => {
     },
     {
       name: "Contact",
-      selector: (row) => row.contact,
+      selector: (row) => isActiveSubscription === true ? row.contact : "XXXXXXXXXX",
       minWidth: "150px",
     },
     {
@@ -1054,7 +1055,9 @@ const Enquirers = () => {
     // Base omit condition
     let omit = false;
 
-    if (enquiryFilter === "Digital Broker" && hideForDigitalBroker) {
+    if (col.name === "Action" && isActiveSubscription === false) {
+      omit = true;
+    } else if (enquiryFilter === "Digital Broker" && hideForDigitalBroker) {
       omit = true;
     } else if (col.name === "Enquiry Lister" && !hasEnquiryLister) {
       omit = true;

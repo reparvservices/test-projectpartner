@@ -24,6 +24,7 @@ import Role from "./pages/Role.jsx";
 import Department from "./pages/Department.jsx";
 import Slider from "./pages/Slider.jsx";
 import Messages from "./pages/Messages.jsx";
+import Subscription from "./pages/Subscription.jsx";
 
 const App = () => {
   return (
@@ -53,6 +54,7 @@ const App = () => {
           <Route path="/department" element={<Department />} />
           <Route path="/slider" element={<Slider />} />
           <Route path="/messages" element={<Messages />} />
+          <Route path="/subscription" element={<Subscription />} />
           {/*<Route path="/brand-accessories" element={<BrandAccessories />} />*/}
           <Route path="/marketing-content" element={<MarketingContent />} />
         </Route>
