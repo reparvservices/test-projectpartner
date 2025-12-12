@@ -401,7 +401,7 @@ function Layout() {
           <div className="left-heading h-8 flex gap-4 items-center justify-between text-[20px] leading-[19.36px] text-black">
             <IoMenu
               onClick={() => {
-                //setIsShortbar(!isShortBar);
+                setIsShortbar(!isShortBar);
               }}
               className="w-8 h-8 cursor-pointer active:scale-95"
             />{" "}
@@ -436,7 +436,7 @@ function Layout() {
       <div className="flex overflow-y-scroll scrollbar-hide">
         <div
           className={`w-64 ${
-            isShortBar ? "md:w-[95px]" : "md:w-60"
+            isShortBar ? "md:w-[16px]" : "md:w-60"
           } h-full fixed overflow-y-scroll scrollbar-hide bg-white shadow-md md:shadow-none md:static top-0 left-0 !z-[55] md:bg-[#F5F5F6] transition-transform duration-300 transform ${
             isSidebarOpen
               ? "translate-x-0"
@@ -481,7 +481,7 @@ function Layout() {
                   </div>
 
                   <span
-                    className={`text-sm md:text-base ${
+                    className={`text-sm max-w-[80px] md:text-base ${
                       isShortBar ? "md:hidden" : "block"
                     }`}
                   >
@@ -489,7 +489,7 @@ function Layout() {
                   </span>
 
                   {item.dropdown && (
-                    <span className="text-xs">
+                    <span className="w-full flex items-end justify-end text-xs">
                       {(item.label === "Leads" && openLeads) ||
                       (item.label === "Visitors" && openVisitors) ||
                       (item.label === "Projects" && openProjects) ||
@@ -530,7 +530,7 @@ function Layout() {
                         className="mr-2 mt-1"
                       />
                     </div>
-                    <div className={`flex flex-col gap-2 transition-all`}>
+                    <div className={`flex flex-col gap-1 transition-all`}>
                       {item.dropdown.map((sub, i) => (
                         <NavLink
                           key={i}
