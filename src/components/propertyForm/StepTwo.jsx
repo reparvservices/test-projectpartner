@@ -61,7 +61,15 @@ const StepTwo = ({ newProperty, setPropertyData }) => {
           </select>
         </div>
 
-        <div className="w-full">
+        <div
+          className={`${
+            ["RentalFlat", "RentalShop", "RentalOffice"].includes(
+              newProperty.propertyCategory
+            )
+              ? "hidden"
+              : "block"
+          } w-full`}
+        >
           <label
             className={`${
               newProperty.ownershipType ? "text-green-600" : "text-[#00000066]"
@@ -90,7 +98,15 @@ const StepTwo = ({ newProperty, setPropertyData }) => {
           </select>
         </div>
 
-        <div className="w-full ">
+        <div
+          className={`${
+            ["RentalFlat", "RentalShop", "RentalOffice"].includes(
+              newProperty.propertyCategory
+            )
+              ? "hidden"
+              : "block"
+          } w-full`}
+        >
           <label
             className={`${
               newProperty.builtUpArea ? "text-green-600" : "text-[#00000066]"
@@ -404,7 +420,15 @@ const StepTwo = ({ newProperty, setPropertyData }) => {
 
       {/* Property Features */}
       <div className="grid gap-6 md:gap-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-        <div className="w-full">
+        <div
+          className={`${
+            ["RentalFlat", "RentalShop", "RentalOffice"].includes(
+              newProperty.propertyCategory
+            )
+              ? "hidden"
+              : "block"
+          } w-full`}
+        >
           <label
             className={`${
               newProperty.locationFeature
@@ -537,7 +561,15 @@ const StepTwo = ({ newProperty, setPropertyData }) => {
             <option>Highway Facing</option>
           </select>
         </div>
-        <div className="w-full ">
+        <div
+          className={`${
+            ["RentalFlat", "RentalShop", "RentalOffice"].includes(
+              newProperty.propertyCategory
+            )
+              ? "hidden"
+              : "block"
+          } w-full`}
+        >
           <label
             className={`${
               newProperty.ageOfPropertyFeature
@@ -601,7 +633,15 @@ const StepTwo = ({ newProperty, setPropertyData }) => {
           </select>
         </div>
 
-        <div className="w-full">
+        <div
+          className={`${
+            ["RentalFlat", "RentalShop", "RentalOffice"].includes(
+              newProperty.propertyCategory
+            )
+              ? "hidden"
+              : "block"
+          } w-full`}
+        >
           <label
             className={`${
               newProperty.propertyStatusFeature
@@ -800,7 +840,15 @@ const StepTwo = ({ newProperty, setPropertyData }) => {
             </option>
           </select>
         </div>
-        <div className="w-full">
+        <div
+          className={`${
+            ["RentalFlat", "RentalShop", "RentalOffice"].includes(
+              newProperty.propertyCategory
+            )
+              ? "hidden"
+              : "block"
+          } w-full`}
+        >
           <label
             className={`${
               newProperty.qualityBenefit ? "text-green-600" : "text-[#00000066]"
