@@ -55,10 +55,7 @@ const menuItems = [
   {
     label: "Leads",
     icon: <IoIosListBox size={21} />,
-    dropdown: [
-      { label: "Enquirers", to: "/enquirers" },
-      { label: "Messages", to: "/messages" },
-    ],
+    dropdown: [{ label: "Enquirers", to: "/enquirers" }],
   },
 
   // Customers
@@ -97,6 +94,7 @@ const menuItems = [
     dropdown: [
       { label: "Sales Partner", to: "/salespersons" },
       { label: "Territory Partner", to: "/territorypartner" },
+      { label: "Messages", to: "/messages" },
       { label: "Calendar", to: "/calender" },
     ],
   },
