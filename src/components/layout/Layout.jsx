@@ -346,6 +346,18 @@ function Layout() {
     fetchSubscription();
   }, []);
 
+  useEffect(() => {
+    if (user && !user?.adharId) {
+      const goToKyc = window.confirm(
+        "Your KYC is incomplete. Do you want to complete it now?"
+      );
+
+      if (goToKyc) {
+        navigate(`/kyc/${user?.id}`);
+      }
+    }
+  }, [user, navigate]);
+
   return (
     <div className="flex flex-col w-full h-screen bg-[#F5F5F6]">
       {/* Mobile Menu Toggle */}
