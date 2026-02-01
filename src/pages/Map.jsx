@@ -5,6 +5,7 @@ import DataTable from "react-data-table-component";
 import Select from "react-select";
 import propertyPicture from "../assets/propertyPicture.svg";
 import FormatPrice from "../components/FormatPrice";
+import { getImageURI } from "../utils/helper";
 
 const Map = () => {
   const { URI, setLoading } = useAuth();
@@ -119,7 +120,7 @@ const Map = () => {
         try {
           const parsed = JSON.parse(row.frontView);
           if (Array.isArray(parsed) && parsed[0]) {
-            imageSrc = `${URI}${parsed[0]}`;
+            imageSrc = `${getImageURI(parsed[0])}`;
           }
         } catch (e) {
           console.warn("Invalid or null frontView:", row.frontView);

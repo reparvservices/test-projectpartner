@@ -224,6 +224,8 @@ function Layout() {
     setShowSliderForm,
     showAddMobileImage,
     setShowAddMobileImage,
+    showContentUploadForm,
+    setShowContentUploadForm,
     isLoggedIn,
   } = useAuth();
 
@@ -279,6 +281,7 @@ function Layout() {
     { state: showNotePopup, setter: setShowNotePopup },
     { state: showSliderForm, setter: setShowSliderForm },
     { state: showAddMobileImage, setter: setShowAddMobileImage },
+    { state: showContentUploadForm, setter: setShowContentUploadForm },
   ];
 
   const [openLeads, setOpenLeads] = useState(false);

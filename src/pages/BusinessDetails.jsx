@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import { IoMdClose } from "react-icons/io";
 import { useAuth } from "../store/auth";
 import { useNavigate } from "react-router-dom";
+import { getImageURI } from "../utils/helper";
 
 export default function BusinessDetails() {
   const { userid } = useParams();
