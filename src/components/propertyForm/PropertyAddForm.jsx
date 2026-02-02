@@ -61,7 +61,7 @@ const PropertyAddForm = ({
 
     try {
       setLoading(true);
-      const response = await fetch(`${URI}/guest-user/properties/add`, {
+      const response = await fetch(`${URI}/project-partner/properties/add`, {
         method: "POST",
         credentials: "include",
         body: formData,
