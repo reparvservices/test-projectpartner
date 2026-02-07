@@ -60,12 +60,6 @@ const Builders = () => {
 
   const add = async (e) => {
     e.preventDefault();
-    if (!user?.adharId) {
-      alert(
-        "Your KYC is not completed! Please complete your KYC from your profile."
-      );
-      return;
-    }
     const endpoint = newBuilder.builderid
       ? `edit/${newBuilder.builderid}`
       : "add";
