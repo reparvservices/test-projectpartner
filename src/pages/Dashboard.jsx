@@ -1,417 +1,231 @@
-import { useState, useEffect } from "react";
-import { FaRupeeSign } from "react-icons/fa";
-import { FaChartArea } from "react-icons/fa";
-import { IoArrowRedo } from "react-icons/io5";
-import { FaThumbsUp } from "react-icons/fa";
-import { CiSearch } from "react-icons/ci";
-import CustomDateRangePicker from "../components/CustomDateRangePicker";
-import DataTable from "react-data-table-component";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth";
-import DashboardFilter from "../components/dashboard/DashboardFilter";
-import { parse } from "date-fns";
+import {
+  FiSearch,
+  FiBell,
+  FiChevronRight,
+  FiPhone,
+  FiMessageSquare,
+  FiCalendar,
+  FiCheckCircle,
+  FiMenu,
+  FiLogOut,
+} from "react-icons/fi";
+import { HiArrowTrendingUp } from "react-icons/hi2";
+import { MdOutlineSpaceDashboard } from "react-icons/md";
 
-function Dashboard() {
-  const { URI, dashboardFilter } = useAuth();
-  const navigate = useNavigate();
-  const [overviewData, setOverviewData] = useState([]);
-  const [overviewCountData, setOverviewCountData] = useState({});
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const getPropertyCounts = (data) => {
-    return data.reduce(
-      (acc, item) => {
-        if (item.enquiryStatus === "Enquired") {
-          acc.Enquired++;
-        } else if (item.enquiryStatus === "Booked") {
-          acc.Booked++;
-        }
-        return acc;
-      },
-      { Enquired: 0, Booked: 0 }
-    );
-  };
-
-  const propertyCounts = getPropertyCounts(overviewData);
-
-  const [range, setRange] = useState([
-    {
-      startDate: null,
-      endDate: null,
-      key: "selection",
-    },
-  ]);
-
-  const filteredData = overviewData?.filter((item) => {
-    // Text search filter
-    const matchesSearch =
-      item.propertyName?.toLowerCase().includes(searchTerm) ||
-      item.company_name?.toLowerCase().includes(searchTerm) ||
-      item.propertyCategory?.toLowerCase().includes(searchTerm) ||
-      item.city?.toLowerCase().includes(searchTerm);
-
-    // Date range filter
-    let startDate = range[0].startDate;
-    let endDate = range[0].endDate;
-
-    if (startDate) startDate = new Date(startDate.setHours(0, 0, 0, 0));
-    if (endDate) endDate = new Date(endDate.setHours(23, 59, 59, 999));
-
-    // Parse item.created_at (format: "26 Apr 2025 | 06:28 PM")
-    const itemDate = parse(
-      item.created_at,
-      "dd MMM yyyy | hh:mm a",
-      new Date()
-    );
-
-    const matchesDate =
-      (!startDate && !endDate) || // no filter
-      (startDate && endDate && itemDate >= startDate && itemDate <= endDate);
-
-    // Enquiry filter logic: New, Alloted, Assign
-    const getProperty = () => {
-      if (item.enquiryStatus === "Booked") return "Booked";
-      if (item.enquiryStatus === "Enquired") return "Enquired";
-      return "";
-    };
-
-    const matchesProperty =
-      !dashboardFilter || getProperty() === dashboardFilter;
-
-    // Final return
-    return matchesSearch && matchesDate && matchesProperty;
-  });
-
-  const customStyles = {
-    rows: {
-      style: {
-        padding: "5px 0px",
-        fontSize: "14px",
-        fontWeight: 500,
-        color: "#111827",
-      },
-    },
-    headCells: {
-      style: {
-        fontSize: "14px",
-        fontWeight: "600",
-        backgroundColor: "#F9FAFB",
-        backgroundColor: "#00000007",
-        color: "#374151",
-      },
-    },
-    cells: {
-      style: {
-        fontSize: "13px",
-        color: "#1F2937",
-      },
-    },
-  };
-
-  const columns = [
-    {
-      name: "SN",
-      cell: (row, index) => (
-        <div className="relative group flex items-center w-full">
-          {/* Serial Number Box */}
-          <span
-            className={`min-w-6 flex items-center justify-center px-2 py-1 rounded-md cursor-pointer ${
-              row.status === "Active"
-                ? "bg-[#E3FFDF] text-[#0BB501]"
-                : "bg-[#FFEAEA] text-[#ff2323]"
-            }`}
-          >
-            {index + 1}
-          </span>
-
-          {/* Tooltip */}
-          <div className="absolute w-[65px] text-center -top-12 left-[30px] -translate-x-1/2 px-2 py-2 rounded bg-black text-white text-xs hidden group-hover:block transition">
-            {row.status === "Active" ? "Active" : "Inactive"}
-          </div>
-        </div>
-      ),
-      width: "70px",
-    },
-    {
-      name: "Image",
-      cell: (row) => {
-        let imageSrc = "default.jpg";
-
-        try {
-          const parsed = JSON.parse(row.frontView);
-          if (Array.isArray(parsed) && parsed[0]) {
-            imageSrc = `${URI}${parsed[0]}`;
-          }
-        } catch (e) {
-          console.warn("Invalid or null frontView:", row.frontView);
-        }
-
-        return (
-          <div className="w-[130px] h-14 overflow-hidden flex items-center justify-center">
-            <img
-              src={imageSrc}
-              alt="Property"
-              onClick={() => {
-                window.open(
-                  "https://www.reparv.in/property-info/" + row.seoSlug,
-                  "_blank"
-                );
-              }}
-              className="w-full h-[100%] object-cover cursor-pointer"
-            />
-          </div>
-        );
-      },
-      width: "130px",
-    },
-    {
-      name: "Name",
-      selector: (row) => row.propertyName,
-      sortable: true,
-      minWidth: "150px",
-    },
-    {
-      name: "Builder",
-      selector: (row) => row.company_name,
-      sortable: true,
-      minWidth: "130px",
-    },
-    { name: "Type", selector: (row) => row.propertyCategory, sortable: true },
-    {
-      name: "City",
-      selector: (row) => row.city,
-      sortable: true,
-      width: "120px",
-    },
-    { name: "Pin Code", selector: (row) => row.pincode, width: "120px" },
-    {
-      name: "Total Price",
-      selector: (row) => row.totalOfferPrice,
-      sortable: true,
-    },
-  ];
-
-  const fetchCountData = async () => {
-    try {
-      const response = await fetch(`${URI}/project-partner/dashboard/count`, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (!response.ok) throw new Error("Failed to fetch Count.");
-      const data = await response.json();
-      //console.log(data);
-      setOverviewCountData(data);
-    } catch (err) {
-      console.error("Error fetching :", err);
-    }
-  };
-
-  //Fetch Data
-  const fetchData = async () => {
-    try {
-      const response = await fetch(
-        URI + "/project-partner/dashboard/properties",
-        {
-          method: "GET",
-          credentials: "include", //  Ensures cookies are sent
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (!response.ok) throw new Error("Failed to fetch properties.");
-      const data = await response.json();
-      setOverviewData(data);
-    } catch (err) {
-      console.error("Error fetching :", err);
-    }
-  };
-
-  useEffect(() => {
-    fetchCountData();
-    fetchData();
-  }, []);
+export default function Dashboard() {
+  const { moreOpen, setMoreOpen } = useAuth();
 
   return (
-    <div className="overview overflow-scroll scrollbar-hide w-full h-screen flex flex-col items-start justify-start">
-      <div className="overview-card-container px-4 md:px-0 gap-2 sm:gap-5 w-full grid place-items-center grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 my-5">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Top Navbar */}
+      <div className="sticky top-0 z-30 bg-[#ffffff] -mx-4 md:-mx-6 px-4 md:px-6 py-3 border-b">
+        <div className="flex items-center justify-between gap-3">
+          {/* Left: Hamburger + Title */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMoreOpen(!moreOpen)}
+              className="md:hidden flex items-center justify-center px-2"
+            >
+              <FiMenu className="w-6 h-6" />
+            </button>
+
+            <h1 className="hidden md:block text-lg md:text-2xl font-semibold">
+              Dashboard
+            </h1>
+          </div>
+
+          {/* Right: Search + Bell + Profile */}
+          <div className="flex items-center gap-2 md:gap-3 flex-1 justify-end">
+            <div className="relative hidden sm:block">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search anything..."
+                className="w-44 md:w-64 pl-10 pr-4 py-2 rounded-xl border bg-white outline-none focus:ring-2 focus:ring-violet-500"
+              />
+            </div>
+
+            <FiSearch className="sm:hidden text-black w-6 h-6" />
+
+            <button className="w-10 h-10 rounded-full bg-white sm:border flex items-center justify-center">
+              <FiBell className="w-6 sm:w-auto h-6 sm:h-auto" />
+            </button>
+
+            <img
+              src="https://i.pravatar.cc/100?img=12"
+              className="hidden md:block w-9 h-9 md:w-10 md:h-10 rounded-full object-cover border"
+            />
+            <FiLogOut className="hidden md:block text-[#64748B] w-5 h-5" />
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl py-4 md:hidden flex justify-between !mt-0">
+        <div>
+          <p className="text-xl font-bold">Hello, David 👋</p>
+          <p className="text-sm text-gray-500">Here’s your daily update</p>
+        </div>
+        <div>
+          <img
+            src="https://i.pravatar.cc/100?img=12"
+            className="w-12 h-12 md:w-10 md:h-10 rounded-full object-cover border"
+          />
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="!mt-0 sm:!mt-6 ">
+      <h2 className="font-semibold mb-3 md:mb-4 text-[#8B8798] sm:hidden">Key Matrics</h2>
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          {
-            label: "Total Deal Amount",
-            value:
-              (Number(overviewCountData?.totalDealAmount) / 10000000).toFixed(
-                2
-              ) + " cr" || "00",
-            icon: (
-              <FaRupeeSign className="text-[#29bc1e] hover:text-[#0bb501] sm:w-6 sm:h-6" />
-            ),
-          },
-          
-          {
-            label: "No. of Deal Done",
-            value: overviewCountData?.totalCustomer || "00",
-            icon: <FaThumbsUp className="text-[#29bc1e] hover:text-[#0bb501] sm:w-6 sm:h-6" />,
-            //to: "/customers",
-          },
-
-          {
-            label: "Self Earning",
-            value:
-              (Number(overviewCountData?.selfEarning) / 100000).toFixed(2) +
-                " Lac" || "00",
-            icon: (
-              <FaRupeeSign className="text-[#29bc1e] hover:text-[#0bb501] sm:w-6 sm:h-6" />
-            ),
-          },
-
-          {
-            label: "Deal in Sq. Ft.",
-            value: overviewCountData?.totalDealInSquareFeet || "00",
-            icon: (
-              <FaChartArea className="text-[#29bc1e] hover:text-[#0bb501] sm:w-6 sm:h-6" />
-            ),
-          },
-          {
-            label: "Properties",
-            value: overviewCountData?.totalProperty || "00",
-            icon: (
-              <IoArrowRedo className="text-[#29bc1e] hover:text-[#0bb501] sm:w-6 sm:h-6" />
-            ),
-            to: "/properties",
-          },
-          {
-            label: "Customers",
-            value: overviewCountData?.totalCustomer || "00",
-            icon: (
-              <IoArrowRedo className="text-[#29bc1e] hover:text-[#0bb501] sm:w-6 sm:h-6" />
-            ),
-            to: "/customers",
-          },
-          {
-            label: "Enquirers",
-            value: overviewCountData?.totalEnquirer || "00",
-            icon: (
-              <IoArrowRedo className="text-[#29bc1e] hover:text-[#0bb501] sm:w-6 sm:h-6" />
-            ),
-            to: "/enquirers",
-          },
-          {
-            label: "Builders",
-            value: overviewCountData?.totalBuilder || "00",
-            icon: (
-              <IoArrowRedo className="text-[#29bc1e] hover:text-[#0bb501] sm:w-6 sm:h-6" />
-            ),
-            to: "/builders",
-          },
-          {
-            label: "Employees",
-            value: overviewCountData?.totalEmployee || "00",
-            icon: (
-              <IoArrowRedo className="text-[#29bc1e] hover:text-[#0bb501] sm:w-6 sm:h-6" />
-            ),
-            to: "/employees",
-          },
-          
-          {
-            label: "Sales Partners",
-            value: overviewCountData?.totalSalesPartner || "00",
-            icon: (
-              <IoArrowRedo className="text-[#29bc1e] hover:text-[#0bb501] sm:w-6 sm:h-6" />
-            ),
-            to: "/salespersons",
-          },
-          {
-            label: "Territory Partners",
-            value: overviewCountData?.totalTerritoryPartner || "00",
-            icon: (
-              <IoArrowRedo className="text-[#29bc1e] hover:text-[#0bb501] sm:w-6 sm:h-6" />
-            ),
-            to: "/territorypartner",
-          },
-          {
-            label: "Total Tickets",
-            value: overviewCountData?.totalTicket || "00",
-            icon: (
-              <IoArrowRedo className="text-[#29bc1e] hover:text-[#0bb501] sm:w-6 sm:h-6" />
-            ),
-            to: "/tickets",
-          },
-        ].map((card, index) => (
+          { label: "Total Deal Amount", value: "₹ 2.4 Cr", growth: "+12.5%" },
+          { label: "Deals Done", value: "18", growth: "+4.2%" },
+          { label: "Self Earnings", value: "₹ 4.5 L", growth: "+8.1%" },
+          { label: "Deal in Sq Ft", value: "24,500", growth: "0.0%" },
+        ].map((card) => (
           <div
-            key={index}
-            onClick={() => navigate(card.to)}
-            className="overview-card w-full max-w-[200px] sm:max-w-[280px] h-[85px] sm:h-[132px] flex flex-col items-center justify-center gap-2 rounded-lg sm:rounded-[16px] p-4 sm:p-6 border-2 hover:border-[#0BB501] bg-white cursor-pointer"
+            key={card.label}
+            className="bg-white rounded-2xl p-4 md:p-5 shadow-sm"
           >
-            <div className="upside w-full sm:max-w-[224px] h-[30px] sm:h-[40px] flex items-center justify-between gap-2 sm:gap-3 text-xs sm:text-base font-medium text-black">
-              <p>{card.label}</p>
-              <div className={`${card.icon ? "block" : "hidden"}`}>
-                {card.icon}
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600">
+                <MdOutlineSpaceDashboard />
               </div>
+
+              <span className="flex items-center gap-1 text-[11px] bg-green-100 text-green-600 px-2 py-1 rounded-full">
+                <HiArrowTrendingUp /> {card.growth}
+              </span>
             </div>
-            <div className="downside w-full h-[30px] sm:max-w-[224px] sm:h-[40px] flex items-center text-xl sm:text-[28px] font-semibold text-black">
-              <p className="flex items-center justify-center">
-                <FaRupeeSign
-                  className={`${
-                    card.label === "Self Earning" ? "block" : "hidden"
-                  }`}
-                />
-                {card.value}
-              </p>
-            </div>
+
+            <h3 className="text-lg md:text-2xl font-bold">{card.value}</h3>
+            <p className="text-xs md:text-sm text-gray-500">{card.label}</p>
           </div>
         ))}
       </div>
+      </div>
 
-      <div className="properties-table w-full h-[60vh] flex flex-col p-4 md:p-6 gap-4 my-[10px] bg-white md:rounded-[24px]">
-        <div className="w-full flex items-center justify-between md:justify-end gap-1 sm:gap-3">
-          <p className="block md:hidden text-lg font-semibold">Dashboard</p>
-        </div>
-        <div className="searchBarContainer w-full flex flex-col lg:flex-row items-center justify-between gap-3">
-          <div className="search-bar w-full lg:w-[30%] min-w-[150px] max:w-[289px] xl:w-[289px] h-[36px] flex gap-[10px] rounded-[12px] p-[10px] items-center justify-start lg:justify-between bg-[#0000000A] border">
-            <CiSearch />
-            <input
-              type="text"
-              placeholder="Search"
-              className="search-input w-[250px] h-[36px] text-sm text-black bg-transparent border-none outline-none"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div className="rightTableHead w-full lg:w-[70%] sm:h-[36px] gap-2 flex flex-wrap justify-end items-center">
-            <div className="flex flex-wrap items-center justify-end gap-3 px-2">
-              <div className="block">
-                <CustomDateRangePicker range={range} setRange={setRange} />
+      {/* Business Overview */}
+      <div>
+        <h2 className="font-semibold mb-3 md:mb-4 text-[#8B8798]">Business Overview</h2>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {[
+            ["Properties", 142],
+            ["Customers", 845],
+            ["Enquirers", 1204],
+            ["Builders", 56],
+            ["Employees", 12],
+            ["Sales Partners", 28],
+            ["Territory Partners", 4],
+            ["Total Tickets", 35],
+          ].map(([label, value]) => (
+            <div
+              key={label}
+              className="bg-white p-4 rounded-xl shadow-sm flex items-center justify-between"
+            >
+              <div>
+                <p className="text-xs md:text-sm text-gray-500">{label}</p>
+                <p className="text-lg md:text-xl font-semibold">{value}</p>
               </div>
+
+              <FiChevronRight className="text-gray-400" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Recent Enquiries */}
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between p-4 border-b gap-2">
+            <h3 className="font-semibold">Recent Enquiries</h3>
+
+            <div className="flex items-center gap-2 text-xs md:text-sm text-violet-600">
+              <button>View All</button>
+              <button className="bg-violet-50 px-3 py-1 rounded-full">
+                Today
+              </button>
+              <button className="bg-violet-50 px-3 py-1 rounded-full">
+                Status: All
+              </button>
             </div>
           </div>
-        </div>
-        <div className="filterContainer w-full flex flex-col sm:flex-row items-center justify-between gap-3">
-          <DashboardFilter counts={propertyCounts} />
+
+          <div className="divide-y">
+            {[
+              {
+                name: "Sarah Jenkins",
+                status: "New Lead",
+                color: "bg-blue-100 text-blue-600",
+              },
+              {
+                name: "David Kim",
+                status: "Contacted",
+                color: "bg-yellow-100 text-yellow-700",
+              },
+              {
+                name: "Amara Okeke",
+                status: "Site Visit",
+                color: "bg-indigo-100 text-indigo-600",
+              },
+              {
+                name: "Omar Farooq",
+                status: "Negotiation",
+                color: "bg-purple-100 text-purple-600",
+              },
+            ].map((item) => (
+              <div
+                key={item.name}
+                className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
+              >
+                <div>
+                  <p className="font-medium">{item.name}</p>
+                  <p className="text-xs text-gray-500">Property enquiry</p>
+                </div>
+
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span
+                    className={`text-xs px-3 py-1 rounded-full ${item.color}`}
+                  >
+                    {item.status}
+                  </span>
+
+                  <div className="flex items-center gap-4 text-lg md:text-base">
+                    <FiPhone className="text-gray-400 hover:text-violet-600 cursor-pointer" />
+                    <FiMessageSquare className="text-gray-400 hover:text-violet-600 cursor-pointer" />
+                    <FiCalendar className="text-gray-400 hover:text-violet-600 cursor-pointer" />
+                    <FiCheckCircle className="text-gray-400 hover:text-green-600 cursor-pointer" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <h2 className="text-[16px] ml-1 font-semibold">Property List</h2>
-        <div className="overflow-scroll scrollbar-hide">
-          <DataTable
-            className="scrollbar-hide"
-            customStyles={customStyles}
-            columns={columns}
-            data={filteredData}
-            pagination
-            paginationPerPage={10}
-            paginationComponentOptions={{
-              rowsPerPageText: "Rows per page:",
-              rangeSeparatorText: "of",
-              selectAllRowsItem: true,
-              selectAllRowsItemText: "All",
-            }}
+        {/* Booked Properties */}
+        <div className="bg-white rounded-2xl shadow-sm p-4">
+          <div className="flex justify-between mb-3">
+            <h3 className="font-semibold">Booked Properties</h3>
+            <button className="text-[#7C3AED] text-xs md:text-sm">
+              View All
+            </button>
+          </div>
+
+          <img
+            src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb"
+            className="rounded-xl mb-3 h-40 w-full object-cover"
           />
+
+          <span className="inline-block text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full mb-2">
+            RENTED
+          </span>
+
+          <p className="font-medium">City Center Apt 4B</p>
+          <p className="text-sm text-gray-500">₹ 12,000 / mo</p>
         </div>
       </div>
     </div>
   );
 }
-
-export default Dashboard;

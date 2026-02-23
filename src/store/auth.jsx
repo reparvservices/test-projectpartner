@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
     label: "Thank You For Registering!",
     description: "Our Representative will call you shortly",
   });
-
+  const [moreOpen, setMoreOpen] = useState(false);
   const [isActiveSubscription, setIsActiveSubacription] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
   const [dashboardFilter, setDashboardFilter] = useState("Booked");
@@ -106,6 +106,7 @@ export const AuthProvider = ({ children }) => {
         isLoggedIn,
         successScreen,
         setSuccessScreen,
+        moreOpen, setMoreOpen,
         showSubscription,
         setShowSubscription,
         storeTokenInCookie,
