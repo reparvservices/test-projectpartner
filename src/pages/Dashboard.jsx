@@ -17,7 +17,7 @@ export default function Dashboard() {
   const { moreOpen, setMoreOpen } = useAuth();
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-6">
       {/* Top Navbar */}
       <div className="sticky top-0 z-30 bg-[#ffffff] -mx-4 md:-mx-6 px-4 md:px-6 py-3 border-b">
         <div className="flex items-center justify-between gap-3">

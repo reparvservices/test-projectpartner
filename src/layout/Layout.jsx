@@ -38,8 +38,8 @@ const topMenu = [
 const middleMenu = [
   { label: "Builders", to: "/builders", icon: <PiBuildingsFill size={18} /> },
   { label: "Customers", to: "/customers", icon: <HiUsers size={18} /> },
-  { label: "Sales Partners", to: "/salespersons", icon: <FaHandshake size={18} /> },
-  { label: "Territory Partners", to: "/territorypartner", icon: <FaUserTie size={18} /> },
+  { label: "Sales Partners", to: "/sales-partners", icon: <FaHandshake size={18} /> },
+  { label: "Territory Partners", to: "/territory-partners", icon: <FaUserTie size={18} /> },
   { label: "Tickets", to: "/tickets", icon: <FaTicket size={18} /> },
 ];
 
@@ -135,7 +135,7 @@ export default function Layout() {
       {/* Main */}
       <div className="flex-1 flex flex-col">
         <motion.main
-          className="flex-1 overflow-y-auto pb-20 md:pb-6 px-4 md:px-6"
+          className="flex-1 overflow-y-auto pb-[100px] md:pb-0"
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
         >
