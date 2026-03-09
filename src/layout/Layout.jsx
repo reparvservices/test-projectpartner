@@ -38,18 +38,30 @@ const topMenu = [
 const middleMenu = [
   { label: "Builders", to: "/builders", icon: <PiBuildingsFill size={18} /> },
   { label: "Customers", to: "/customers", icon: <HiUsers size={18} /> },
-  { label: "Sales Partners", to: "/sales-partners", icon: <FaHandshake size={18} /> },
-  { label: "Territory Partners", to: "/territory-partners", icon: <FaUserTie size={18} /> },
+  {
+    label: "Sales Partners",
+    to: "/sales-partners",
+    icon: <FaHandshake size={18} />,
+  },
+  {
+    label: "Territory Partners",
+    to: "/territory-partners",
+    icon: <FaUserTie size={18} />,
+  },
   { label: "Tickets", to: "/tickets", icon: <FaTicket size={18} /> },
 ];
 
 const bottomMenu = [
   { label: "Profile", to: "/profile", icon: <FaUserCircle size={18} /> },
-  { label: "Subscription", to: "/subscription", icon: <BiSolidDiamond size={18} /> },
+  {
+    label: "Subscription",
+    to: "/subscription",
+    icon: <BiSolidDiamond size={18} />,
+  },
 ];
 
 export default function Layout() {
-  const {moreOpen, setMoreOpen} = useAuth();
+  const { moreOpen, setMoreOpen } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const linkClass = ({ isActive }) =>
@@ -64,25 +76,69 @@ export default function Layout() {
   return (
     <div className="flex h-screen bg-[#F6F7FB] overflow-hidden">
       {/* Sidebar (Desktop + Mobile Same UI) */}
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex !w-[260px] bg-white border-r flex-col h-screen">
+        <div className="h-[100px] flex items-center justify-center pt-5">
+          <img src={reparvMainLogo} className="h-13" />
+        </div>
+
+        <nav className="px-4 space-y-2 mt-2">
+          {topMenu.map((item) => (
+            <NavLink key={item.to} to={item.to} className={linkClass}>
+              {item.icon}
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="my-5 mx-6 h-[1px] bg-gray-200" />
+
+        <nav className="px-4 space-y-2 flex-1 overflow-y-auto">
+          {middleMenu.map((item) => (
+            <NavLink key={item.to} to={item.to} className={linkClass}>
+              {item.icon}
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="my-5 mx-6 h-[1px] bg-gray-200" />
+
+        <nav className="px-4 space-y-2 tall:flex-1 pb-2">
+          {bottomMenu.map((item) => (
+            <NavLink key={item.to} to={item.to} className={linkClass}>
+              {item.icon}
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <button
+          onClick={() => setMoreOpen(true)}
+          className="mx-4 mb-4 mt-2 flex items-center gap-3 px-4 py-2.5 rounded-full text-sm text-[#7C3AED] hover:bg-[#F3EDFF]"
+        >
+          <IoMdMenu className="w-5 h-5" />
+          More
+        </button>
+      </aside>
+
       <AnimatePresence>
-        {(mobileOpen || window.innerWidth >= 768) && (
-          <div className="hidden md:block">
-            {mobileOpen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.4 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setMobileOpen(false)}
-                className="fixed inset-0 bg-black z-40 md:hidden"
-              />
-            )}
+        {mobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.4 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 bg-black z-40 md:hidden"
+            />
 
             <motion.aside
               initial={{ x: -280 }}
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: "spring", stiffness: 260, damping: 22 }}
-              className="fixed md:static left-0 top-0 bottom-0 w-[260px] bg-white border-r z-50 hidden md:flex flex-col h-screen"
+              className="fixed md:hidden left-0 top-0 bottom-0 w-[260px] bg-white border-r z-50 flex flex-col h-screen"
             >
               <div className="h-[100px] flex items-center justify-center pt-5">
                 <img src={reparvMainLogo} className="h-13" />
@@ -90,7 +146,12 @@ export default function Layout() {
 
               <nav className="px-4 space-y-2 mt-2">
                 {topMenu.map((item) => (
-                  <NavLink key={item.to} to={item.to} onClick={() => setMobileOpen(false)} className={linkClass}>
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMobileOpen(false)}
+                    className={linkClass}
+                  >
                     {item.icon}
                     {item.label}
                   </NavLink>
@@ -101,7 +162,12 @@ export default function Layout() {
 
               <nav className="px-4 space-y-2 flex-1 overflow-y-auto">
                 {middleMenu.map((item) => (
-                  <NavLink key={item.to} to={item.to} onClick={() => setMobileOpen(false)} className={linkClass}>
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMobileOpen(false)}
+                    className={linkClass}
+                  >
                     {item.icon}
                     {item.label}
                   </NavLink>
@@ -112,7 +178,12 @@ export default function Layout() {
 
               <nav className="px-4 space-y-2 tall:flex-1 pb-2">
                 {bottomMenu.map((item) => (
-                  <NavLink key={item.to} to={item.to} onClick={() => setMobileOpen(false)} className={linkClass}>
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMobileOpen(false)}
+                    className={linkClass}
+                  >
                     {item.icon}
                     {item.label}
                   </NavLink>
@@ -128,12 +199,12 @@ export default function Layout() {
                 More
               </button>
             </motion.aside>
-          </div>
+          </>
         )}
       </AnimatePresence>
 
       {/* Main */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex flex-1 flex-col min-w-0 bg-[radial-gradient(98.95%_98.95%_at_50%_1.05%,_#EEEAFF_0%,_#FFFFFF_36.12%)]">
         <motion.main
           className="flex-1 overflow-y-auto pb-[100px] md:pb-0"
           initial={{ opacity: 0, y: 6 }}
@@ -155,7 +226,12 @@ export default function Layout() {
               Dashboard
             </NavLink>
 
-            <NavLink to="/community" className={"w-14 h-14 flex items-center justify-center -mt-10 bg-[#5323DC] text-white border-4 border-[#F3F0FF] rounded-full shadow-[0px_4px_10px_0px_#7C3AED66]"}>
+            <NavLink
+              to="/community"
+              className={
+                "w-14 h-14 flex items-center justify-center -mt-10 bg-[#5323DC] text-white border-4 border-[#F3F0FF] rounded-full shadow-[0px_4px_10px_0px_#7C3AED66]"
+              }
+            >
               <FaPlus size={20} />
             </NavLink>
 

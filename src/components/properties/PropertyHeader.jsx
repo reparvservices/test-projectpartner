@@ -1,0 +1,121 @@
+import {
+  FiSearch,
+  FiMapPin,
+  FiDownload,
+  FiPlus,
+  FiArrowLeft,
+  FiMoreHorizontal,
+  FiSliders,
+} from "react-icons/fi";
+
+export default function PropertyHeader({
+  onSearch,
+  onAddProperty,
+  onDownload,
+  onMapView,
+  onPostUpdate,
+  onBack,
+}) {
+  return (
+    <header className="w-full bg-white md:bg-transparent border-b">
+      {/* MOBILE HEADER */}
+      <div className="md:hidden px-4 py-3 space-y-3">
+        {/* Top Row */}
+        <div className="flex items-center justify-between">
+          <button onClick={onBack}>
+            <FiArrowLeft className="text-2xl text-gray-700" />
+          </button>
+
+          <h1 className="text-lg font-semibold">Properties</h1>
+
+          <button>
+            <FiMoreHorizontal className="text-2xl text-gray-700" />
+          </button>
+        </div>
+
+        {/* Search Row */}
+        <div className="flex items-center gap-3">
+          {/* Search */}
+          <div className="relative flex-1">
+            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+
+            <input
+              type="text"
+              placeholder="Search properties..."
+              onChange={(e) => onSearch?.(e.target.value)}
+              className="w-full h-11 pl-10 pr-4 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+            />
+          </div>
+
+          {/* Map Button */}
+          <button
+            onClick={onMapView}
+            className="h-11 w-11 border rounded-lg flex items-center justify-center"
+          >
+            <FiMapPin className="text-lg text-gray-700" />
+          </button>
+
+          {/* Filter Button */}
+          <button
+            onClick={onPostUpdate}
+            className="h-11 w-11 border rounded-lg flex items-center justify-center"
+          >
+            <FiSliders className="text-lg text-gray-700" />
+          </button>
+        </div>
+      </div>
+
+      {/* DESKTOP HEADER */}
+      <div className="hidden md:flex flex-wrap w-full px-6 py-4 items-center justify-between gap-6">
+        {/* Title */}
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-semibold">Properties</h1>
+          <p className="text-sm text-gray-500">Overview • All Listings</p>
+        </div>
+
+        {/* Search */}
+        <div className="relative w-full sm:max-w-[300px] ">
+          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+
+          <input
+            type="text"
+            placeholder="Search anything..."
+            onChange={(e) => onSearch?.(e.target.value)}
+            className="w-full h-10 pl-10 pr-4 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#5323DC]"
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={onMapView}
+            className="flex items-center gap-2 border border-[#5323DC] px-4 h-10 rounded-lg text-sm text-[#5323DC] hover:bg-gray-50"
+          >
+            <FiMapPin /> Map View
+          </button>
+
+          <button
+            onClick={onDownload}
+            className="flex items-center gap-2 border px-4 h-10 rounded-lg text-sm hover:bg-gray-50"
+          >
+            <FiDownload /> Download
+          </button>
+
+          <button
+            onClick={onPostUpdate}
+            className="border border-[#5323DC] px-4 h-10 rounded-lg text-sm text-[#5323DC] hover:bg-gray-50"
+          >
+            Post Update
+          </button>
+
+          <button
+            onClick={onAddProperty}
+            className="flex items-center gap-2 bg-[#5323Dc] text-white px-4 h-10 rounded-lg text-sm shadow hover:bg-[#5824e9] "
+          >
+            <FiPlus /> Add Property
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
