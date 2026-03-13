@@ -23,6 +23,8 @@ import AddTerritoryPartner from "./pages/territoryPartners/AddTerritoryPartner";
 import Builders from "./pages/builders/Builders";
 import AddBuilder from "./pages/builders/AddBuilder";
 import ComparePlans from "./pages/subscription/ComparePlans";
+import AddEnquiry from "./pages/enquiries/AddEnquiry";
+import AddEmployee from "./pages/employees/AddEmployee";
 
 const App = () => {
   return (
@@ -40,6 +42,7 @@ const App = () => {
           <Route path="/property/add/Mobile" element={<AddPropertyMobile />} />
           <Route path="/not" element={<Notifications />} />
           <Route path="/enquiries" element={<Enquiries />} />
+          <Route path="/enquiry/add" element={<AddEnquiry />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/builders" element={<Builders />} />
           <Route path="/builder/add" element={<AddBuilder />} />
@@ -50,6 +53,7 @@ const App = () => {
           <Route path="/subscription" element={<Subscription />} />
           <Route path="/subscription/compare-plans" element={<ComparePlans />} />
           <Route path="/employees" element={<Employees />} />
+          <Route path="/employee/add" element={<AddEmployee />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/edit-profile" element={<EditProfileResponsive />} />
         </Route>

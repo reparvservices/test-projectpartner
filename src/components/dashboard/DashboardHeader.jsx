@@ -29,7 +29,7 @@ export default function DashboardHeader({ onMenuClick }) {
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
 
           <input
-            className="pl-10 pr-4 py-2 w-72 rounded-xl border bg-gray-50 focus:outline-none"
+            className="pl-10 pr-4 py-2 w-72 rounded-xl border bg-white focus:outline-none"
             placeholder="Search anything..."
           />
         </div>
@@ -55,7 +55,7 @@ export default function DashboardHeader({ onMenuClick }) {
         />
 
         {/* Logout Desktop */}
-        <FiLogOut className="hidden md:block text-gray-500 cursor-pointer" />
+        <FiLogOut className="hidden md:block w-6 h-6 text-gray-500 cursor-pointer" />
 
       </div>
 

@@ -1,214 +1,283 @@
-import React from "react";
+import { useState } from "react";
 import {
-  ArrowLeft,
-  User,
-  MapPin,
-  Briefcase,
-  Settings,
-  Upload
+  ArrowLeft, User, MapPin, Briefcase, Settings,
+  ImagePlus, Check, ChevronDown
 } from "lucide-react";
 
-export default function AddSalesPartner() {
+const GRADIENT = "linear-gradient(110.73deg, #5E23DC 0%, #7C3AED 100%)";
+
+/* ── Toggle ── */
+function Toggle({ checked, onChange }) {
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`relative w-11 h-6 rounded-full transition-all duration-200 focus:outline-none flex-shrink-0 ${
+        checked ? "bg-violet-600" : "bg-gray-200"
+      }`}
+    >
+      <span className={`absolute top-[3px] w-[18px] h-[18px] bg-white rounded-full shadow transition-all duration-200 ${
+        checked ? "left-[22px]" : "left-[3px]"
+      }`} />
+    </button>
+  );
+}
 
-      {/* Header */}
-      <div className="flex items-center gap-3 px-6 py-4 border-b bg-white">
-        <ArrowLeft className="cursor-pointer" size={20} />
-        <h1 className="text-xl font-semibold text-gray-800">
-          Add Sales Partner
-        </h1>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 p-6 max-w-7xl w-full space-y-8">
-
-        {/* Partner Basic Information */}
-        <Section title="Partner Basic Information" icon={<User size={18}/>}>
-          <div className="grid md:grid-cols-2 gap-6">
-
-            <Input
-              label="Full Name"
-              required
-              placeholder="e.g. Michael Chen"
-            />
-
-            <Input
-              label="Contact Number"
-              required
-              placeholder="+1 (555) 000-0000"
-            />
-
-            <Input
-              label="Email Address"
-              required
-              placeholder="michael@example.com"
-            />
-
-            {/* Upload */}
-            <div>
-              <Label>Profile Photo</Label>
-              <div className="border border-dashed rounded-lg p-5 flex items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-50">
-                <Upload size={16} className="mr-2"/>
-                Upload profile photo...
-              </div>
-            </div>
-
-          </div>
-        </Section>
-
-        {/* Location */}
-        <Section title="Location Details" icon={<MapPin size={18}/>}>
-          <div className="grid md:grid-cols-2 gap-6">
-
-            <Select label="State" required>
-              <option>Select State</option>
-            </Select>
-
-            <Select label="City" required>
-              <option>Select City</option>
-            </Select>
-
-            <Input
-              label="Service Area / Territory"
-              placeholder="e.g. Greater Bay Area"
-            />
-
-            <Select label="Preferred Property Type">
-              <option>Select Type</option>
-            </Select>
-
-          </div>
-        </Section>
-
-        {/* Partner Background */}
-        <Section title="Partner Intent and Background" icon={<Briefcase size={18}/>}>
-          <div className="grid md:grid-cols-2 gap-6">
-
-            <div className="md:col-span-2">
-              <Label required>Why are You Interested?</Label>
-              <textarea
-                rows={4}
-                className="w-full border rounded-lg p-3 text-sm outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="Describe your interest in joining the network..."
-              />
-            </div>
-
-            <Input
-              label="Years of Experience"
-              placeholder="e.g. 5"
-            />
-
-            <Input
-              label="Previous Brokerage"
-              placeholder="e.g. Century Real Estate"
-            />
-
-            <div className="md:col-span-2">
-              <Label>Short Bio</Label>
-              <textarea
-                rows={3}
-                className="w-full border rounded-lg p-3 text-sm outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="Professional biography..."
-              />
-            </div>
-
-          </div>
-        </Section>
-
-        {/* Network Settings */}
-        <Section title="Network Settings" icon={<Settings size={18}/>}>
-          <div className="grid md:grid-cols-2 gap-6">
-
-            <Select label="Partner Status">
-              <option>Active</option>
-              <option>Inactive</option>
-            </Select>
-
-            <div className="flex items-center justify-between border rounded-lg px-4 py-3">
-              <span>Commission Agreement</span>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" defaultChecked />
-                <span className="text-sm">Signed and Verified</span>
-              </div>
-            </div>
-
-            <Toggle label="Lead Sharing" />
-
-            <Toggle label="Network Visibility" defaultChecked />
-
-          </div>
-        </Section>
-
-      </div>
-
-      {/* Footer */}
-      <div className="border-t bg-white px-6 py-4 flex justify-between items-center">
-
-        <button className="px-6 py-2 rounded-lg border bg-gray-100">
-          Cancel
-        </button>
-
-        <button className="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow">
-          ✓ Save Sales Partner
-        </button>
-
-      </div>
-
+/* ── Section Header ── */
+function SectionHeader({ icon: Icon, title }) {
+  return (
+    <div className="flex items-center gap-2.5 pb-5 border-b border-gray-100 mb-6">
+      <Icon size={17} className="text-violet-600 shrink-0" />
+      <h2 className="text-[15px] font-bold text-gray-900">{title}</h2>
     </div>
   );
 }
 
-/* ---------- Reusable Components ---------- */
-
-function Section({ title, icon, children }) {
-  return (
-    <div className="bg-white border rounded-xl p-6">
-      <div className="flex items-center gap-2 text-gray-700 font-semibold mb-6">
-        {icon}
-        {title}
-      </div>
-      {children}
-    </div>
-  );
-}
-
+/* ── Label ── */
 function Label({ children, required }) {
   return (
-    <label className="block text-sm font-medium mb-2">
-      {children} {required && <span className="text-red-500">*</span>}
+    <label className="block text-[13px] font-medium text-gray-700 mb-2">
+      {children}
+      {required && <span className="text-red-500 ml-1">*</span>}
     </label>
   );
 }
 
-function Input({ label, placeholder, required }) {
+/* ── Input ── */
+function Input({ label, required, className = "", ...props }) {
   return (
     <div>
-      <Label required={required}>{label}</Label>
+      {label && <Label required={required}>{label}</Label>}
       <input
-        className="w-full border rounded-lg p-3 text-sm outline-none focus:ring-2 focus:ring-purple-500"
-        placeholder={placeholder}
+        className={`w-full border border-gray-200 rounded-[6px] px-3.5 py-2.5 text-[13.5px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-50 transition-all ${className}`}
+        {...props}
       />
     </div>
   );
 }
 
-function Select({ label, children, required }) {
+/* ── Select ── */
+function SelectField({ label, required, children }) {
   return (
     <div>
-      <Label required={required}>{label}</Label>
-      <select className="w-full border rounded-lg p-3 text-sm outline-none focus:ring-2 focus:ring-purple-500">
-        {children}
-      </select>
+      {label && <Label required={required}>{label}</Label>}
+      <div className="relative">
+        <select className="w-full border border-gray-200 rounded-[6px] px-3.5 py-2.5 text-[13.5px] text-gray-800 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-50 transition-all appearance-none bg-white cursor-pointer pr-9">
+          {children}
+        </select>
+        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+      </div>
     </div>
   );
 }
 
-function Toggle({ label, defaultChecked }) {
+/* ── Textarea ── */
+function Textarea({ label, required, rows = 4, ...props }) {
   return (
-    <div className="flex items-center justify-between border rounded-lg px-4 py-3">
-      <span>{label}</span>
-      <input type="checkbox" defaultChecked={defaultChecked} />
+    <div>
+      {label && <Label required={required}>{label}</Label>}
+      <textarea
+        rows={rows}
+        className="w-full border border-gray-200 rounded-[6px] px-3.5 py-2.5 text-[13.5px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-50 transition-all resize-none"
+        {...props}
+      />
+    </div>
+  );
+}
+
+/* ── Main Component ── */
+export default function AddSalesPartner({ onBack }) {
+  const [photoFile, setPhotoFile]         = useState(null);
+  const [leadSharing, setLeadSharing]     = useState(true);
+  const [netVisibility, setNetVisibility] = useState(true);
+  const [commission, setCommission]       = useState(true);
+
+  return (
+    <div className="min-h-screen flex flex-col">
+
+      {/* ── Header ── */}
+      <div className="sticky top-0 z-10 flex items-center gap-3 px-5 md:px-8 py-4 border-b border-gray-100 bg-white">
+        <button
+          onClick={onBack}
+          className="p-1.5 rounded-[6px] hover:bg-gray-100 transition-colors"
+        >
+          <ArrowLeft size={18} className="text-gray-700" />
+        </button>
+        <h1 className="text-[17px] font-bold text-gray-900">Add Sales Partners</h1>
+      </div>
+
+      {/* ── Body ── */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-6xl px-5 md:px-8 py-8 space-y-8 bg-white">
+
+          {/* ── Partner Basic Information ── */}
+          <section>
+            <SectionHeader icon={User} title="Partner Basic Information" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+              <Input label="Full Name" required placeholder="e.g. Michael Chen" />
+              <Input label="Contact Number" required placeholder="+1 (555) 000-0000" />
+              <Input label="Email Address" required placeholder="michael@example.com" type="email" />
+
+              {/* Profile Photo Upload */}
+              <div>
+                <Label>Profile Photo</Label>
+                <label className="block cursor-pointer">
+                  <div className="border border-dashed border-gray-200 rounded-[6px] px-4 py-[11px] flex items-center gap-3 text-gray-400 hover:border-violet-300 hover:bg-violet-50/30 transition-all">
+                    <ImagePlus size={17} className="text-gray-400 shrink-0" />
+                    <span className="text-[13.5px] text-gray-400">
+                      {photoFile ? photoFile.name : "Upload profile photo..."}
+                    </span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={e => setPhotoFile(e.target.files?.[0] || null)}
+                  />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Location Details ── */}
+          <section>
+            <SectionHeader icon={MapPin} title="Location Details" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+              <SelectField label="State" required>
+                <option value="">Select State</option>
+                <option>Maharashtra</option>
+                <option>Karnataka</option>
+                <option>Delhi</option>
+                <option>Tamil Nadu</option>
+              </SelectField>
+
+              <SelectField label="City" required>
+                <option value="">Select City</option>
+                <option>Mumbai</option>
+                <option>Bangalore</option>
+                <option>Delhi</option>
+                <option>Chennai</option>
+              </SelectField>
+
+              <Input
+                label="Service Area / Territory"
+                placeholder="e.g. Greater Bay Area"
+              />
+
+              <SelectField label="Preferred Property Type">
+                <option value="">Select Type</option>
+                <option>Residential</option>
+                <option>Commercial</option>
+                <option>Industrial</option>
+                <option>Mixed Use</option>
+              </SelectField>
+
+            </div>
+          </section>
+
+          {/* ── Partner Intent and Background ── */}
+          <section>
+            <SectionHeader icon={Briefcase} title="Partner Intent and Background" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+              <div className="md:col-span-2">
+                <Textarea
+                  label="Why are You Interested?"
+                  required
+                  rows={4}
+                  placeholder="Describe your interest in joining the Reparv network..."
+                />
+              </div>
+
+              <Input label="Years of Experience" placeholder="e.g. 5" />
+              <Input label="Previous Brokerage" placeholder="e.g. Century Real Estate" />
+
+              <div className="md:col-span-2">
+                <Textarea
+                  label="Short Bio"
+                  rows={3}
+                  placeholder="Professional biography..."
+                />
+              </div>
+
+            </div>
+          </section>
+
+          {/* ── Network Settings ── */}
+          <section>
+            <SectionHeader icon={Settings} title="Network Settings" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+              <SelectField label="Partner Status">
+                <option>Active</option>
+                <option>Inactive</option>
+              </SelectField>
+
+              {/* Commission Agreement - checkbox style */}
+              <div>
+                <Label>Commission Agreement</Label>
+                <button
+                  type="button"
+                  onClick={() => setCommission(!commission)}
+                  className="w-full flex items-center gap-3 border border-gray-200 rounded-[6px] px-3.5 py-2.5 hover:border-gray-300 transition-colors"
+                >
+                  <span className={`w-5 h-5 rounded-[4px] flex items-center justify-center border transition-all flex-shrink-0 ${
+                    commission
+                      ? "border-violet-600 bg-violet-600"
+                      : "border-gray-300 bg-white"
+                  }`}>
+                    {commission && <Check size={12} className="text-white" strokeWidth={3} />}
+                  </span>
+                  <span className="text-[13.5px] text-gray-700 font-medium">Signed and Verified</span>
+                </button>
+              </div>
+
+              {/* Lead Sharing Toggle */}
+              <div>
+                <Label>Lead Sharing</Label>
+                <div className="flex items-center justify-between border border-gray-200 rounded-[6px] px-3.5 py-2.5">
+                  <span className="text-[13.5px] text-gray-700 font-medium">Lead Sharing Permission</span>
+                  <Toggle checked={leadSharing} onChange={setLeadSharing} />
+                </div>
+              </div>
+
+              {/* Network Visibility Toggle */}
+              <div>
+                <Label>Network Visibility</Label>
+                <div className="flex items-center justify-between border border-gray-200 rounded-[6px] px-3.5 py-2.5">
+                  <span className="text-[13.5px] text-gray-700 font-medium">Visible in Network</span>
+                  <Toggle checked={netVisibility} onChange={setNetVisibility} />
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <div className="h-2" />
+        </div>
+      </div>
+
+      {/* ── Footer ── */}
+      <div className="sticky bottom-0 bg-white border-t border-gray-100 px-5 md:px-8 py-4 flex items-center justify-between gap-4">
+        <button
+          type="button"
+          className="px-6 py-2.5 rounded-[6px] border border-gray-200 text-[13.5px] font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="flex items-center gap-2 px-6 py-2.5 rounded-[6px] text-[13.5px] font-bold text-white shadow-[0_4px_14px_rgba(94,35,220,0.3)] hover:opacity-90 transition-opacity"
+          style={{ background: GRADIENT }}
+        >
+          <Check size={14} strokeWidth={2.5} />
+          Save Sales Partner
+        </button>
+      </div>
+
     </div>
   );
 }
