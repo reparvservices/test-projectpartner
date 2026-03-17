@@ -1,5 +1,5 @@
 import { DotsIcon, LocationPinIcon, BuildingIcon, PhoneSmIcon, PlusIcon } from "./CalendarIcons";
-import { DAY_PANEL_DATA } from "./calendarData";
+import { DAY_PANEL_DATA } from "./calendarData.js";
 
 /** SubIcon selector */
 function SubIcon({ type }) {

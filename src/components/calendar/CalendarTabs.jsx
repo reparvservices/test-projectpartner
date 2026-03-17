@@ -1,4 +1,4 @@
-import { NAV_TABS } from "./calendarData";
+import { NAV_TABS } from "./calendarData.js";
 
 /**
  * CalendarTabs
