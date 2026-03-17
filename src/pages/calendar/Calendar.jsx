@@ -6,7 +6,7 @@ import CalendarTabs      from "../../components/calendar/CalendarTabs";
 import CalendarStats     from "../../components/calendar/CalendarStats";
 import CalendarGrid      from "../../components/calendar/CalendarGrid";
 import DayPanel          from "../../components/calendar/DayPanel";
-import CalendarFAB       from "../../components/calendar/CalendarFab";
+import CalendarFAB       from "../../components/calendar/CalendarFAB";
 
 // Mobile-only components
 import MobileStats       from "../../components/calendar/MobileStats";
