@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SearchIcon, FilterIcon, PlusIcon } from "./CalendarIcons";
-import { VIEW_OPTIONS } from "./CalendarData";
+import { VIEW_OPTIONS } from "./calendarData";
 
 const BackIcon = () => (
   <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
