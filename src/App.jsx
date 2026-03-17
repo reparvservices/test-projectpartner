@@ -1,66 +1,191 @@
+import { lazy, Suspense } from "react";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import "./App.css";
-import { Routes, Route, Navigate } from "react-router-dom";
-import Layout from "./layout/Layout";
-import Dashboard from "./pages/Dashboard";
-import Notifications from "./pages/Notifications";
-import Profile from "./pages/profile/Profile";
-import EditProfileResponsive from "./pages/profile/EditProfileResponsive";
-import Feed from "./pages/Feed";
-import Community from "./pages/Community";
-import Properties from "./pages/properties/Properties";
-import AddProperty from "./pages/properties/AddProperty";
-import AddPropertyMobile from "./pages/properties/AddPropertyMobile";
-import UpdateProperty from "./pages/properties/UpdateProperty";
-import Map from "./pages/properties/Map";
-import Employees from "./pages/employees/Employees";
-import Enquiries from "./pages/enquiries/Enquiries";
-import Customers from "./pages/customers/Customers";
-import Subscription from "./pages/subscription/Subscription";
-import TerritoryPartners from "./pages/territoryPartners/TerritoryPartners";
-import SalesPartners from "./pages/salesPartners/SalesPartners";
-import AddSalesPartner from "./pages/salesPartners/AddSalesPartner";
-import AddTerritoryPartner from "./pages/territoryPartners/AddTerritoryPartner";
-import Builders from "./pages/builders/Builders";
-import AddBuilder from "./pages/builders/AddBuilder";
-import ComparePlans from "./pages/subscription/ComparePlans";
-import AddEnquiry from "./pages/enquiries/AddEnquiry";
-import AddEmployee from "./pages/employees/AddEmployee";
 
-const App = () => {
+// ── Layouts ───────────────────────────────────────────────────────────────────
+import Layout    from "./layout/Layout";
+import LayoutTwo from "./layout/Layout2";
+
+// ── Auth Guard ────────────────────────────────────────────────────────────────
+import { useAuth } from "./store/auth";
+import Login from "./pages/Login";
+
+// ── Lazy-loaded pages ─────────────────────────────────────────────────────────
+// Public
+const PartnerPage          = lazy(() => import("./pages/PartnerPage"));
+const PartnersPage         = lazy(() => import("./components/partnerPageUpdated/PartnersPage"));
+const PrivacyPolicy        = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsAndConditions   = lazy(() => import("./pages/TermsAndConditions"));
+const AccountCancellation  = lazy(() => import("./pages/AccountCancellation"));
+const RefundPolicy         = lazy(() => import("./pages/RefundPolicy"));
+
+// App — Dashboard & Feed
+const Dashboard            = lazy(() => import("./pages/Dashboard"));
+const Feed                 = lazy(() => import("./pages/Feed"));
+const Community            = lazy(() => import("./pages/Community"));
+const Notifications        = lazy(() => import("./pages/Notifications"));
+
+// App — Properties
+const Properties           = lazy(() => import("./pages/properties/Properties"));
+const AddProperty          = lazy(() => import("./pages/properties/AddProperty"));
+const AddPropertyMobile    = lazy(() => import("./pages/properties/AddPropertyMobile"));
+const UpdateProperty       = lazy(() => import("./pages/properties/UpdateProperty"));
+const Map                  = lazy(() => import("./pages/properties/Map"));
+
+// App — Calendar
+const Calendar             = lazy(() => import("./pages/calendar/Calendar"));
+const AddEvent             = lazy(() => import("./pages/calendar/AddEvent"));
+
+// App — Enquiries & Customers
+const Enquiries            = lazy(() => import("./pages/enquiries/Enquiries"));
+const AddEnquiry           = lazy(() => import("./pages/enquiries/AddEnquiry"));
+const Customers            = lazy(() => import("./pages/customers/Customers"));
+
+// App — Builders
+const Builders             = lazy(() => import("./pages/builders/Builders"));
+const AddBuilder           = lazy(() => import("./pages/builders/AddBuilder"));
+
+// App — Partners
+const SalesPartners        = lazy(() => import("./pages/salesPartners/SalesPartners"));
+const AddSalesPartner      = lazy(() => import("./pages/salesPartners/AddSalesPartner"));
+const TerritoryPartners    = lazy(() => import("./pages/territoryPartners/TerritoryPartners"));
+const AddTerritoryPartner  = lazy(() => import("./pages/territoryPartners/AddTerritoryPartner"));
+
+// App — Employees
+const Employees            = lazy(() => import("./pages/employees/Employees"));
+const AddEmployee          = lazy(() => import("./pages/employees/AddEmployee"));
+
+// App — Subscription
+const Subscription         = lazy(() => import("./pages/subscription/Subscription"));
+const ComparePlans         = lazy(() => import("./pages/subscription/ComparePlans"));
+
+// App — Profile
+const Profile              = lazy(() => import("./pages/profile/Profile"));
+const EditProfileResponsive = lazy(() => import("./pages/profile/EditProfileResponsive"));
+
+// ── Fallback loader ───────────────────────────────────────────────────────────
+function PageLoader() {
   return (
-    <>
-      <Routes>
-        <Route path="" element={<></>} />
-        <Route path="/" element={<Layout />}>
-          <Route path="/feed" element={<Feed />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/properties" element={<Properties />} />
-          <Route path="/properties/map-view" element={<Map />} />
-          <Route path="/property/add" element={<AddProperty />} />
-          <Route path="/property/update" element={<UpdateProperty />} />
-          <Route path="/property/add/Mobile" element={<AddPropertyMobile />} />
-          <Route path="/not" element={<Notifications />} />
-          <Route path="/enquiries" element={<Enquiries />} />
-          <Route path="/enquiry/add" element={<AddEnquiry />} />
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/builders" element={<Builders />} />
-          <Route path="/builder/add" element={<AddBuilder />} />
-          <Route path="/sales-partners" element={<SalesPartners />} />
-          <Route path="/sales-partner/add" element={<AddSalesPartner />} />
-          <Route path="/territory-partners" element={<TerritoryPartners />} />
-          <Route path="/territory-partner/add" element={<AddTerritoryPartner />} />
-          <Route path="/subscription" element={<Subscription />} />
-          <Route path="/subscription/compare-plans" element={<ComparePlans />} />
-          <Route path="/employees" element={<Employees />} />
-          <Route path="/employee/add" element={<AddEmployee />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/edit-profile" element={<EditProfileResponsive />} />
-        </Route>
-        <Route path="*" element={<></>}></Route>
-      </Routes>
-    </>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 rounded-full border-4 border-violet-200 border-t-violet-600 animate-spin" />
+        <p className="text-sm text-gray-400 font-medium">Loading…</p>
+      </div>
+    </div>
   );
-};
+}
+
+// ── Protected route guard ─────────────────────────────────────────────────────
+function RequireAuth() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) return <PageLoader />;
+  if (!user) return <Navigate to="/" replace />;
+  return <Outlet />;
+}
+
+// ── 404 page ──────────────────────────────────────────────────────────────────
+function NotFound() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center px-4">
+      <h1 className="text-7xl font-bold text-violet-600">404</h1>
+      <p className="text-xl font-semibold text-gray-900">Page Not Found</p>
+      <p className="text-gray-400 text-sm max-w-xs">
+        The page you're looking for doesn't exist or has been moved.
+      </p>
+      <a
+        href="/"
+        className="mt-2 px-6 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors"
+      >
+        Go Home
+      </a>
+    </div>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+const App = () => (
+  <Suspense fallback={<PageLoader />}>
+    <Routes>
+
+      {/* ════════════════════════════════════════════
+          PUBLIC ROUTES — no auth required
+      ════════════════════════════════════════════ */}
+      <Route path="/" element={<LayoutTwo />}>
+        <Route index                      element={<PartnerPage />} />
+        <Route path="login"            element={<Login />} />
+        <Route path="partners"            element={<PartnersPage />} />
+        <Route path="privacy-policy"      element={<PrivacyPolicy />} />
+        <Route path="terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="account-cancellation" element={<AccountCancellation />} />
+        <Route path="cancellation-policy"  element={<RefundPolicy />} />
+      </Route>
+
+      {/* ════════════════════════════════════════════
+          PROTECTED ROUTES — must be authenticated
+      ════════════════════════════════════════════ */}
+      <Route path="/app" element={<RequireAuth />}>
+        <Route element={<Layout />}>
+
+          {/* Default redirect */}
+          <Route index element={<Navigate to="dashboard" replace />} />
+
+          {/* Dashboard & Feed */}
+          <Route path="dashboard"   element={<Dashboard />} />
+          <Route path="feed"        element={<Feed />} />
+          <Route path="community"   element={<Community />} />
+          <Route path="notifications" element={<Notifications />} />
+
+          {/* Calendar */}
+          <Route path="calendar"           element={<Calendar />} />
+          <Route path="calendar/event/add" element={<AddEvent />} />
+
+          {/* Properties */}
+          <Route path="properties"          element={<Properties />} />
+          <Route path="properties/map-view" element={<Map />} />
+          <Route path="property/add"        element={<AddProperty />} />
+          <Route path="property/add/mobile" element={<AddPropertyMobile />} />
+          <Route path="property/update/:id" element={<UpdateProperty />} />
+
+          {/* Enquiries */}
+          <Route path="enquiries"    element={<Enquiries />} />
+          <Route path="enquiry/add"  element={<AddEnquiry />} />
+
+          {/* Customers */}
+          <Route path="customers" element={<Customers />} />
+
+          {/* Builders */}
+          <Route path="builders"     element={<Builders />} />
+          <Route path="builder/add"  element={<AddBuilder />} />
+
+          {/* Sales Partners */}
+          <Route path="sales-partners"    element={<SalesPartners />} />
+          <Route path="sales-partner/add" element={<AddSalesPartner />} />
+
+          {/* Territory Partners */}
+          <Route path="territory-partners"    element={<TerritoryPartners />} />
+          <Route path="territory-partner/add" element={<AddTerritoryPartner />} />
+
+          {/* Employees */}
+          <Route path="employees"    element={<Employees />} />
+          <Route path="employee/add" element={<AddEmployee />} />
+
+          {/* Subscription */}
+          <Route path="subscription"                element={<Subscription />} />
+          <Route path="subscription/compare-plans"  element={<ComparePlans />} />
+
+          {/* Profile */}
+          <Route path="profile"       element={<Profile />} />
+          <Route path="edit-profile"  element={<EditProfileResponsive />} />
+
+        </Route>
+      </Route>
+
+      {/* 404 */}
+      <Route path="*" element={<NotFound />} />
+
+    </Routes>
+  </Suspense>
+);
 
 export default App;

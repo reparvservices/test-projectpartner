@@ -3,6 +3,7 @@ import PropertyHeader from "../../components/properties/PropertyHeader";
 import PropertyFilter from "../../components/properties/PropertyFilter";
 import PropertySidebar from "../../components/properties/PropertySidebar";
 import PropertyCard from "../../components/properties/PropertyCard";
+import CustomDateRangePicker from "../../components/CustomDateRangePicker";
 
 const properties = [
   {
@@ -35,6 +36,9 @@ const properties = [
 
 export default function Properties() {
   const [filter, setFilter] = useState("Approved");
+  const [range, setRange] = useState([
+    { startDate: null, endDate: null, key: "selection" },
+  ]);
   return (
     <div className="w-full min-h-screen  pb-24 overflow-x-hidden">
       {/* Header */}
@@ -42,15 +46,20 @@ export default function Properties() {
         <PropertyHeader
           onSearch={(value) => console.log("search:", value)}
           onAddProperty={() => console.log("Add property")}
-          onDownload={() => console.log("Download")}
-          onMapView={() => console.log("Map view")}
+          properties={properties}
           onPostUpdate={() => console.log("Post update")}
         />
-
-        <PropertyFilter
-          active={filter}
-          onChange={(value) => setFilter(value)}
-        />
+        <div className="w-full bg-white md:bg-transparent border-b border-gray-100">
+          <div className="w-full px-4 py-3 flex items-center justify-between gap-4 overflow-x-auto scrollbar-hide">
+            <PropertyFilter
+              counts={{ Approved: 12, NotApproved: 5, Rejected: 1, Draft: 3 }}
+            />
+            {/* ── CustomDateRangePicker ── */}
+            <div className="flex-shrink-0 z-50">
+              <CustomDateRangePicker range={range} setRange={setRange} />
+            </div>
+          </div>
+        </div>
       </header>
 
       <main className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">

@@ -27,7 +27,7 @@ export default function BuildersHeader({ onBack }) {
       {/* DESKTOP */}
       <div className="hidden md:flex items-center justify-between gap-6 px-8 py-[18px]">
         <div className="max-w-[300px] shrink-0">
-          <h1 className="text-[22px] font-extrabold text-[#1E293B] tracking-tight leading-tight">
+          <h1 className="text-[20px] font-bold text-[#1E293B]">
             Builders Network
           </h1>
           <p className="text-[10px] text-gray-400 mt-0.5">
@@ -74,7 +74,7 @@ export default function BuildersHeader({ onBack }) {
             <button onClick={onBack} className="p-0 bg-transparent border-none cursor-pointer">
               <ArrowLeft size={20} className="text-gray-900" strokeWidth={2.2} />
             </button>
-            <h1 className="text-[18px] font-extrabold text-gray-900 tracking-tight">
+            <h1 className="text-[18px] font-semibold text-gray-900 tracking-tight">
               Builders Network
             </h1>
           </div>

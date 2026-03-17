@@ -7,15 +7,17 @@ import {
   FiMoreHorizontal,
   FiSliders,
 } from "react-icons/fi";
+import DownloadCSV from "../DownloadCSV";
+import { useNavigate } from "react-router-dom";
 
 export default function PropertyHeader({
   onSearch,
   onAddProperty,
-  onDownload,
-  onMapView,
+  properties,
   onPostUpdate,
   onBack,
 }) {
+  const navigate = useNavigate();
   return (
     <header className="w-full bg-white md:bg-transparent border-b">
       {/* MOBILE HEADER */}
@@ -49,7 +51,9 @@ export default function PropertyHeader({
 
           {/* Map Button */}
           <button
-            onClick={onMapView}
+            onClick={() => {
+              navigate("/app/properties/map-view");
+            }}
             className="h-11 w-11 border rounded-lg flex items-center justify-center"
           >
             <FiMapPin className="text-lg text-gray-700" />
@@ -79,7 +83,7 @@ export default function PropertyHeader({
 
           <input
             type="text"
-            placeholder="Search anything..."
+            placeholder="Search"
             onChange={(e) => onSearch?.(e.target.value)}
             className="w-full h-10 pl-10 pr-4 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#5323DC]"
           />
@@ -88,28 +92,27 @@ export default function PropertyHeader({
         {/* Actions */}
         <div className="flex flex-wrap items-center gap-3">
           <button
-            onClick={onMapView}
+            onClick={() => {
+              navigate("/app/propertries/map-view");
+            }}
             className="flex items-center gap-2 border border-[#5323DC] px-4 h-10 rounded-lg text-sm text-[#5323DC] hover:bg-gray-50"
           >
             <FiMapPin /> Map View
           </button>
 
-          <button
-            onClick={onDownload}
-            className="flex items-center gap-2 border px-4 h-10 rounded-lg text-sm hover:bg-gray-50"
-          >
-            <FiDownload /> Download
-          </button>
+          <DownloadCSV data={properties} filename={"Properties.csv"} />
 
           <button
             onClick={onPostUpdate}
-            className="border border-[#5323DC] px-4 h-10 rounded-lg text-sm text-[#5323DC] hover:bg-gray-50"
+            className="hidden border border-[#5323DC] px-4 h-10 rounded-lg text-sm text-[#5323DC] hover:bg-gray-50"
           >
             Post Update
           </button>
 
           <button
-            onClick={onAddProperty}
+            onClick={() => {
+              navigate("/app/property/add");
+            }}
             className="flex items-center gap-2 bg-[#5323Dc] text-white px-4 h-10 rounded-lg text-sm shadow hover:bg-[#5824e9] "
           >
             <FiPlus /> Add Property

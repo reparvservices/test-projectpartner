@@ -246,7 +246,7 @@ export default function Community() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search topics, members, or groups..."
-                className="outline-none text-[13px] text-white placeholder:text-gray-400 bg-transparent w-full"
+                className="outline-none text-[12px] placeholder:text-gray-400 bg-transparent w-full"
               />
             </div>
             <button

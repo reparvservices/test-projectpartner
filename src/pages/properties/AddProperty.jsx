@@ -1,196 +1,329 @@
-import {
-  FiArrowLeft,
-  FiHome,
-  FiMapPin,
-  FiImage,
-  FiUploadCloud,
-  FiCheckCircle,
-  FiInfo,
-} from "react-icons/fi";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../store/auth";
+import { uploadToS3 } from "../../utils/s3";
+import Loader from "../../components/Loader";
 
+import AddPropertyHeader from "../../components/properties/addProperty/AddPropertyHeader";
+import PropertyClassification from "../../components/properties/addProperty/PropertyClassification";
+import BasicInfoForm from "../../components/properties/addProperty/BasicInfoForm";
+import LocationForm from "../../components/properties/addProperty/LocationForm";
+import MediaGallery from "../../components/properties/addProperty/MediaGallery";
+import ListingQualitySidebar from "../../components/properties/addProperty/ListingQualitySidebar";
+
+// ── Validation regex ──────────────────────────────────────────────────────────
+const nameRegex = /^[A-Za-z\s]+$/;
+const phoneRegex = /^[6-9]\d{9}$/;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const EMPTY_FORM = {
+  propertyCategory: "",
+  propertyName: "",
+  builtUpArea: "",
+  carpetArea: "",
+  totalSalesPrice: "",
+  totalOfferPrice: "",
+  address: "",
+  state: "",
+  city: "",
+  pincode: "",
+  latitude: "",
+  longitude: "",
+  locationLabel: "",
+  projectBy: "",
+  contact: "",
+  email: "",
+};
+
+const EMPTY_IMAGES = {
+  frontView: [],
+  sideView: [],
+  kitchenView: [],
+  hallView: [],
+  bedroomView: [],
+  bathroomView: [],
+  balconyView: [],
+  nearestLandmark: [],
+  developedAmenities: [],
+};
+
+// Fields required before Publish is enabled
+const REQUIRED = [
+  "propertyCategory",
+  "propertyName",
+  "address",
+  "state",
+  "city",
+  "carpetArea",
+  "totalSalesPrice",
+  "totalOfferPrice",
+];
+
+/**
+ * AddProperty — single-page form (no step 2, images inline)
+ * New design: header + main grid [left content | right sidebar]
+ */
 export default function AddProperty() {
+  const navigate = useNavigate();
+  const { URI, setLoading } = useAuth();
+
+  const [propertyTab, setPropertyTab] = useState("new");
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [imageFiles, setImageFiles] = useState(EMPTY_IMAGES);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [canPublish, setCanPublish] = useState(false);
+  const [errors, setErrors] = useState({
+    propertyName: "",
+    projectBy: "",
+    contact: "",
+    email: "",
+  });
+
+  // ── Field handler ─────────────────────────────────────────────────────────
+  const handleChange = (field, value) => {
+    if (field === "state") {
+      setForm((prev) => ({ ...prev, state: value, city: "" }));
+      setCities([]);
+    } else {
+      setForm((prev) => ({ ...prev, [field]: value }));
+    }
+  };
+
+  // ── Validation ────────────────────────────────────────────────────────────
+  const validateField = (name, value) => {
+    let e = "";
+    if (name === "propertyName" && value && !nameRegex.test(value))
+      e = "Only letters allowed";
+    if (name === "projectBy" && value && !nameRegex.test(value))
+      e = "Letters only";
+    if (name === "contact" && value && !phoneRegex.test(value))
+      e = "Enter valid 10-digit number";
+    if (name === "email" && value && !emailRegex.test(value))
+      e = "Enter valid email";
+    setErrors((prev) => ({ ...prev, [name]: e }));
+  };
+
+  // ── Publish button guard ──────────────────────────────────────────────────
+  useEffect(() => {
+    const ok =
+      REQUIRED.every((f) => {
+        const v = form[f];
+        return v && v.toString().trim() !== "";
+      }) && !Object.values(errors).some(Boolean);
+    setCanPublish(ok);
+  }, [form, errors]);
+
+  // ── Image handlers (max 3 per category) ──────────────────────────────────
+  const handleAddImages = (category, files) => {
+    setImageFiles((prev) => {
+      const merged = [...(prev[category] || []), ...files];
+      if (merged.length > 3) {
+        alert("Max 3 images per category.");
+        return { ...prev, [category]: merged.slice(0, 3) };
+      }
+      return { ...prev, [category]: merged };
+    });
+  };
+
+  const handleRemoveImage = (category, index) => {
+    setImageFiles((prev) => {
+      const updated = [...prev[category]];
+      updated.splice(index, 1);
+      return { ...prev, [category]: updated };
+    });
+  };
+
+  // ── API ───────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${URI}/admin/states`, {
+          method: "GET",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (res.ok) setStates(await res.json());
+      } catch (err) {
+        console.error("states:", err);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!form.state) return;
+    (async () => {
+      try {
+        const res = await fetch(`${URI}/admin/cities/${form.state}`, {
+          method: "GET",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (res.ok) setCities(await res.json());
+      } catch (err) {
+        console.error("cities:", err);
+      }
+    })();
+  }, [form.state]);
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
+    if (!canPublish) return;
+    setLoading(true);
+    try {
+      const payload = { ...form };
+
+      // Upload all image categories to S3
+      for (const field of Object.keys(EMPTY_IMAGES)) {
+        if (imageFiles[field]?.length > 0) {
+          const urls = [];
+          for (const file of imageFiles[field]) {
+            const url = await uploadToS3(file);
+            if (url) urls.push(url);
+          }
+          payload[field] = urls;
+        } else {
+          payload[field] = [];
+        }
+      }
+
+      const endpoint = form.propertyid ? `edit/${form.propertyid}` : "add";
+      const res = await fetch(`${URI}/user/properties/${endpoint}`, {
+        method: form.propertyid ? "PUT" : "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.status === 409) {
+        alert((await res.json()).message || "Property name already exists!");
+        return;
+      }
+      if (!res.ok) throw new Error(`Status: ${res.status}`);
+
+      alert(
+        form.propertyid ? "Property updated!" : "Property added successfully!",
+      );
+      setForm(EMPTY_FORM);
+      setImageFiles(EMPTY_IMAGES);
+    } catch (err) {
+      console.error("Submit:", err);
+      alert("Please check all fields and try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white pb-20">
+    <div className="min-h-screen pb-24 sm:pb-10">
+      {/* Sticky header */}
+      <AddPropertyHeader
+        onSaveDraft={() => alert("Saved as draft!")}
+        onCancel={() => navigate(-1)}
+        onPublish={handleSubmit}
+        canPublish={canPublish}
+      />
 
-      {/* Header */}
-      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur border-b">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button className="h-9 w-9 grid place-items-center rounded-xl border">
-              <FiArrowLeft />
-            </button>
-            <h1 className="text-lg sm:text-xl font-semibold">Add New Property</h1>
-          </div>
+      {/* Main layout: left content + right sidebar */}
+      <main className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
+        {/* ═══ LEFT CONTENT ═══ */}
+        <form onSubmit={handleSubmit} id="add-property-form">
+          <section className="space-y-6">
+            {/* 1 — Property Classification: New / Resale / Rental */}
+            <PropertyClassification
+              propertyTab={propertyTab}
+              propertyCategory={form.propertyCategory}
+              onTabChange={(tab) => {
+                setPropertyTab(tab);
+                handleChange("propertyCategory", "");
+              }}
+              onCategoryChange={(val) => handleChange("propertyCategory", val)}
+            />
 
-          <div className="flex items-center gap-2">
-            <button className="hidden sm:block text-sm text-muted-foreground">
-              Save Draft
-            </button>
-            <button className="h-9 px-4 rounded-xl border text-sm">
-              Cancel
-            </button>
-            <button className="h-9 px-4 rounded-xl bg-violet-600 text-white text-sm shadow">
-              Publish Property
-            </button>
-          </div>
-        </div>
-      </header>
+            {/* 2 — Basic Info + Location (2-col on md+) */}
 
-      {/* Layout */}
-      <main className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+            <BasicInfoForm
+              form={form}
+              errors={errors}
+              propertyTab={propertyTab}
+              onChange={handleChange}
+              onValidate={validateField}
+            />
+            <LocationForm
+              form={form}
+              errors={errors}
+              states={states}
+              cities={cities}
+              onChange={handleChange}
+              onValidate={validateField}
+              // Pass your Google Maps API key here if available:
+              // gmapsApiKey="YOUR_GOOGLE_MAPS_API_KEY"
+            />
 
-        {/* Left Content */}
-        <section className="space-y-6">
+            {/* 3 — Media Gallery (inline, no second step) */}
+            <MediaGallery
+              imageFiles={imageFiles}
+              onAdd={handleAddImages}
+              onRemove={handleRemoveImage}
+            />
 
-          {/* Property Classification */}
-          <div className="bg-white rounded-2xl border p-4 sm:p-6">
-            <h3 className="font-semibold mb-3">Property Classification</h3>
-
-            <div className="flex flex-wrap gap-2 mb-4">
-              {["New Launch", "Resale", "Rental"].map((t, i) => (
-                <button
-                  key={t}
-                  className={`px-4 py-1.5 rounded-full text-sm border ${
-                    i === 0 ? "bg-violet-600 text-white" : "bg-white"
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {["Flat / Apt", "Plot", "Shop", "Row House", "Industrial", "Farm Land"].map(
-                (item, i) => (
-                  <button
-                    key={item}
-                    className={`border rounded-xl p-4 flex flex-col items-center gap-2 ${
-                      i === 0
-                        ? "bg-violet-600 text-white"
-                        : "bg-white hover:bg-violet-50"
-                    }`}
-                  >
-                    <FiHome />
-                    <span className="text-sm">{item}</span>
-                  </button>
-                )
-              )}
-            </div>
-          </div>
-
-          {/* Forms */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/* Basic Info */}
-            <div className="bg-white rounded-2xl border p-4 sm:p-6 space-y-4">
-              <h3 className="font-semibold">Basic Information</h3>
-
-              {[
-                ["Property Name / Project", "Green Valley Heights"],
-                ["Built Up Area (sq ft)", "1,450"],
-                ["Carpet Area (sq ft)", "1,100"],
-                ["Total Sales Price (₹)", "85,00,000"],
-                ["Offer Price (₹)", "82,50,000"],
-              ].map(([label, value]) => (
-                <div key={label}>
-                  <label className="text-xs text-muted-foreground">{label}</label>
-                  <input
-                    defaultValue={value}
-                    className="mt-1 w-full h-10 rounded-xl border px-3 text-sm"
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Location */}
-            <div className="bg-white rounded-2xl border p-4 sm:p-6 space-y-4">
-              <h3 className="font-semibold">Location Details</h3>
-
-              {[
-                ["State", "Maharashtra"],
-                ["City", "Pune"],
-                ["Address / Locality", "Wakad, Sector 4"],
-              ].map(([label, value]) => (
-                <div key={label}>
-                  <label className="text-xs text-muted-foreground">{label}</label>
-                  <input
-                    defaultValue={value}
-                    className="mt-1 w-full h-10 rounded-xl border px-3 text-sm"
-                  />
-                </div>
-              ))}
-
-              <div className="h-36 rounded-xl border flex flex-col items-center justify-center text-sm text-muted-foreground gap-2">
-                <FiMapPin className="text-violet-600" />
-                Location Pinned on Map
-              </div>
-            </div>
-          </div>
-
-          {/* Media Gallery */}
-          <div className="bg-white rounded-2xl border p-4 sm:p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold">Media Gallery</h3>
-              <button className="text-sm text-violet-600">Manage Files</button>
-            </div>
-
-            <div className="border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center text-sm text-muted-foreground">
-              <FiUploadCloud size={28} className="text-violet-600 mb-2" />
-              Click to upload or drag & drop
-              <p className="text-xs mt-1">PNG, JPG, GIF (max 800x400px)</p>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-              {[
-                "https://images.unsplash.com/photo-1502673530728-f79b4cab31b1?w=400",
-                "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400",
-                "https://images.unsplash.com/photo-1494526585095-c41746248156?w=400",
-              ].map((img) => (
-                <img
-                  key={img}
-                  src={img}
-                  className="h-24 w-full object-cover rounded-xl"
-                />
-              ))}
-
-              <button className="h-24 border rounded-xl grid place-items-center text-violet-600 text-xl">
-                +
+            {/* Desktop submit row */}
+            <div className="hidden sm:flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="h-10 px-5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                Cancel
               </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Right Sidebar */}
-        <aside className="space-y-6">
-
-          <div className="bg-white rounded-2xl border p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Listing Quality</h3>
-              <span className="text-violet-600 font-semibold">65%</span>
-            </div>
-
-            {[
-              "Basic Details",
-              "Location Info",
-              "Price & Payment",
-              "Upload Floor Plan",
-              "Add Amenities",
-            ].map((t, i) => (
-              <div key={t} className="flex items-center gap-2 text-sm">
-                <FiCheckCircle
-                  className={i < 3 ? "text-violet-600" : "text-gray-300"}
-                />
-                {t}
+              <div className="flex items-center gap-3">
+                <Loader />
+                <button
+                  type="submit"
+                  disabled={!canPublish}
+                  className={`h-10 px-8 rounded-xl text-sm font-semibold text-white transition-all shadow-md
+                    ${
+                      canPublish
+                        ? "bg-[#5323DC] hover:bg-violet-700 active:scale-95 cursor-pointer shadow-violet-200"
+                        : "bg-gray-300 cursor-not-allowed"
+                    }`}
+                >
+                  Publish Property
+                </button>
               </div>
-            ))}
-          </div>
+            </div>
+          </section>
+        </form>
 
-          <div className="bg-violet-50 rounded-2xl border p-4 text-sm flex gap-2">
-            <FiInfo className="text-violet-600 mt-0.5" />
-            Listings with high-quality images & videos get 40% more enquiries.
-          </div>
-        </aside>
+        {/* ═══ RIGHT SIDEBAR ═══ */}
+        <ListingQualitySidebar form={form} imageFiles={imageFiles} />
       </main>
+
+      {/* Mobile sticky bottom bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 sm:hidden bg-white border-t border-gray-100 px-4 py-3 flex gap-3">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="flex-1 h-11 rounded-2xl border border-gray-200 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          form="add-property-form"
+          disabled={!canPublish}
+          className={`flex-1 h-11 rounded-2xl text-sm font-semibold text-white transition-all
+            ${
+              canPublish
+                ? "bg-[#5323DC] cursor-pointer shadow-lg shadow-violet-200 active:scale-95"
+                : "bg-gray-300 cursor-not-allowed"
+            }`}
+        >
+          Publish Property
+        </button>
+      </div>
     </div>
   );
 }

@@ -12,7 +12,7 @@ export default function SalesPartnersHeader({ onBack }) {
 
           {/* Title + Breadcrumb */}
           <div>
-            <h1 className="text-[20px] font-extrabold text-gray-900 tracking-tight leading-tight">
+            <h1 className="text-[20px] font-bold text-gray-900 tracking-tight leading-tight">
               Sales Partners
             </h1>
             <p className="text-xs text-gray-400 mt-0.5">
@@ -29,25 +29,25 @@ export default function SalesPartnersHeader({ onBack }) {
               <Search size={14} className="text-gray-400 shrink-0" />
               <input
                 placeholder="Search anything..."
-                className="outline-none text-[13px] text-gray-700 placeholder:text-gray-400 bg-transparent w-full"
+                className="outline-none text-[12px] text-gray-700 placeholder:text-gray-400 bg-transparent w-full"
               />
             </div>
 
             {/* This Month */}
-            <button className="flex items-center gap-2 border border-gray-200 rounded-[8px] px-3.5 py-[9px] text-[13px] text-gray-700 font-medium bg-white hover:border-gray-300 transition-colors whitespace-nowrap">
+            <button className="flex items-center gap-2 border border-gray-200 rounded-[8px] px-3.5 py-[8px] text-[12px] text-gray-700 font-medium bg-white hover:border-gray-300 transition-colors whitespace-nowrap">
               <Calendar size={14} className="text-gray-500" />
               This Month
             </button>
 
             {/* Export */}
-            <button className="flex items-center gap-2 border border-gray-200 rounded-[8px] px-3.5 py-[9px] text-[13px] text-gray-700 font-medium bg-white hover:border-gray-300 transition-colors whitespace-nowrap">
+            <button className="flex items-center gap-2 border border-gray-200 rounded-[8px] px-3.5 py-[8px] text-[12px] text-gray-700 font-medium bg-white hover:border-gray-300 transition-colors whitespace-nowrap">
               <Download size={14} className="text-gray-500" />
               Export
             </button>
 
             {/* Add Partner */}
             <button
-              className="flex items-center gap-2 px-4 py-[9px] text-white text-[13px] font-bold rounded-[8px] whitespace-nowrap hover:opacity-90 transition-opacity shadow-[0_4px_12px_rgba(94,35,220,0.28)]"
+              className="flex items-center gap-2 px-4 py-[8px] text-white text-[12px] font-bold rounded-[6px] whitespace-nowrap hover:opacity-90 transition-opacity shadow-[0_4px_12px_rgba(94,35,220,0.28)]"
               style={{ background: GRADIENT }}
             >
               <Plus size={14} strokeWidth={2.5} />

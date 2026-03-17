@@ -9,7 +9,7 @@ export default function TerritoryHeader({ onBack }) {
       {/* DESKTOP */}
       <div className="hidden md:flex flex-wrap items-center justify-between gap-6 px-8 py-4">
         <div>
-          <h1 className="text-[20px] font-extrabold text-[#0F1724]">
+          <h1 className="text-[20px] font-bold text-[#0F1724]">
             Territory Partners
           </h1>
           <p className="text-xs mt-0.5 flex items-center gap-1">
@@ -20,23 +20,23 @@ export default function TerritoryHeader({ onBack }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2 border border-gray-200 rounded-[8px] px-3.5 py-[9px] bg-white min-w-[210px] focus-within:border-violet-400 transition-colors">
+          <div className="flex items-center gap-2 border border-gray-200 rounded-[6px] px-3.5 py-[8px] bg-white min-w-[210px] focus-within:border-violet-400 transition-colors">
             <Search size={14} className="text-gray-400 shrink-0" />
             <input
               placeholder="Search anything..."
-              className="outline-none text-[13px] text-gray-700 placeholder:text-gray-400 bg-transparent w-full"
+              className="outline-none text-[12px] text-gray-700 placeholder:text-gray-400 bg-transparent w-full"
             />
           </div>
-          <button className="flex items-center gap-2 border border-gray-200 rounded-[8px] px-3.5 py-[9px] text-[13px] text-gray-700 font-medium bg-white hover:border-gray-300 transition-colors whitespace-nowrap">
+          <button className="flex items-center gap-2 border border-gray-200 rounded-[6px] px-3.5 py-[8px] text-[12px] text-gray-700 font-medium bg-white hover:border-gray-300 transition-colors whitespace-nowrap">
             <Calendar size={14} className="text-gray-500" />
             Last 30 Days
           </button>
-          <button className="flex items-center gap-2 border border-gray-200 rounded-[8px] px-3.5 py-[9px] text-[13px] text-gray-700 font-medium bg-white hover:border-gray-300 transition-colors whitespace-nowrap">
+          <button className="flex items-center gap-2 border border-gray-200 rounded-[6px] px-3.5 py-[8px] text-[12px] text-gray-700 font-medium bg-white hover:border-gray-300 transition-colors whitespace-nowrap">
             <Download size={14} className="text-gray-500" />
             Export
           </button>
           <button
-            className="flex items-center gap-2 px-4 py-[9px] text-white text-[13px] font-bold rounded-[8px] whitespace-nowrap hover:opacity-90 transition-opacity shadow-[0_4px_12px_rgba(94,35,220,0.28)]"
+            className="flex items-center gap-2 px-4 py-[8px] text-white text-[12px] font-bold rounded-[6px] whitespace-nowrap hover:opacity-90 transition-opacity shadow-[0_4px_12px_rgba(94,35,220,0.28)]"
             style={{ background: GRADIENT }}
           >
             <Plus size={14} strokeWidth={2.5} />
@@ -52,7 +52,7 @@ export default function TerritoryHeader({ onBack }) {
             <button onClick={onBack} className="bg-transparent border-none cursor-pointer p-0">
               <ArrowLeft size={20} className="text-gray-900" strokeWidth={2.2} />
             </button>
-            <h1 className="text-[18px] font-bold text-gray-900">Territory Partners</h1>
+            <h1 className="text-[18px] font-semibold text-gray-900">Territory Partners</h1>
           </div>
           <button
             className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 hover:opacity-90 transition-opacity shadow-[0_4px_14px_rgba(94,35,220,0.35)]"
@@ -63,7 +63,7 @@ export default function TerritoryHeader({ onBack }) {
         </div>
 
         <div className="px-4 pb-3">
-          <div className="flex items-center gap-2.5 bg-gray-100 rounded-xl px-4 py-[11px]">
+          <div className="flex items-center gap-2.5 bg-gray-100 rounded-xl px-4 py-[10px]">
             <Search size={15} className="text-gray-400 shrink-0" />
             <input
               placeholder="Search partners, territory..."

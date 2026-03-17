@@ -18,7 +18,7 @@ export default function CustomersHeader({ search, onSearch }) {
       {/* ── DESKTOP ── */}
       <div className="hidden md:flex flex-wrap items-center justify-between gap-6 px-8 py-4">
         <div>
-          <h1 className="text-[22px] font-bold">
+          <h1 className="text-[20px] font-bold">
             Customers
           </h1>
           <p className="text-[12.5px] text-gray-500 mt-0.5">
@@ -27,7 +27,7 @@ export default function CustomersHeader({ search, onSearch }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2 border rounded-[6px] px-3.5 py-[9px] bg-white min-w-[300px]">
+          <div className="flex items-center gap-2 border rounded-[6px] px-3.5 py-[8px] bg-white min-w-[300px]">
             <Search size={14} className="text-gray-400 shrink-0" />
             <input
               value={search}
@@ -37,7 +37,7 @@ export default function CustomersHeader({ search, onSearch }) {
             />
           </div>
 
-          <button className="flex items-center gap-2 border rounded-[6px] px-3.5 py-[9px] text-[13px] font-medium bg-transparent hover:bg-white/5 transition-colors whitespace-nowrap">
+          <button className="flex items-center gap-2 border rounded-[6px] px-3.5 py-[8px] text-[13px] font-medium bg-transparent hover:bg-white/5 transition-colors whitespace-nowrap">
             <Calendar size={14} className="text-gray-800" />
             This Month
           </button>

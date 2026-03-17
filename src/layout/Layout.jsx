@@ -3,7 +3,7 @@ import { Outlet, NavLink } from "react-router-dom";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import reparvMainLogo from "../assets/layout/reparvMainLogo.svg";
-
+import { useLocation } from "react-router-dom";
 import { MdDashboard } from "react-icons/md";
 import { IoIosListBox } from "react-icons/io";
 import { HiUsers } from "react-icons/hi2";
@@ -29,33 +29,37 @@ import {
 } from "react-icons/hi";
 
 const topMenu = [
-  { label: "Feed", to: "/feed", icon: <AiFillHome size={18} /> },
-  { label: "Dashboard", to: "/dashboard", icon: <MdDashboard size={18} /> },
-  { label: "Community", to: "/community", icon: <HiUsers size={18} /> },
-  { label: "Calendar", to: "/calendar", icon: <IoIosListBox size={18} /> },
+  { label: "Feed", to: "/app/feed", icon: <AiFillHome size={18} /> },
+  { label: "Dashboard", to: "/app/dashboard", icon: <MdDashboard size={18} /> },
+  { label: "Community", to: "/app/community", icon: <HiUsers size={18} /> },
+  { label: "Calendar", to: "/app/calendar", icon: <IoIosListBox size={18} /> },
 ];
 
 const middleMenu = [
-  { label: "Builders", to: "/builders", icon: <PiBuildingsFill size={18} /> },
-  { label: "Customers", to: "/customers", icon: <HiUsers size={18} /> },
+  {
+    label: "Builders",
+    to: "/app/builders",
+    icon: <PiBuildingsFill size={18} />,
+  },
+  { label: "Customers", to: "/app/customers", icon: <HiUsers size={18} /> },
   {
     label: "Sales Partners",
-    to: "/sales-partners",
+    to: "/app/sales-partners",
     icon: <FaHandshake size={18} />,
   },
   {
     label: "Territory Partners",
-    to: "/territory-partners",
+    to: "/app/territory-partners",
     icon: <FaUserTie size={18} />,
   },
-  { label: "Tickets", to: "/tickets", icon: <FaTicket size={18} /> },
+  { label: "Tickets", to: "/app/tickets", icon: <FaTicket size={18} /> },
 ];
 
 const bottomMenu = [
-  { label: "Profile", to: "/profile", icon: <FaUserCircle size={18} /> },
+  { label: "Profile", to: "/app/profile", icon: <FaUserCircle size={18} /> },
   {
     label: "Subscription",
-    to: "/subscription",
+    to: "/app/subscription",
     icon: <BiSolidDiamond size={18} />,
   },
 ];
@@ -64,9 +68,25 @@ export default function Layout() {
   const { moreOpen, setMoreOpen } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const linkClass = ({ isActive }) =>
-    `flex items-center gap-3 px-4 py-2.5 rounded-full text-sm transition
-     ${isActive ? "bg-[linear-gradient(93.29deg,#5E23DC_5.34%,#8B5CF6_102.64%)] text-white font-semibold shadow-sm" : "text-[#4B5563] hover:bg-gray-100"}`;
+  const dashboardPaths = [
+    "/app/dashboard",
+    "/app/properties",
+    "/app/enquiries",
+    "/app/employees",
+  ];
+
+  const linkClass = ({ isActive }, itemPath) => {
+    const isCustomActive =
+      dashboardPaths.includes(itemPath) &&
+      dashboardPaths.some((path) => location.pathname.startsWith(path));
+
+    return `flex items-center gap-3 px-4 py-2.5 rounded-full text-sm transition
+    ${
+       isActive || isCustomActive
+        ? "bg-[linear-gradient(93.29deg,#5E23DC_5.34%,#8B5CF6_102.64%)] text-white font-semibold shadow-sm"
+        : "text-[#4B5563] hover:bg-gray-100"
+    }`;
+  };
 
   const mobileTabClass = ({ isActive }) =>
     `flex flex-col items-center text-[11px] ${
@@ -75,7 +95,6 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen bg-[#F6F7FB] overflow-hidden">
-      {/* Sidebar (Desktop + Mobile Same UI) */}
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex !w-[260px] bg-white border-r flex-col h-screen">
         <div className="h-[100px] flex items-center justify-center pt-5">
@@ -84,7 +103,7 @@ export default function Layout() {
 
         <nav className="px-4 space-y-2 mt-2">
           {topMenu.map((item) => (
-            <NavLink key={item.to} to={item.to} className={linkClass}>
+            <NavLink key={item.to} to={item.to} className={(props) => linkClass(props, item.to)}>
               {item.icon}
               {item.label}
             </NavLink>
@@ -95,7 +114,7 @@ export default function Layout() {
 
         <nav className="px-4 space-y-2 flex-1 overflow-y-auto">
           {middleMenu.map((item) => (
-            <NavLink key={item.to} to={item.to} className={linkClass}>
+            <NavLink key={item.to} to={item.to} className={(props) => linkClass(props, item.to)}>
               {item.icon}
               {item.label}
             </NavLink>
@@ -106,7 +125,7 @@ export default function Layout() {
 
         <nav className="px-4 space-y-2 tall:flex-1 pb-2">
           {bottomMenu.map((item) => (
-            <NavLink key={item.to} to={item.to} className={linkClass}>
+            <NavLink key={item.to} to={item.to} className={(props) => linkClass(props, item.to)}>
               {item.icon}
               {item.label}
             </NavLink>
@@ -150,7 +169,7 @@ export default function Layout() {
                     key={item.to}
                     to={item.to}
                     onClick={() => setMobileOpen(false)}
-                    className={linkClass}
+                    className={(props) => linkClass(props, item.to)}
                   >
                     {item.icon}
                     {item.label}
@@ -166,7 +185,7 @@ export default function Layout() {
                     key={item.to}
                     to={item.to}
                     onClick={() => setMobileOpen(false)}
-                    className={linkClass}
+                    className={(props) => linkClass(props, item.to)}
                   >
                     {item.icon}
                     {item.label}
@@ -182,7 +201,7 @@ export default function Layout() {
                     key={item.to}
                     to={item.to}
                     onClick={() => setMobileOpen(false)}
-                    className={linkClass}
+                    className={(props) => linkClass(props, item.to)}
                   >
                     {item.icon}
                     {item.label}
@@ -206,7 +225,7 @@ export default function Layout() {
       {/* Main */}
       <div className="flex flex-1 flex-col min-w-0 bg-[radial-gradient(98.95%_98.95%_at_50%_1.05%,_#EEEAFF_0%,_#FFFFFF_36.12%)]">
         <motion.main
-          className="flex-1 overflow-y-auto pb-[100px] md:pb-0"
+          className="flex-1 overflow-y-auto pb-25 md:pb-0"
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -215,19 +234,19 @@ export default function Layout() {
 
         {/* Mobile Bottom Bar */}
         <nav className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t z-40">
-          <div className="flex items-center justify-around h-[70px]">
-            <NavLink to="/feed" className={mobileTabClass}>
+          <div className="flex items-center justify-around h-18">
+            <NavLink to="/app/feed" className={mobileTabClass}>
               <AiFillHome size={20} />
               Feed
             </NavLink>
 
-            <NavLink to="/dashboard" className={mobileTabClass}>
+            <NavLink to="/app/dashboard" className={mobileTabClass}>
               <MdDashboard size={20} />
               Dashboard
             </NavLink>
 
             <NavLink
-              to="/community"
+              to="/app/community"
               className={
                 "w-14 h-14 flex items-center justify-center -mt-10 bg-[#5323DC] text-white border-4 border-[#F3F0FF] rounded-full shadow-[0px_4px_10px_0px_#7C3AED66]"
               }
@@ -235,12 +254,12 @@ export default function Layout() {
               <FaPlus size={20} />
             </NavLink>
 
-            <NavLink to="/calendar" className={mobileTabClass}>
+            <NavLink to="/app/calendar" className={mobileTabClass}>
               <IoIosListBox size={20} />
               Calendar
             </NavLink>
 
-            <NavLink to="/profile" className={mobileTabClass}>
+            <NavLink to="/app/profile" className={mobileTabClass}>
               <FaUserCircle size={20} />
               Profile
             </NavLink>

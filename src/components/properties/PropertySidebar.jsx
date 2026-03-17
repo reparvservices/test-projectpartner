@@ -45,10 +45,10 @@ export default function PropertySidebar() {
   ];
 
   return (
-    <aside className="w-full xl:w-[340px] space-y-6">
+    <aside className="w-full xl:w-[340px] flex flex-col gap-6">
 
       {/* Activity Feed */}
-      <div className="bg-white rounded-lg border p-6 shadow-sm">
+      <div className="hidden bg-white rounded-lg border p-6 shadow-sm">
         <div className="flex justify-between items-center mb-5">
           <h3 className="text-xl font-semibold">Property Activity Feed</h3>
           <button className="text-violet-600 font-medium text-sm">

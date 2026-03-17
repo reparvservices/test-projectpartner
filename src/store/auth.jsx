@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
   //const URI = "https://aws-api.reparv.in";
 
   const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("projectPartnerUser"))
+    JSON.parse(localStorage.getItem("projectPartnerUser")),
   );
   const [loading, setLoading] = useState(false);
   const [successScreen, setSuccessScreen] = useState({
@@ -95,6 +95,12 @@ export const AuthProvider = ({ children }) => {
   const [showAddMobileImage, setShowAddMobileImage] = useState(false);
   const [showContentUploadForm, setShowContentUploadForm] = useState(false);
 
+  // Partners Page
+  const [projectPartner, setProjectPartners] = useState([]);
+  const [currentProjectPartner, setCurrentProjectPartner] = useState(null);
+  const [showInquiryForm, setShowInquiryForm] = useState(false);
+  const [role, setRole] = useState("sales");
+
   return (
     <AuthContext.Provider
       value={{
@@ -106,7 +112,8 @@ export const AuthProvider = ({ children }) => {
         isLoggedIn,
         successScreen,
         setSuccessScreen,
-        moreOpen, setMoreOpen,
+        moreOpen,
+        setMoreOpen,
         showSubscription,
         setShowSubscription,
         storeTokenInCookie,
@@ -227,6 +234,16 @@ export const AuthProvider = ({ children }) => {
         setShowAddMobileImage,
         showContentUploadForm,
         setShowContentUploadForm,
+
+        // partners page
+        projectPartner,
+        setProjectPartners,
+        currentProjectPartner,
+        setCurrentProjectPartner,
+        showInquiryForm,
+        setShowInquiryForm,
+        role,
+        setRole,
       }}
     >
       {children}

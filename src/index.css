@@ -1,14 +1,268 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ─── Tailwind v4 ────────────────────────────────────────── */
+@import "tailwindcss";
 
-* {
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-  font-family:'Inter', sans-serif;
+/* ─── Swiper (imports must come after tailwindcss) ───────── */
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
+
+/* ─── Custom Screens ─────────────────────────────────────── */
+@custom-variant tall (@media (min-height: 900px));
+
+/* ─── Custom Scrollbar Utilities ────────────────────────── */
+@utility scrollbar-x-hidden {
+  overflow-x: hidden;
 }
 
+@utility scrollbar-y-hidden {
+  overflow-y: hidden;
+}
+
+@utility scrollbar-hide {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility scrollbar-x-hide {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility scrollbar-y-hide {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility scrollbar-y-visible {
+  overflow-y: scroll;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* ─── Base Reset ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #fafafa;
+  overflow-x: hidden;
+}
+
+/* ─── Swiper Pagination Bullets ──────────────────────────── */
+.custom-pagination span,
+.custom-pagination2 span {
+  width: 20px;
+  height: 5px;
+  border-radius: 60px;
+  transition: all 0.3s ease;
+  opacity: 1;
+}
+
+.custom-pagination span {
+  background-color: #ffffff;
+}
+
+.custom-pagination2 span {
+  background-color: #00000066;
+}
+
+.custom-pagination .swiper-pagination-bullet-active,
+.custom-pagination2 .swiper-pagination-bullet-active {
+  background-color: #0bb501;
+}
+
+/* ─── Swiper Buttons ─────────────────────────────────────── */
+.swiper-button-prev::after,
+.swiper-button-next::after {
+  display: none;
+}
+
+.swiper-pagination-bullet.custom-bullet {
+  width: 8px;
+  height: 8px;
+  background-color: #9ca3af;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+
+.swiper-pagination-bullet-active.custom-bullet {
+  width: 12px;
+  height: 12px;
+  background-color: #15803d;
+}
+
+/* ─── Logo Swiper ────────────────────────────────────────── */
+.logo-swiper {
+  padding: 40px 0;
+}
+
+.logo-swiper .swiper-slide {
+  opacity: 0.4;
+  transform: scale(0.85);
+  transition: all 0.4s ease;
+}
+
+.logo-swiper .swiper-slide-active {
+  opacity: 1;
+  transform: scale(1.55);
+  z-index: 10;
+}
+
+/* ─── Testimonial Swiper ─────────────────────────────────── */
+.testimonial-swiper {
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+
+.testimonial-swiper .swiper-slide {
+  transition: transform 0.4s ease;
+}
+
+/* ─── Range Input ────────────────────────────────────────── */
+input[type="range"] {
+  -webkit-appearance: none;
+  background: transparent;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 1rem;
+  width: 1rem;
+  border-radius: 9999px;
+  background-color: #16a34a;
+  cursor: pointer;
+}
+
+@layer base {
+  * {
+    border-color: #00000014;
+  }
+}
+
+/* ─── Animations ─────────────────────────────────────────── */
+@keyframes gradientMove {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientMove 6s ease infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-14px); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulseSoft {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.05); }
+}
+
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(60px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes revealLeft {
+  from { opacity: 0; transform: translateX(-60px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(60px);
+}
+
+.reveal.active {
+  animation: revealUp 0.8s ease-out forwards;
+}
+
+.reveal-left.active {
+  animation: revealLeft 0.8s ease-out forwards;
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes screenPop {
+  0%   { opacity: 0; transform: scale(0.8) translateY(40px); }
+  60%  { opacity: 1; transform: scale(1.03) translateY(-5px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-screenPop {
+  animation: screenPop 0.45s ease-out;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0%); }
+  to   { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  animation: marquee 25s linear infinite;
+  width: max-content;
+}
+
+/* ─── React Calendar ─────────────────────────────────────── */
 .react-calendar__tile--now {
   border: 2px solid green !important;
   border-radius: 100%;
@@ -17,7 +271,7 @@
 }
 
 .react-calendar__tile {
-  width: 45px !important; 
+  width: 45px !important;
   height: 45px !important;
   border-radius: 50%;
   color: black !important;
@@ -27,11 +281,10 @@
   justify-content: center;
 }
 
-/* In your CSS */
+/* ─── Responsive Utilities ───────────────────────────────── */
 @media (min-width: 768px) {
   .md-left-offset {
     left: calc(100vw - 500px);
     top: 0px;
   }
 }
-

@@ -1,15 +1,25 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
+  base: '/',
+  server: {
+    allowedHosts: true,
+  },
   build: {
-    chunkSizeWarningLimit: 1000, // Increase limit
+    outDir: 'dist',
+    assetsDir: 'assets',
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes("node_modules")) {
-            return "vendor"; // Separate third-party libraries
+          if (id.includes('node_modules')) {
+            return 'vendor';
           }
         },
       },
