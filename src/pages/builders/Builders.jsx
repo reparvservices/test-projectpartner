@@ -3,7 +3,7 @@
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 import BuildersHeader from "../../components/builders/BuildersHeader";
-import LiveActivitySection from "../../components/builders/LiveactivitySection";
+import LiveActivitySection from "../../components/builders/LiveActivitySection";
 import NetworkSection from "../../components/builders/NetworkSection";
 
 const liveActivity = [
