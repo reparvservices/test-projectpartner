@@ -6,11 +6,10 @@ import { useAuth } from "../../store/auth";
  * Props:
  *   counts : { Enquired: number, Booked: number }
  */
-export default function DashboardFilter({ counts = {} }) {
+export default function DashboardFilter({ counts = {}, properties }) {
   const { dashboardFilter, setDashboardFilter } = useAuth();
-
+  console.log(counts);
   const filters = [
-    { label: "All",      value: "",          count: (counts.Enquired || 0) + (counts.Booked || 0) },
     { label: "Enquired", value: "Enquired",  count: counts.Enquired || 0 },
     { label: "Booked",   value: "Booked",    count: counts.Booked   || 0 },
   ];

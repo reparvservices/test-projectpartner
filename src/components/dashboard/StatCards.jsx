@@ -90,7 +90,7 @@ export default function StatCards({ counts = {}, loading = false }) {
             <div className="flex items-center justify-center pb-2 sm:pb-4">
               {item.icon}
             </div>
-            <span className="hidden lg:flex text-xs bg-green-100 text-green-600 px-2.5 py-1 rounded-full items-center gap-1 font-medium">
+            <span className="hidden lg:hidden text-xs bg-green-100 text-green-600 px-2.5 py-1 rounded-full items-center gap-1 font-medium">
               <HiArrowTrendingUp className="w-3 h-3" /> {item.growth}
             </span>
           </div>

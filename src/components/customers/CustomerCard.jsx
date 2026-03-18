@@ -1,157 +1,209 @@
-import { User, Pencil, UserPlus, MessageCircle, Phone, FileText, Share2, Building2, Clock } from "lucide-react";
+import { useState } from "react";
+import { MessageCircle, Phone, FileText, Share2, Building2, Clock, MoreVertical, CreditCard } from "lucide-react";
+import propertyPicture from "../../assets/propertyPicture.svg";
+import { getImageURI } from "../../utils/helper";
+import FormatPrice from "../FormatPrice";
 
-const GRADIENT = "linear-gradient(110.73deg, #5E23DC 0%, #7C3AED 100%)";
+const GRADIENT = "linear-gradient(110.73deg, #5323DC 0%, #8E61FF 100%)";
 
-const badgeStyles = {
-  red:    "bg-red-50 text-red-500 border-red-100",
-  blue:   "bg-blue-50 text-blue-600 border-blue-100",
-  green:  "bg-emerald-50 text-emerald-600 border-emerald-100",
-  purple: "bg-violet-50 text-violet-600 border-violet-100",
-  amber:  "bg-amber-50 text-amber-600 border-amber-100",
-};
+function fmtLac(val) {
+  const n = Number(val);
+  if (!n) return "—";
+  if (n >= 10000000) return `₹${(n / 10000000).toFixed(2)}Cr`;
+  if (n >= 100000)   return `₹${(n / 100000).toFixed(2)}L`;
+  return `₹${n.toLocaleString("en-IN")}`;
+}
 
-export default function CustomerCard({ customer: c }) {
+/* status badge based on payment type */
+function Badge({ paymenttype }) {
+  if (!paymenttype) return null;
+  const map = {
+    "UPI":         { bg: "bg-blue-50",   text: "text-blue-600",   label: "UPI" },
+    "Cash":        { bg: "bg-green-50",  text: "text-green-600",  label: "Cash" },
+    "Check":       { bg: "bg-amber-50",  text: "text-amber-600",  label: "Cheque" },
+    "Net Banking": { bg: "bg-violet-50", text: "text-violet-600", label: "Net Banking" },
+  };
+  const s = map[paymenttype] || { bg: "bg-slate-100", text: "text-slate-500", label: paymenttype };
   return (
-    <div className="bg-white rounded-[16px] p-4 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+    <span className={`inline-flex text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide ${s.bg} ${s.text}`}>
+      {s.label}
+    </span>
+  );
+}
 
-      {/* ══ MOBILE layout ══ */}
-      <div className="block md:hidden">
+function ActionMenu({ row, onAction }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative shrink-0">
+      <button onClick={() => setOpen(!open)} className="p-1.5 rounded-xl hover:bg-slate-100 transition-colors">
+        <MoreVertical size={16} className="text-slate-300" />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-9 z-50 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 w-44">
+            <button onClick={() => { onAction("view", row.enquirersid); setOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-violet-50 transition-colors">View Details</button>
+            <button onClick={() => { onAction("addPayment", row.enquirersid); setOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-violet-50 transition-colors">Add Payment</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
-        {/* Row 1: Avatar + Name/Company/Time + Badge top-right */}
+export default function CustomerCard({ customer: c, onAction }) {
+  let imageSrc = propertyPicture;
+  try {
+    const parsed = JSON.parse(c.frontView);
+    if (Array.isArray(parsed) && parsed[0]) imageSrc = getImageURI(parsed[0]);
+  } catch (e) {}
+
+  const initials = c.customer?.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "?";
+
+  return (
+    <div className="bg-white rounded-md border shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+
+      {/* ── MOBILE ── */}
+      <div className="block md:hidden p-4">
+        {/* Top row */}
         <div className="flex items-start gap-3 mb-4">
-          <img
-            src={c.avatar}
-            alt={c.name}
-            className="w-[56px] h-[56px] rounded-full object-cover shrink-0 ring-2 ring-gray-100"
-          />
+          {/* Avatar — initials circle */}
+          <div
+            className="w-14 h-14 rounded-full shrink-0 flex items-center justify-center text-lg font-bold text-white ring-2 ring-slate-100 cursor-pointer"
+            style={{ background: GRADIENT }}
+            onClick={() => c.seoSlug && window.open("https://www.reparv.in/property-info/" + c.seoSlug, "_blank")}
+          >
+            {initials}
+          </div>
+
           <div className="flex-1 min-w-0">
-            <h3 className="text-[17px] font-extrabold text-gray-900 leading-tight">{c.name}</h3>
-            <p className="text-[12.5px] text-gray-500 mt-0.5">{c.company}</p>
-            <p className="flex items-center gap-1 text-[12px] text-gray-400 mt-1">
-              <Clock size={11} className="text-gray-400 shrink-0" />
-              {c.lastActive.replace("Last active: ", "").replace("Added: ", "").replace("Contacted: ", "").replace("Follow-up scheduled: ", "")}
-            </p>
-          </div>
-          {/* Badge — top right */}
-          <span className={`inline-flex shrink-0 text-[11px] font-bold px-3 py-1 rounded-full border uppercase tracking-wide ${
-            badgeStyles[c.badgeColor] || badgeStyles.blue
-          }`}>
-            {c.badge}
-          </span>
-        </div>
-
-        {/* Row 2: 2×2 property info grid */}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-4 mb-5">
-          <div>
-            <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Interested In</p>
-            <p className="text-[14px] font-bold text-gray-900 leading-snug">{c.property}</p>
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Budget</p>
-            <p className="text-[14px] font-bold text-gray-900">{c.budget}</p>
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Location</p>
-            <p className="text-[14px] font-bold text-gray-900">{c.location}</p>
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Prefers</p>
-            <p className="text-[14px] font-bold text-gray-900">Modern, Gym</p>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <h3 className="font-bold text-slate-900 text-base leading-tight truncate">{c.customer}</h3>
+                <p className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
+                  <Clock size={11} /> {c.created_at?.split("|")[0]?.trim()}
+                </p>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Badge paymenttype={c.paymenttype} />
+                <ActionMenu row={c} onAction={onAction} />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Row 3: Gradient Message + 3 violet circle icon buttons */}
+        {/* Info grid */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3 bg-slate-50 rounded-xl p-3 mb-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-0.5">Deal Amount</p>
+            <p className="text-sm font-bold text-slate-800">{fmtLac(c.dealamount)}</p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-0.5">Token Amount</p>
+            <p className="text-sm font-bold text-slate-800">{fmtLac(c.tokenamount)}</p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-0.5">Contact</p>
+            <p className="text-sm font-bold text-slate-800">{c.contact || "—"}</p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-0.5">Payment</p>
+            <p className="text-sm font-bold text-slate-800">{c.paymenttype || "—"}</p>
+          </div>
+        </div>
+
+        {/* Actions */}
         <div className="flex items-center gap-3">
           <button
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-[12px] text-[14px] font-bold text-white hover:opacity-90 transition-opacity"
+            onClick={() => onAction("view", c.enquirersid)}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white hover:opacity-90 transition-opacity"
             style={{ background: GRADIENT }}
           >
-            <MessageCircle size={16} />
-            Message
+            <MessageCircle size={15} /> View Details
           </button>
-          {[Phone, FileText, Share2].map((Icon, i) => (
-            <button
-              key={i}
-              className="w-12 h-12 flex items-center justify-center rounded-full bg-violet-50 hover:bg-violet-100 transition-colors shrink-0"
-            >
-              <Icon size={17} className="text-violet-600" />
-            </button>
-          ))}
+          <button
+            onClick={() => onAction("addPayment", c.enquirersid)}
+            className="w-12 h-12 flex items-center justify-center rounded-full bg-violet-50 hover:bg-violet-100 transition-colors shrink-0"
+          >
+            <CreditCard size={17} className="text-violet-600" />
+          </button>
+          <a
+            href={`tel:${c.contact}`}
+            className="w-12 h-12 flex items-center justify-center rounded-full bg-violet-50 hover:bg-violet-100 transition-colors shrink-0"
+          >
+            <Phone size={17} className="text-violet-600" />
+          </a>
         </div>
-
       </div>
 
-      {/* ══ DESKTOP layout ══ */}
-      <div className="hidden md:block">
+      {/* ── DESKTOP ── */}
+      <div className="hidden md:block p-6">
+        {/* Top row */}
+        <div className="flex items-start gap-4 mb-5">
+          {/* Left: initials avatar */}
+          <div
+            className="w-14 h-14 rounded-full shrink-0 flex items-center justify-center text-lg font-bold text-white ring-2 ring-slate-100 cursor-pointer"
+            style={{ background: GRADIENT }}
+            onClick={() => c.seoSlug && window.open("https://www.reparv.in/property-info/" + c.seoSlug, "_blank")}
+          >
+            {initials}
+          </div>
 
-        {/* Top Row: Avatar + Name + Actions + Timestamp */}
-        <div className="flex items-start gap-3.5 mb-4">
-          <img
-            src={c.avatar}
-            alt={c.name}
-            className="w-14 h-14 rounded-full object-cover shrink-0 ring-2 ring-gray-100"
-          />
           <div className="flex-1 min-w-0">
-            <h3 className="text-[17px] font-extrabold text-gray-900 leading-tight">{c.name}</h3>
-            <p className="flex items-center gap-1.5 text-[12.5px] text-gray-500 mt-0.5">
-              <Building2 size={12} className="text-gray-400 shrink-0" />
-              {c.company}
+            <h3 className="text-lg font-bold text-slate-900 leading-tight">{c.customer}</h3>
+            <p className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
+              <Building2 size={11} /> {c.contact}
             </p>
-            <span className={`inline-flex mt-2 text-[11.5px] font-semibold px-2.5 py-0.5 rounded-[5px] border ${
-              badgeStyles[c.badgeColor] || badgeStyles.blue
-            }`}>
-              {c.badge}
-            </span>
+            <Badge paymenttype={c.paymenttype} />
           </div>
+
           <div className="flex flex-col items-end gap-2 shrink-0">
-            <div className="flex items-center gap-3">
-              <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors"><User size={17} /></button>
-              <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors"><Pencil size={17} /></button>
-              <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors"><UserPlus size={17} /></button>
-            </div>
-            <p className="text-[11.5px] text-gray-400 whitespace-nowrap">{c.lastActive}</p>
+            <ActionMenu row={c} onAction={onAction} />
+            <p className="text-xs text-slate-400 whitespace-nowrap">{c.created_at?.split("|")[0]?.trim()}</p>
           </div>
         </div>
 
-        {/* Property Details: 3-col */}
-        <div className="grid grid-cols-3 gap-4 mb-5 pt-4 border-t border-gray-100">
+        {/* Info: 3 col */}
+        <div className="grid grid-cols-3 gap-4 mb-5 pt-4 border-t border-slate-100">
           <div>
-            <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Interested Property</p>
-            <p className="text-[13.5px] font-bold text-violet-600 leading-snug">{c.property}</p>
+            <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-1">Deal Amount</p>
+            <p className="text-sm font-bold text-violet-600">{fmtLac(c.dealamount)}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Budget Range</p>
-            <p className="text-[13.5px] font-bold text-gray-900">{c.budget}</p>
+            <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-1">Token Amount</p>
+            <p className="text-sm font-bold text-slate-900">{fmtLac(c.tokenamount)}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Location Pref</p>
-            <p className="text-[13.5px] font-bold text-gray-900">{c.location}</p>
+            <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-1">Payment Type</p>
+            <p className="text-sm font-bold text-slate-900">{c.paymenttype || "—"}</p>
           </div>
         </div>
 
-        {/* Action Buttons: 4-col */}
+        {/* Actions: 4 col */}
         <div className="grid grid-cols-4 gap-2.5">
           <button
-            className="flex items-center justify-center gap-2 py-2.5 rounded-[8px] text-[13px] font-bold text-white hover:opacity-90 transition-opacity"
+            onClick={() => onAction("view", c.enquirersid)}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90 transition-opacity"
             style={{ background: GRADIENT }}
           >
-            <MessageCircle size={15} />
-            Message
+            <MessageCircle size={14} /> View
           </button>
-          <button className="flex items-center justify-center gap-2 py-2.5 rounded-[8px] text-[13px] font-semibold text-gray-700 border border-gray-200 bg-white hover:bg-gray-50 transition-colors">
-            <Phone size={14} className="text-gray-500" />
-            Call
+          <button
+            onClick={() => onAction("addPayment", c.enquirersid)}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-slate-700 border border-slate-200 bg-white hover:bg-slate-50 transition-colors"
+          >
+            <CreditCard size={14} className="text-slate-500" /> Payment
           </button>
-          <button className="flex items-center justify-center gap-2 py-2.5 rounded-[8px] text-[13px] font-semibold text-gray-700 border border-gray-200 bg-white hover:bg-gray-50 transition-colors">
-            <FileText size={14} className="text-gray-500" />
-            Add Note
-          </button>
-          <button className="flex items-center justify-center gap-2 py-2.5 rounded-[8px] text-[13px] font-semibold text-gray-700 border border-gray-200 bg-white hover:bg-gray-50 transition-colors">
-            <Share2 size={14} className="text-gray-500" />
-            Share Update
+          <a
+            href={`tel:${c.contact}`}
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-slate-700 border border-slate-200 bg-white hover:bg-slate-50 transition-colors"
+          >
+            <Phone size={14} className="text-slate-500" /> Call
+          </a>
+          <button className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-slate-700 border border-slate-200 bg-white hover:bg-slate-50 transition-colors">
+            <Share2 size={14} className="text-slate-500" /> Share
           </button>
         </div>
-
       </div>
     </div>
   );

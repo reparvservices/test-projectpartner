@@ -7,7 +7,7 @@ export const getImageURI = (path) => {
     return path;
   }
 
-  const base = "https://api.reparv.in";
+  const base = import.meta.env.VITE_S3_IMAGE_URL;
 
   // Ensure single slash between base and path
   return `${base}/${path.replace(/^\/+/, "")}`;

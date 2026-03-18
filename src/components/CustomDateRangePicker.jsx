@@ -354,7 +354,7 @@ export default function CustomDateRangePicker({ range = [{}], setRange }) {
       <div ref={trigRef} className="inline-flex">
         <button
           onClick={toggle}
-          className={`flex items-center justify-between gap-2 h-9 px-3 rounded-xl text-sm font-medium cursor-pointer transition-all border
+          className={`flex items-center justify-between gap-2 h-9 px-3 rounded-md text-xs font-semibold cursor-pointer transition-all border
             ${open
               ? "border-[#5323DC] ring-2 ring-violet-200 text-[#5323DC] bg-violet-50"
               : "border-gray-200 text-gray-600 bg-white hover:border-violet-400 hover:text-violet-600"

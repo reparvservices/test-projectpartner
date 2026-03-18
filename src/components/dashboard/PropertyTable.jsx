@@ -2,7 +2,8 @@ import { CiSearch } from "react-icons/ci";
 import DataTable from "react-data-table-component";
 import CustomDateRangePicker from "../CustomDateRangePicker";
 import DashboardFilter from "./DashboardFilter";
-
+import propertyPicture from "../../assets/propertyPicture.svg";
+import { getImageURI } from "../../utils/helper";
 /**
  * PropertyTable
  * Props:
@@ -62,10 +63,10 @@ export default function PropertyTable({
     {
       name: "Image",
       cell: (row) => {
-        let src = "/default.jpg";
+        let src = propertyPicture;
         try {
           const parsed = JSON.parse(row.frontView);
-          if (Array.isArray(parsed) && parsed[0]) src = `${URI}${parsed[0]}`;
+          if (Array.isArray(parsed) && parsed[0]) src = `${getImageURI(parsed[0])}`;
         } catch {}
         return (
           <div className="w-[120px] h-12 overflow-hidden flex items-center justify-center rounded-lg">
@@ -121,7 +122,6 @@ export default function PropertyTable({
       {/* Table heading */}
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-gray-900">Property List</h2>
-        <span className="text-xs text-gray-400">{data.length} properties</span>
       </div>
 
       {/* Search + Date range row */}
