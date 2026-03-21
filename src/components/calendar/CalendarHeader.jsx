@@ -1,12 +1,8 @@
 import { useState } from "react";
 import { SearchIcon, FilterIcon, PlusIcon } from "./CalendarIcons";
 import { VIEW_OPTIONS } from "./calendarData";
-
-const BackIcon = () => (
-  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-    <polyline points="15 18 9 12 15 6" />
-  </svg>
-);
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const NAV_TABS = ["Schedule", "Tasks", "Notes"];
 
@@ -26,6 +22,7 @@ export default function CalendarHeader({
   activeTab,
   onTabChange,
 }) {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
   return (
@@ -37,10 +34,9 @@ export default function CalendarHeader({
 
         {/* Row 1: Back ← | Calendar | + FAB */}
         <div className="flex items-center justify-between px-4 h-14">
-          <button className="w-9 h-9 flex items-center justify-center text-gray-700 hover:text-black transition-colors cursor-pointer rounded-lg">
-            <BackIcon />
+          <button onClick={()=>{navigate(-1)}} className="p-1.5 rounded-full hover:bg-slate-100 transition-colors">
+            <ArrowLeft size={20} className="text-slate-900" strokeWidth={2.2} />
           </button>
-
           <span className="text-[15px] font-semibold tracking-wide">
             Calendar
           </span>

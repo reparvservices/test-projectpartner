@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Search, Plus, ChevronDown, ArrowLeft, SlidersHorizontal } from "lucide-react";
+import {
+  Search,
+  Plus,
+  ChevronDown,
+  ArrowLeft,
+  SlidersHorizontal,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function Toggle({ checked, onChange }) {
   return (
@@ -19,11 +26,11 @@ function Toggle({ checked, onChange }) {
 }
 
 export default function BuildersHeader({ onBack }) {
+  const navigate = useNavigate();
   const [verified, setVerified] = useState(false);
 
   return (
     <div className="bg-white border-b border-gray-100">
-
       {/* DESKTOP */}
       <div className="hidden md:flex items-center justify-between gap-6 px-8 py-[18px]">
         <div className="max-w-[300px] shrink-0">
@@ -59,7 +66,10 @@ export default function BuildersHeader({ onBack }) {
 
           <button
             className="flex items-center gap-2 px-5 py-[8px] text-white text-[12px] font-bold rounded-[6px] whitespace-nowrap shadow-[0_4px_14px_rgba(94,35,220,0.3)] hover:opacity-90 transition-opacity"
-            style={{ background: "linear-gradient(110.73deg, #5E23DC 0%, #7C3AED 100%)" }}
+            style={{
+              background:
+                "linear-gradient(110.73deg, #5E23DC 0%, #7C3AED 100%)",
+            }}
           >
             <Plus size={15} strokeWidth={2.5} />
             Add Builder
@@ -71,8 +81,17 @@ export default function BuildersHeader({ onBack }) {
       <div className="flex flex-col md:hidden">
         <div className="flex items-center justify-between px-4 pt-4 pb-3">
           <div className="flex items-center gap-3">
-            <button onClick={onBack} className="p-0 bg-transparent border-none cursor-pointer">
-              <ArrowLeft size={20} className="text-gray-900" strokeWidth={2.2} />
+            <button
+              onClick={() => {
+                navigate(-1);
+              }}
+              className="p-0 bg-transparent border-none cursor-pointer"
+            >
+              <ArrowLeft
+                size={20}
+                className="text-gray-900"
+                strokeWidth={2.2}
+              />
             </button>
             <h1 className="text-[18px] font-semibold text-gray-900 tracking-tight">
               Builders Network
@@ -80,7 +99,10 @@ export default function BuildersHeader({ onBack }) {
           </div>
           <button
             className="w-10 h-10 rounded-full flex items-center justify-center shadow-[0_4px_14px_rgba(94,35,220,0.35)] hover:opacity-90 transition-opacity shrink-0"
-            style={{ background: "linear-gradient(110.73deg, #5E23DC 0%, #7C3AED 100%)" }}
+            style={{
+              background:
+                "linear-gradient(110.73deg, #5E23DC 0%, #7C3AED 100%)",
+            }}
           >
             <Plus size={18} className="text-white" strokeWidth={2.5} />
           </button>
@@ -112,7 +134,6 @@ export default function BuildersHeader({ onBack }) {
           </div>
         </div>
       </div>
-
     </div>
   );
 }

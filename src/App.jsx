@@ -3,65 +3,84 @@ import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import "./App.css";
 
 // ── Layouts ───────────────────────────────────────────────────────────────────
-import Layout    from "./layout/Layout";
+import Layout from "./layout/Layout";
 import LayoutTwo from "./layout/Layout2";
 
 // ── Auth Guard ────────────────────────────────────────────────────────────────
 import { useAuth } from "./store/auth";
 import Login from "./pages/Login";
+import PropertiesFlatAndPlotInfo from "./pages/properties/PropertiesFlatAndPlotInfo";
+
+// for Navigation
+import { useNavigate } from "react-router-dom";
 
 // ── Lazy-loaded pages ─────────────────────────────────────────────────────────
 // Public
-const PartnerPage          = lazy(() => import("./pages/PartnerPage"));
-const PartnersPage         = lazy(() => import("./components/partnerPageUpdated/PartnersPage"));
-const PrivacyPolicy        = lazy(() => import("./pages/PrivacyPolicy"));
-const TermsAndConditions   = lazy(() => import("./pages/TermsAndConditions"));
-const AccountCancellation  = lazy(() => import("./pages/AccountCancellation"));
-const RefundPolicy         = lazy(() => import("./pages/RefundPolicy"));
+const PartnerPage = lazy(() => import("./pages/PartnerPage"));
+const PartnersPage = lazy(
+  () => import("./components/partnerPageUpdated/PartnersPage"),
+);
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
+const AccountCancellation = lazy(() => import("./pages/AccountCancellation"));
+const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
 
 // App — Dashboard & Feed
-const Dashboard            = lazy(() => import("./pages/Dashboard"));
-const Feed                 = lazy(() => import("./pages/Feed"));
-const Community            = lazy(() => import("./pages/Community"));
-const Notifications        = lazy(() => import("./pages/Notifications"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Feed = lazy(() => import("./pages/Feed"));
+const Community = lazy(() => import("./pages/Community"));
+const Notifications = lazy(() => import("./pages/Notifications"));
 
 // App — Properties
-const Properties           = lazy(() => import("./pages/properties/Properties"));
-const AddProperty          = lazy(() => import("./pages/properties/AddProperty"));
-const AddPropertyMobile    = lazy(() => import("./pages/properties/AddPropertyMobile"));
-const UpdateProperty       = lazy(() => import("./pages/properties/UpdateProperty"));
-const Map                  = lazy(() => import("./pages/properties/Map"));
+const Properties = lazy(() => import("./pages/properties/Properties"));
+const AddProperty = lazy(() => import("./pages/properties/AddProperty"));
+const AddPropertyMobile = lazy(
+  () => import("./pages/properties/AddPropertyMobile"),
+);
+const UpdateProperty = lazy(() => import("./pages/properties/UpdateProperty"));
+const Map = lazy(() => import("./pages/properties/Map"));
 
 // App — Calendar
-const Calendar             = lazy(() => import("./pages/calendar/Calendar"));
-const AddEvent             = lazy(() => import("./pages/calendar/AddEvent"));
+const Calendar = lazy(() => import("./pages/calendar/Calendar"));
+const AddEvent = lazy(() => import("./pages/calendar/AddEvent"));
 
 // App — Enquiries & Customers
-const Enquiries            = lazy(() => import("./pages/enquiries/Enquiries"));
-const AddEnquiry           = lazy(() => import("./pages/enquiries/AddEnquiry"));
-const Customers            = lazy(() => import("./pages/customers/Customers"));
+const Enquiries = lazy(() => import("./pages/enquiries/Enquiries"));
+const AddEnquiry = lazy(() => import("./pages/enquiries/AddEnquiry"));
+const Customers = lazy(() => import("./pages/customers/Customers"));
 
 // App — Builders
-const Builders             = lazy(() => import("./pages/builders/Builders"));
-const AddBuilder           = lazy(() => import("./pages/builders/AddBuilder"));
+const Builders = lazy(() => import("./pages/builders/Builders"));
+const AddBuilder = lazy(() => import("./pages/builders/AddBuilder"));
 
 // App — Partners
-const SalesPartners        = lazy(() => import("./pages/salesPartners/SalesPartners"));
-const AddSalesPartner      = lazy(() => import("./pages/salesPartners/AddSalesPartner"));
-const TerritoryPartners    = lazy(() => import("./pages/territoryPartners/TerritoryPartners"));
-const AddTerritoryPartner  = lazy(() => import("./pages/territoryPartners/AddTerritoryPartner"));
+const SalesPartners = lazy(() => import("./pages/salesPartners/SalesPartners"));
+const AddSalesPartner = lazy(
+  () => import("./pages/salesPartners/AddSalesPartner"),
+);
+const UpdateSalesPartner = lazy(
+  () => import("./pages/salesPartners/UpdateSalesPartner"),
+);
+const TerritoryPartners = lazy(
+  () => import("./pages/territoryPartners/TerritoryPartners"),
+);
+const AddTerritoryPartner = lazy(
+  () => import("./pages/territoryPartners/AddTerritoryPartner"),
+);
 
 // App — Employees
-const Employees            = lazy(() => import("./pages/employees/Employees"));
-const AddEmployee          = lazy(() => import("./pages/employees/AddEmployee"));
+const Employees = lazy(() => import("./pages/employees/Employees"));
+const AddEmployee = lazy(() => import("./pages/employees/AddEmployee"));
 
 // App — Subscription
-const Subscription         = lazy(() => import("./pages/subscription/Subscription"));
-const ComparePlans         = lazy(() => import("./pages/subscription/ComparePlans"));
+const Subscription = lazy(() => import("./pages/subscription/Subscription"));
+const ComparePlans = lazy(() => import("./pages/subscription/ComparePlans"));
 
 // App — Profile
-const Profile              = lazy(() => import("./pages/profile/Profile"));
-const EditProfileResponsive = lazy(() => import("./pages/profile/EditProfileResponsive"));
+const Profile = lazy(() => import("./pages/profile/Profile"));
+const EditProfileResponsive = lazy(
+  () => import("./pages/profile/EditProfileResponsive"),
+);
 
 // ── Fallback loader ───────────────────────────────────────────────────────────
 function PageLoader() {
@@ -86,6 +105,7 @@ function RequireAuth() {
 
 // ── 404 page ──────────────────────────────────────────────────────────────────
 function NotFound() {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center px-4">
       <h1 className="text-7xl font-bold text-violet-600">404</h1>
@@ -93,12 +113,14 @@ function NotFound() {
       <p className="text-gray-400 text-sm max-w-xs">
         The page you're looking for doesn't exist or has been moved.
       </p>
-      <a
-        href="/"
+      <div
+        onClick={() => {
+          navigate(-1);
+        }}
         className="mt-2 px-6 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors"
       >
-        Go Home
-      </a>
+        Go Back
+      </div>
     </div>
   );
 }
@@ -107,18 +129,17 @@ function NotFound() {
 const App = () => (
   <Suspense fallback={<PageLoader />}>
     <Routes>
-
       {/* ════════════════════════════════════════════
           PUBLIC ROUTES — no auth required
       ════════════════════════════════════════════ */}
       <Route path="/" element={<LayoutTwo />}>
-        <Route index                      element={<PartnerPage />} />
-        <Route path="login"            element={<Login />} />
-        <Route path="partners"            element={<PartnersPage />} />
-        <Route path="privacy-policy"      element={<PrivacyPolicy />} />
+        <Route index element={<PartnerPage />} />
+        <Route path="login" element={<Login />} />
+        <Route path="partners" element={<PartnersPage />} />
+        <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="terms-and-conditions" element={<TermsAndConditions />} />
         <Route path="account-cancellation" element={<AccountCancellation />} />
-        <Route path="cancellation-policy"  element={<RefundPolicy />} />
+        <Route path="cancellation-policy" element={<RefundPolicy />} />
       </Route>
 
       {/* ════════════════════════════════════════════
@@ -126,64 +147,73 @@ const App = () => (
       ════════════════════════════════════════════ */}
       <Route path="/app" element={<RequireAuth />}>
         <Route element={<Layout />}>
-
           {/* Default redirect */}
           <Route index element={<Navigate to="dashboard" replace />} />
 
           {/* Dashboard & Feed */}
-          <Route path="dashboard"   element={<Dashboard />} />
-          <Route path="feed"        element={<Feed />} />
-          <Route path="community"   element={<Community />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="feed" element={<Feed />} />
+          <Route path="community" element={<Community />} />
           <Route path="notifications" element={<Notifications />} />
 
           {/* Calendar */}
-          <Route path="calendar"           element={<Calendar />} />
+          <Route path="calendar" element={<Calendar />} />
           <Route path="calendar/event/add" element={<AddEvent />} />
 
           {/* Properties */}
-          <Route path="properties"          element={<Properties />} />
+          <Route path="properties" element={<Properties />} />
           <Route path="properties/map-view" element={<Map />} />
-          <Route path="property/add"        element={<AddProperty />} />
+          <Route path="property/add" element={<AddProperty />} />
           <Route path="property/add/mobile" element={<AddPropertyMobile />} />
           <Route path="property/update/:id" element={<UpdateProperty />} />
+          <Route
+            path="property/additional-info/:propertyid"
+            element={<PropertiesFlatAndPlotInfo />}
+          />
 
           {/* Enquiries */}
-          <Route path="enquiries"    element={<Enquiries />} />
-          <Route path="enquiry/add"  element={<AddEnquiry />} />
+          <Route path="enquiries" element={<Enquiries />} />
+          <Route path="enquiry/add" element={<AddEnquiry />} />
 
           {/* Customers */}
           <Route path="customers" element={<Customers />} />
 
           {/* Builders */}
-          <Route path="builders"     element={<Builders />} />
-          <Route path="builder/add"  element={<AddBuilder />} />
+          <Route path="builders" element={<Builders />} />
+          <Route path="builder/add" element={<AddBuilder />} />
 
           {/* Sales Partners */}
-          <Route path="sales-partners"    element={<SalesPartners />} />
+          <Route path="sales-partners" element={<SalesPartners />} />
           <Route path="sales-partner/add" element={<AddSalesPartner />} />
 
+          <Route
+            path="sales-partner/update/:id"
+            element={<UpdateSalesPartner />}
+          />
+
           {/* Territory Partners */}
-          <Route path="territory-partners"    element={<TerritoryPartners />} />
-          <Route path="territory-partner/add" element={<AddTerritoryPartner />} />
+          <Route path="territory-partners" element={<TerritoryPartners />} />
+          <Route
+            path="territory-partner/add"
+            element={<AddTerritoryPartner />}
+          />
 
           {/* Employees */}
-          <Route path="employees"    element={<Employees />} />
+          <Route path="employees" element={<Employees />} />
           <Route path="employee/add" element={<AddEmployee />} />
 
           {/* Subscription */}
-          <Route path="subscription"                element={<Subscription />} />
-          <Route path="subscription/compare-plans"  element={<ComparePlans />} />
+          <Route path="subscription" element={<Subscription />} />
+          <Route path="subscription/compare-plans" element={<ComparePlans />} />
 
           {/* Profile */}
-          <Route path="profile"       element={<Profile />} />
-          <Route path="edit-profile"  element={<EditProfileResponsive />} />
-
+          <Route path="profile" element={<Profile />} />
+          <Route path="edit-profile" element={<EditProfileResponsive />} />
         </Route>
       </Route>
 
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
-
     </Routes>
   </Suspense>
 );

@@ -1,241 +1,215 @@
-import { useState } from "react";
-import { FiUpload, FiArrowLeft } from "react-icons/fi";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../store/auth";
+import { uploadToS3 } from "../../utils/s3";
+import Loader from "../../components/Loader";
+import AddPropertyHeader from "../../components/properties/addProperty/AddPropertyHeader";
+import PropertyClassification from "../../components/properties/addProperty/PropertyClassification";
+import BasicInfoForm from "../../components/properties/addProperty/BasicInfoForm";
+import LocationForm from "../../components/properties/addProperty/LocationForm";
+import MediaGallery from "../../components/properties/addProperty/MediaGallery";
+import ListingQualitySidebar from "../../components/properties/addProperty/ListingQualitySidebar";
+
+const nameRegex  = /^[A-Za-z\s]+$/;
+const phoneRegex = /^[6-9]\d{9}$/;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const EMPTY_IMAGES = {
+  frontView: [], sideView: [], kitchenView: [], hallView: [],
+  bedroomView: [], bathroomView: [], balconyView: [],
+  nearestLandmark: [], developedAmenities: [],
+};
+
+const REQUIRED = [
+  "propertyCategory", "propertyName", "address", "state", "city",
+  "carpetArea", "totalSalesPrice", "totalOfferPrice",
+];
+
+/* Maps property category to its tab */
+function getTab(category = "") {
+  const c = category.toLowerCase();
+  if (c.includes("rental") || c.includes("rent")) return "rent";
+  if (c.includes("resale")) return "resale";
+  return "new";
+}
 
 export default function UpdateProperty() {
-  const [updateType, setUpdateType] = useState("Announcement");
-  const [visibility, setVisibility] = useState("public");
-  const [content, setContent] = useState("");
-  const [media, setMedia] = useState([]);
-  const [progress, setProgress] = useState(65);
-  const [unitsSold, setUnitsSold] = useState("12");
-  const [remaining, setRemaining] = useState("45");
+  const navigate    = useNavigate();
+  const { id }      = useParams();
+  const { URI, setLoading } = useAuth();
 
-  const card = "bg-white border border-[#E5E7EB] rounded-2xl p-5 space-y-4";
-  const pill =
-    "px-4 py-2 rounded-full border text-sm whitespace-nowrap cursor-pointer transition";
-  const pillActive = "border-[#8A38F5] text-[#8A38F5] bg-[#F4ECFF]";
-  const pillIdle = "border-gray-300 text-gray-600 hover:border-[#8A38F5]";
-  const input =
-    "w-full border border-[#D9D9D9] rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#8A38F5]";
+  const [propertyTab, setPropertyTab] = useState("new");
+  const [form, setForm]               = useState({});
+  const [imageFiles, setImageFiles]   = useState(EMPTY_IMAGES);
+  const [states, setStates]           = useState([]);
+  const [cities, setCities]           = useState([]);
+  const [canPublish, setCanPublish]   = useState(false);
+  const [fetchingData, setFetchingData] = useState(true);
+  const [errors, setErrors]           = useState({ propertyName: "", projectBy: "", contact: "", email: "" });
 
-  const handleFiles = (e) => {
-    const files = Array.from(e.target.files);
-    setMedia((prev) => [...prev, ...files]);
+  /* ── fetch existing property ── */
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${URI}/project-partner/properties/${id}`, { method: "GET", credentials: "include", headers: { "Content-Type": "application/json" } });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        setForm(data);
+        setPropertyTab(getTab(data.propertyCategory));
+      } catch (e) { console.error(e); alert("Failed to load property."); navigate("/app/properties"); }
+      finally { setFetchingData(false); }
+    })();
+  }, [id]);
+
+  /* ── fetch states ── */
+  useEffect(() => {
+    (async () => {
+      try { const res = await fetch(`${URI}/admin/states`, { method: "GET", credentials: "include", headers: { "Content-Type": "application/json" } }); if (res.ok) setStates(await res.json()); }
+      catch (e) { console.error(e); }
+    })();
+  }, []);
+
+  /* ── fetch cities when state changes ── */
+  useEffect(() => {
+    if (!form.state) return;
+    (async () => {
+      try { const res = await fetch(`${URI}/admin/cities/${form.state}`, { method: "GET", credentials: "include", headers: { "Content-Type": "application/json" } }); if (res.ok) setCities(await res.json()); }
+      catch (e) { console.error(e); }
+    })();
+  }, [form.state]);
+
+  const handleChange = (field, value) => {
+    if (field === "state") { setForm((p) => ({ ...p, state: value, city: "" })); setCities([]); }
+    else setForm((p) => ({ ...p, [field]: value }));
   };
 
+  const validateField = (name, value) => {
+    let e = "";
+    if (name === "propertyName" && value && !nameRegex.test(value))  e = "Only letters allowed";
+    if (name === "projectBy"    && value && !nameRegex.test(value))  e = "Letters only";
+    if (name === "contact"      && value && !phoneRegex.test(value)) e = "Enter valid 10-digit number";
+    if (name === "email"        && value && !emailRegex.test(value)) e = "Enter valid email";
+    setErrors((p) => ({ ...p, [name]: e }));
+  };
+
+  useEffect(() => {
+    if (!form.propertyName) return;
+    const ok = REQUIRED.every((f) => { const v = form[f]; return v && v.toString().trim() !== ""; })
+      && !Object.values(errors).some(Boolean);
+    setCanPublish(ok);
+  }, [form, errors]);
+
+  const handleAddImages = (category, files) => {
+    setImageFiles((prev) => {
+      const merged = [...(prev[category] || []), ...files];
+      if (merged.length > 3) { alert("Max 3 images per category."); return { ...prev, [category]: merged.slice(0, 3) }; }
+      return { ...prev, [category]: merged };
+    });
+  };
+
+  const handleRemoveImage = (category, index) => {
+    setImageFiles((prev) => { const updated = [...prev[category]]; updated.splice(index, 1); return { ...prev, [category]: updated }; });
+  };
+
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
+    if (!canPublish) return;
+    setLoading(true);
+    try {
+      const payload = { ...form };
+      // Only upload new images if user selected any
+      for (const field of Object.keys(EMPTY_IMAGES)) {
+        if (imageFiles[field]?.length > 0) {
+          const urls = [];
+          for (const file of imageFiles[field]) { const url = await uploadToS3(file); if (url) urls.push(url); }
+          payload[field] = urls;
+        }
+        // else keep existing URLs already in form
+      }
+      const res = await fetch(`${URI}/project-partner/properties/edit/${id}`, {
+        method: "PUT", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.status === 409) { alert((await res.json()).message || "Property already exists!"); return; }
+      if (!res.ok) throw new Error(`Status: ${res.status}`);
+      alert("Property updated successfully!");
+      navigate("/app/properties");
+    } catch (e) { console.error(e); alert("Please check all fields and try again."); }
+    finally { setLoading(false); }
+  };
+
+  if (fetchingData) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-4 border-[#5323DC] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-slate-500">Loading property...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#FAF8FF]">
-      {/* TOP BAR */}
-      <div className="bg-white border-b sticky top-0 z-20">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => window.history.back()}
-              className="p-2 rounded-full hover:bg-gray-100"
-            >
-              <FiArrowLeft size={20} />
-            </button>
+    <div className="min-h-screen bg-slate-50 pb-24 sm:pb-10">
+      <AddPropertyHeader
+        onSaveDraft={() => alert("Saved as draft!")}
+        onCancel={() => navigate("/app/properties")}
+        onPublish={handleSubmit}
+        canPublish={canPublish}
+        title="Update Property"
+      />
 
-            <div>
-              <h2 className="text-base sm:text-lg font-semibold">
-                Create Property Update
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-500">
-                Posting to:{" "}
-                <span className="font-medium">Green Valley Heights</span>
-              </p>
-            </div>
-          </div>
-
-          <div className="hidden sm:flex items-center gap-2">
-            <button className="px-4 py-2 text-sm border rounded-lg">
-              Save Draft
-            </button>
-            <button className="px-4 py-2 text-sm bg-[#8A38F5] text-white rounded-lg">
-              Post Update
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* BODY */}
-      <div className="max-w-[1400px] mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* LEFT */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* UPDATE TYPE */}
-          <div className={card}>
-            <h3 className="font-semibold text-sm">UPDATE TYPE</h3>
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {[
-                "Announcement",
-                "Construction",
-                "Price Update",
-                "Media",
-                "Sales Milestone",
-              ].map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setUpdateType(item)}
-                  className={`${pill} ${
-                    updateType === item ? pillActive : pillIdle
-                  }`}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-
-            <div className="border rounded-xl overflow-hidden">
-              <div className="bg-[#F4F0FF] px-3 py-2 flex gap-3 text-gray-500 text-sm">
-                <b>B</b> <i>I</i> <u>U</u> • ≡ • 🔗
-              </div>
-              <textarea
-                rows={6}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="w-full p-4 text-sm outline-none"
-                placeholder="Write your update here..."
-              />
-            </div>
-          </div>
-
-          {/* MEDIA */}
-          <div className={card}>
-            <h3 className="font-semibold text-sm">MEDIA & ATTACHMENTS</h3>
-
-            <label className="w-full border-2 border-dashed rounded-xl py-10 flex flex-col items-center gap-2 cursor-pointer bg-[#F4F0FF]">
-              <FiUpload size={26} className="text-[#8A38F5]" />
-              <p className="text-sm font-medium">
-                Click or drag files to upload
-              </p>
-              <span className="text-xs text-gray-500">
-                Images, Videos or Documents
-              </span>
-              <input
-                type="file"
-                multiple
-                className="hidden"
-                onChange={handleFiles}
-              />
-            </label>
-
-            <div className="flex gap-3 mt-3">
-              {media.map((file, i) => (
-                <img
-                  key={i}
-                  src={URL.createObjectURL(file)}
-                  className="w-24 h-20 rounded-lg object-cover border"
-                  alt=""
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* METRICS */}
-          <div className={card}>
-            <div className="flex justify-between">
-              <h3 className="font-semibold text-sm">PROPERTY METRICS</h3>
-              <span className="text-xs text-gray-400">Optional</span>
-            </div>
-
-            <label className="text-sm font-medium">
-              Construction Progress{" "}
-              <span className="text-[#8A38F5]">{progress}%</span>
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={progress}
-              onChange={(e) => setProgress(e.target.value)}
-              className="w-full accent-[#8A38F5]"
+      <main className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
+        <form onSubmit={handleSubmit} id="update-property-form">
+          <section className="space-y-5">
+            <PropertyClassification
+              propertyTab={propertyTab}
+              propertyCategory={form.propertyCategory}
+              onTabChange={(tab) => { setPropertyTab(tab); handleChange("propertyCategory", ""); }}
+              onCategoryChange={(val) => handleChange("propertyCategory", val)}
             />
+            <BasicInfoForm form={form} errors={errors} propertyTab={propertyTab} onChange={handleChange} onValidate={validateField} />
+            <LocationForm form={form} errors={errors} states={states} cities={cities} onChange={handleChange} onValidate={validateField} />
+            <MediaGallery imageFiles={imageFiles} onAdd={handleAddImages} onRemove={handleRemoveImage} existingImages={form.frontView} />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-              <input
-                className={input}
-                placeholder="Units Sold (This Month)"
-                value={unitsSold}
-                onChange={(e) => setUnitsSold(e.target.value)}
-              />
-              <input
-                className={input}
-                placeholder="Remaining Availability"
-                value={remaining}
-                onChange={(e) => setRemaining(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
+            {/* Note about existing images */}
+            {form.frontView && (
+              <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-xs text-blue-700">
+                Existing images are preserved. Upload new ones above only to replace them.
+              </div>
+            )}
 
-        {/* RIGHT */}
-        <div className="space-y-6">
-          {/* VISIBILITY */}
-          <div className={card}>
-            <h3 className="font-semibold text-sm">VISIBILITY</h3>
-
-            {[
-              {
-                key: "public",
-                label: "Public Network",
-                desc: "Visible to all partners and customers",
-              },
-              {
-                key: "partners",
-                label: "Sales Partners Only",
-                desc: "Restricted to channel partners",
-              },
-              {
-                key: "internal",
-                label: "Internal Team",
-                desc: "Private team update",
-              },
-            ].map((item) => (
-              <label
-                key={item.key}
-                className={`border rounded-lg p-3 flex gap-3 cursor-pointer ${
-                  visibility === item.key
-                    ? "border-[#8A38F5] bg-[#F4ECFF]"
-                    : "border-gray-300"
-                }`}
-              >
-                <input
-                  type="radio"
-                  checked={visibility === item.key}
-                  onChange={() => setVisibility(item.key)}
-                  className="accent-[#8A38F5] mt-1"
-                />
-                <div>
-                  <p className="font-medium text-sm">{item.label}</p>
-                  <p className="text-xs text-gray-500">{item.desc}</p>
-                </div>
-              </label>
-            ))}
-          </div>
-
-          {/* PREVIEW */}
-          <div className={card}>
-            <h3 className="font-semibold text-sm">PREVIEW</h3>
-
-            <div className="rounded-xl bg-[#8A38F5] text-white p-4 space-y-2">
-              <p className="font-semibold">Green Valley Heights</p>
-              <p className="text-xs opacity-80">Wakad, Pune</p>
-
-              <div className="bg-white/20 rounded-lg p-3 text-xs min-h-[80px]">
-                {content || "This is how your update will appear in the feed."}
+            <div className="hidden sm:flex items-center justify-between gap-3 pt-2">
+              <button type="button" onClick={() => navigate("/app/properties")} className="h-10 px-5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                Cancel
+              </button>
+              <div className="flex items-center gap-3">
+                <Loader />
+                <button type="submit" disabled={!canPublish}
+                  className={`h-10 px-8 rounded-xl text-sm font-semibold text-white transition-all shadow-md
+                    ${canPublish ? "bg-[#5323DC] hover:bg-violet-700 active:scale-95 shadow-violet-200" : "bg-gray-300 cursor-not-allowed"}`}
+                >
+                  Save Changes
+                </button>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </section>
+        </form>
 
-      {/* MOBILE ACTION BAR */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 flex gap-3 sm:hidden">
-        <button className="w-1/2 border rounded-lg py-2 text-sm">
-          Save Draft
+        <ListingQualitySidebar form={form} imageFiles={imageFiles} />
+      </main>
+
+      {/* Mobile bottom bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden bg-white border-t border-gray-100 px-4 py-4 flex gap-3">
+        <button type="button" onClick={() => navigate("/app/properties")} className="flex-1 h-11 rounded-2xl border border-gray-200 text-sm font-medium text-gray-600">
+          Cancel
         </button>
-        <button className="w-1/2 bg-[#8A38F5] text-white rounded-lg py-2 text-sm">
-          Post Update
+        <button type="submit" form="update-property-form" disabled={!canPublish}
+          className={`flex-1 h-11 rounded-2xl text-sm font-semibold text-white transition-all
+            ${canPublish ? "bg-[#5323DC] shadow-lg shadow-violet-200 active:scale-95" : "bg-gray-300 cursor-not-allowed"}`}
+        >
+          Save Changes
         </button>
       </div>
     </div>

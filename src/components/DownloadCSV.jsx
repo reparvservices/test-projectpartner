@@ -22,7 +22,7 @@ const DownloadCSV = ({ data, filename }) => {
   return (
     <button
       onClick={handleDownload}
-      className="flex items-center gap-2 border px-4 h-10 rounded-lg text-sm hover:bg-gray-50"
+      className="flex items-center gap-2 border px-4 py-2 rounded-md text-xs font-medium bg-white"
     >
       <FiDownload /> Download
     </button>

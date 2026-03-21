@@ -333,17 +333,17 @@ export default function AddBuilder({ onBack }) {
       </div>
 
       {/* ── Footer ── */}
-      <div className="sticky bottom-0 bg-white border-t border-gray-100 px-5 md:px-8 py-4 flex items-center justify-between gap-4">
+      <div className="sticky z-50 bottom-0 bg-white border-t border-gray-100 px-5 md:px-8 py-4 flex items-center justify-between gap-4">
         <button
           type="button"
-          className="px-6 py-2.5 rounded-[6px] border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+          className="px-6 py-2.5 rounded-md border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
         >
           Cancel
         </button>
 
         <button
           type="button"
-          className="flex items-center gap-2 px-6 py-2.5 rounded-[6px] text-sm font-bold text-white shadow-[0_4px_14px_rgba(94,35,220,0.3)] hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 px-6 py-2.5 rounded-md text-sm font-bold text-white shadow-[0_4px_14px_rgba(94,35,220,0.3)] hover:opacity-90 transition-opacity"
           style={{ background: GRADIENT }}
         >
           <Check size={15} strokeWidth={2.5} />

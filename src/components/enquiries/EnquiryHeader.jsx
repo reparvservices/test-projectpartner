@@ -1,18 +1,23 @@
-import { Search, Plus, Upload, ChevronDown, SlidersHorizontal } from "lucide-react";
+import { Search, Plus, ArrowLeft, Upload, ChevronDown, SlidersHorizontal } from "lucide-react";
 import DownloadCSV from "../DownloadCSV";
 import CustomDateRangePicker from "../CustomDateRangePicker";
+import { useNavigate } from "react-router-dom";
 
 const GRADIENT = "linear-gradient(110.73deg, #5323DC 0%, #8E61FF 100%)";
 
 const sources = ["Select Enquiry Source", "Ads", "Onsite", "Direct", "CSV", "Landing Page", "Digital Broker"];
 
 export default function EnquiryHeader({ search, setSearch, selectedSource, setSelectedSource, onAddEnquiry, onAddCSV, filteredData, range, setRange }) {
+  const navigate = useNavigate();
   return (
     <div className="bg-white border-b border-slate-100">
 
       {/* ── Mobile ── */}
       <div className="md:hidden p-4 space-y-3">
         <div className="flex items-center justify-between">
+          <button onClick={()=>{navigate(-1)}} className="p-1.5 rounded-full hover:bg-slate-100 transition-colors">
+            <ArrowLeft size={20} className="text-slate-900" strokeWidth={2.2} />
+          </button>
           <h1 className="text-xl font-semibold text-slate-900">Enquiries</h1>
           <button onClick={onAddEnquiry} className="text-white p-2.5 rounded-full shadow-lg" style={{ background: GRADIENT }}>
             <Plus size={18} />

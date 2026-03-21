@@ -65,7 +65,7 @@ export default function BusinessOverview({ counts = {} }) {
       ),
     },
     {
-      label: "Sales Partners", value: counts?.totalSalesPartner, route: "/app/salespersons",
+      label: "Sales Partners", value: counts?.totalSalesPartner, route: "/app/sales-partners",
       icon: (
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
           <rect width="36" height="36" rx="10" fill="#ECFEFF" />
@@ -76,7 +76,7 @@ export default function BusinessOverview({ counts = {} }) {
       ),
     },
     {
-      label: "Territory Partners", value: counts?.totalTerritoryPartner, route: "/app/territorypartner",
+      label: "Territory Partners", value: counts?.totalTerritoryPartner, route: "/app/territory-partners",
       icon: (
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
           <rect width="36" height="36" rx="10" fill="#FFFBEB" />

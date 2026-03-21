@@ -1,9 +1,11 @@
 import { Search, Calendar, Download, MessageCircle, Plus, ChevronDown, SlidersHorizontal, ArrowLeft } from "lucide-react";
 import CustomDateRangePicker from "../CustomDateRangePicker";
+import { useNavigate } from "react-router-dom";
 
 const GRADIENT = "linear-gradient(110.73deg, #5323DC 0%, #8E61FF 100%)";
 
 export default function CustomersHeader({ search, onSearch, range, setRange, total }) {
+  const navigate = useNavigate();
   return (
     <div className=" border-b ">
 
@@ -43,12 +45,12 @@ export default function CustomersHeader({ search, onSearch, range, setRange, tot
       {/* ── Mobile ── */}
       <div className="flex flex-col gap-3 md:hidden pb-4">
         <div className="relative flex items-center justify-between px-4 pt-4 pb-3 border-b border-slate-100">
-          <button className="p-1.5 rounded-full hover:bg-slate-100 transition-colors">
+          <button onClick={()=>{navigate(-1)}} className="p-1.5 rounded-full hover:bg-slate-100 transition-colors">
             <ArrowLeft size={20} className="text-slate-900" strokeWidth={2.2} />
           </button>
           <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-slate-900">Customers</h1>
           <button
-            className="w-9 h-9 rounded-full flex items-center justify-center shadow-lg hover:opacity-90 transition-opacity"
+            className="opacity-0 w-9 h-9 rounded-full flex items-center justify-center shadow-lg hover:opacity-90 transition-opacity"
             style={{ background: GRADIENT }}
           >
             <Plus size={17} className="text-white" />

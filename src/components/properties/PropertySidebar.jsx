@@ -1,180 +1,73 @@
 import { FiEye, FiChevronRight } from "react-icons/fi";
-import { FiCheck } from "react-icons/fi";
 import { HiOutlineFire } from "react-icons/hi";
+import { getImageURI } from "../../utils/helper";
+import propertyPicture from "../../assets/propertyPicture.svg";
 
-export default function PropertySidebar() {
-  const activity = [
-    {
-      name: "Sarah M.",
-      text: "updated the price for",
-      property: "Green Valley",
-      time: "2 hours ago",
-      avatar:
-        "https://randomuser.me/api/portraits/women/44.jpg",
-    },
-    {
-      name: "Marcus",
-      text: "added 3 new photos to",
-      property: "Lakeview Towers",
-      time: "5 hours ago",
-      avatar:
-        "https://randomuser.me/api/portraits/men/32.jpg",
-    },
-    {
-      name: "System",
-      text: "approved",
-      property: "Sunnyvale Heights",
-      time: "1 day ago",
-      system: true,
-    },
-  ];
+function getImage(item) {
+  try {
+    const parsed = JSON.parse(item?.frontView);
+    if (Array.isArray(parsed) && parsed[0]) return getImageURI(parsed[0]);
+  } catch {}
+  return propertyPicture;
+}
 
-  const trending = [
-    {
-      name: "Sunnyvale Heights",
-      views: "12.5k views",
-      image:
-        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=400",
-    },
-    {
-      name: "The Grand Arch",
-      views: "8.2k views",
-      image:
-        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=400",
-    },
+export default function PropertySidebar({ properties = [], counts = {} }) {
+  const trending = [...properties]
+    .sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0))
+    .slice(0, 3);
+
+  const stats = [
+    { label: "Total Properties",  value: properties.length,       color: "text-slate-900"    },
+    { label: "Active Listings",   value: properties.filter(p => p.status === "Active").length, color: "text-slate-900" },
+    { label: "Approved",          value: counts.Approved || 0,    color: "text-green-600"    },
+    { label: "Pending Approval",  value: counts.NotApproved || 0, color: "text-amber-500"    },
+    { label: "Rejected",          value: counts.Rejected || 0,    color: "text-red-500"      },
   ];
 
   return (
-    <aside className="w-full xl:w-[340px] flex flex-col gap-6">
-
-      {/* Activity Feed */}
-      <div className="hidden bg-white rounded-lg border p-6 shadow-sm">
-        <div className="flex justify-between items-center mb-5">
-          <h3 className="text-xl font-semibold">Property Activity Feed</h3>
-          <button className="text-violet-600 font-medium text-sm">
-            View All
-          </button>
-        </div>
-
-        <div className="space-y-5">
-          {activity.map((item, i) => (
-            <div key={i} className="flex gap-4">
-
-              {/* Avatar */}
-              {item.system ? (
-                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 grid place-items-center text-white">
-                  <FiCheck />
-                </div>
-              ) : (
-                <img
-                  src={item.avatar}
-                  className="h-10 w-10 rounded-full object-cover"
-                />
-              )}
-
-              {/* Text */}
-              <div className="text-sm leading-relaxed">
-                <p>
-                  <span className="font-semibold">{item.name}</span>{" "}
-                  {item.text}{" "}
-                  <span className="text-violet-600">
-                    {item.property}
-                  </span>
-                  .
-                </p>
-
-                <p className="text-gray-400 text-xs mt-1">
-                  {item.time}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+    <aside className="flex flex-col gap-5">
 
       {/* Trending */}
-      <div className="bg-white rounded-lg border p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-xl font-semibold">
-            Trending Properties
-          </h3>
-          <HiOutlineFire className="text-orange-500" />
+      <div className="bg-white rounded-lg border border-slate-100 shadow-sm p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-base text-slate-900">Trending Properties</h3>
+          <HiOutlineFire className="text-orange-500" size={18} />
         </div>
-
         <div className="space-y-4">
+          {trending.length === 0 && <p className="text-sm text-slate-400 text-center py-4">No properties yet.</p>}
           {trending.map((item, i) => (
-            <div key={i}>
-
-              <div className="flex items-center justify-between">
+            <div key={item.propertyid || i}>
+              <div
+                className="flex items-center justify-between cursor-pointer group"
+                onClick={() => item.seoSlug && window.open("https://www.reparv.in/property-info/" + item.seoSlug, "_blank")}
+              >
                 <div className="flex gap-3 items-center">
-
-                  <img
-                    src={item.image}
-                    className="h-12 w-12 rounded-lg object-cover"
-                  />
-
-                  <div>
-                    <p className="font-medium">
-                      {item.name}
-                    </p>
-
-                    <p className="text-gray-400 text-sm flex items-center gap-1">
-                      <FiEye size={14} />
-                      {item.views}
+                  <img src={getImage(item)} alt={item.propertyName} className="w-12 h-12 rounded-xl object-cover shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm text-slate-900 truncate max-w-[160px] group-hover:text-[#5323DC] transition-colors">{item.propertyName}</p>
+                    <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                      <FiEye size={11} /> {item.views || 0} views
                     </p>
                   </div>
                 </div>
-
-                <FiChevronRight className="text-gray-400" />
+                <FiChevronRight className="text-slate-300 shrink-0" />
               </div>
-
-              {i !== trending.length - 1 && (
-                <div className="border-t mt-4"></div>
-              )}
+              {i < trending.length - 1 && <div className="border-t border-slate-100 mt-4" />}
             </div>
           ))}
         </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="bg-white rounded-lg border p-6 shadow-sm">
-        <h3 className="text-xl font-semibold mb-5">
-          Quick Stats
-        </h3>
-
-        <div className="space-y-4 text-sm">
-
-          <div className="flex justify-between items-center">
-            <span className="text-gray-400">
-              Total Properties
-            </span>
-            <span className="font-semibold text-lg">
-              24
-            </span>
-          </div>
-
-          <div className="border-t"></div>
-
-          <div className="flex justify-between items-center">
-            <span className="text-gray-400">
-              Active Listings
-            </span>
-            <span className="font-semibold text-lg">
-              18
-            </span>
-          </div>
-
-          <div className="border-t"></div>
-
-          <div className="flex justify-between items-center">
-            <span className="text-gray-400">
-              Pending Approvals
-            </span>
-            <span className="font-semibold text-lg text-orange-500">
-              5
-            </span>
-          </div>
-
+      <div className="bg-white rounded-lg border border-slate-100 shadow-sm p-5">
+        <h3 className="font-bold text-base text-slate-900 mb-4">Quick Stats</h3>
+        <div className="flex flex-col divide-y divide-slate-100">
+          {stats.map((s, i) => (
+            <div key={i} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+              <p className="text-sm text-slate-400 font-medium">{s.label}</p>
+              <p className={`text-base font-bold ${s.color}`}>{s.value}</p>
+            </div>
+          ))}
         </div>
       </div>
     </aside>

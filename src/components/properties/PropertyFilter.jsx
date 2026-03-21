@@ -40,14 +40,14 @@ export default function PropertyFilter({ counts = {} }) {
   return (
     <>
       {/* ── Filter Pills ── */}
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         {filters?.map((item) => {
           const isActive = propertyFilter === item.label;
           return (
             <button
               key={item.label}
               onClick={() => setPropertyFilter(item.label)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm whitespace-nowrap font-medium border transition-all cursor-pointer
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs whitespace-nowrap font-medium border transition-all cursor-pointer
                   ${
                     isActive
                       ? "text-white border-transparent shadow-md shadow-violet-200"
@@ -57,7 +57,7 @@ export default function PropertyFilter({ counts = {} }) {
                 isActive
                   ? {
                       background:
-                        "linear-gradient(94.94deg, #5E23DC -8.34%, #8B5CF6 97.17%)",
+                        "#5323DC",
                     }
                   : {}
               }

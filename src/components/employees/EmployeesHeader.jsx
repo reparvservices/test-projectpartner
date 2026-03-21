@@ -1,8 +1,10 @@
 import { Search, Calendar, Download, Plus, ArrowLeft, ChevronDown, SlidersHorizontal } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const GRADIENT = "linear-gradient(110.73deg, #5E23DC 0%, #7C3AED 100%)";
 
 export default function EmployeesHeader({ search, onSearch, onAdd }) {
+  const navigate = useNavigate();
   return (
     <div className="border-b">
 
@@ -41,9 +43,18 @@ export default function EmployeesHeader({ search, onSearch, onAdd }) {
       {/* ── MOBILE ── */}
       <div className="flex flex-col gap-4 md:hidden pb-4">
         <div className="relative flex items-center justify-between px-4 p-4 border-b bg-white">
-          <button className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
-            <ArrowLeft size={20} className="text-gray-900" strokeWidth={2.2} />
-          </button>
+          <button
+              onClick={() => {
+                navigate(-1);
+              }}
+              className="p-0 bg-transparent border-none cursor-pointer"
+            >
+              <ArrowLeft
+                size={20}
+                className="text-gray-900"
+                strokeWidth={2.2}
+              />
+            </button>
           <h1 className="absolute left-1/2 -translate-x-1/2 text-[18px] font-semibold text-gray-900">Employees</h1>
           <button
             onClick={onAdd}
