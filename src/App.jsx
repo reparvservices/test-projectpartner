@@ -181,6 +181,7 @@ const App = () => (
           {/* Builders */}
           <Route path="builders" element={<Builders />} />
           <Route path="builder/add" element={<AddBuilder />} />
+          <Route path="builder/update/:id" element={<AddBuilder />} />
 
           {/* Sales Partners */}
           <Route path="sales-partners" element={<SalesPartners />} />
