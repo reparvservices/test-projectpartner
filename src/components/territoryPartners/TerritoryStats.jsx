@@ -16,7 +16,6 @@ function StatCard({ s }) {
       <p className="text-[28px] font-extrabold text-gray-900 leading-none tracking-tight mb-3">{s.value ?? "—"}</p>
       <p className={`text-[12.5px] font-semibold flex items-center gap-1.5 ${s.subColor || "text-gray-400"}`}>
         {s.icon && <s.icon size={13} />}
-        {s.sub}
       </p>
     </div>
   );

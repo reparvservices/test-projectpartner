@@ -22,7 +22,7 @@ function StatCard({ s }) {
       <p className="text-[28px] font-extrabold text-gray-900 leading-none tracking-tight mb-3">
         {s.value ?? "—"}
       </p>
-      <SubText sub={s.sub} subSuffix={s.subSuffix} subGreen={s.subGreen} />
+      {/*<SubText sub={s.sub} subSuffix={s.subSuffix} subGreen={s.subGreen} />*/}
     </div>
   );
 }

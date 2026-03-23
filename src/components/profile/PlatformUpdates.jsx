@@ -7,7 +7,6 @@ export default function PlatformUpdates() {
           Reparv Analytics 2.0 is live! Track your partner engagement with deeper insights.
         </p>
       </div>
-
       <div className="bg-[#F2EDFF] p-5 rounded-2xl">
         <p className="text-xs font-semibold text-violet-600 mb-1">COMMUNITY</p>
         <p className="text-sm text-gray-700">

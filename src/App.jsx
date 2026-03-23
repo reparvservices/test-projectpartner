@@ -13,6 +13,9 @@ import PropertiesFlatAndPlotInfo from "./pages/properties/PropertiesFlatAndPlotI
 
 // for Navigation
 import { useNavigate } from "react-router-dom";
+import Tickets from "./pages/tickets/Tickets";
+import AddTicket from "./pages/tickets/AddTicket";
+import EditProfile from "./pages/profile/EditProfile";
 
 // ── Lazy-loaded pages ─────────────────────────────────────────────────────────
 // Public
@@ -203,13 +206,18 @@ const App = () => (
           <Route path="employees" element={<Employees />} />
           <Route path="employee/add" element={<AddEmployee />} />
 
+          {/* Tickets */}
+          <Route path="tickets" element={<Tickets />} />
+          <Route path="tickets/add" element={<AddTicket />} />
+          <Route path="tickets/update/:id" element={<AddTicket />} />
+
           {/* Subscription */}
           <Route path="subscription" element={<Subscription />} />
           <Route path="subscription/compare-plans" element={<ComparePlans />} />
 
           {/* Profile */}
           <Route path="profile" element={<Profile />} />
-          <Route path="edit-profile" element={<EditProfileResponsive />} />
+          <Route path="edit-profile" element={<EditProfile />} />
         </Route>
       </Route>
 

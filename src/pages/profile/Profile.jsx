@@ -1,22 +1,50 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../store/auth";
 import MobileTopBar from "../../components/profile/MobileTopBar";
-import PlatformUpdates from "../../components/profile/PlatformUpdates";
-import PostsGrid from "../../components/profile/PostsGrid";
 import ProfileHeader from "../../components/profile/ProfileHeader";
+import PostsGrid from "../../components/profile/PostsGrid";
 import SuggestedPartners from "../../components/profile/SuggestedPartners";
-import { FiMenu, FiSearch, FiBell } from "react-icons/fi";
+import PlatformUpdates from "../../components/profile/PlatformUpdates";
 
 export default function Profile() {
+  const { URI, setLoading } = useAuth();
+  const navigate = useNavigate();
+
+  const [user, setUser]         = useState({ fullname:"", username:"", email:"", contact:"", role:"", referral:"", userimage:"", id:"", status:"" });
+  const [fetching, setFetching] = useState(true);
+
+  /* ── fetch profile (same as old code) ── */
+  const fetchProfile = async () => {
+    try {
+      setFetching(true);
+      const r = await fetch(`${URI}/project-partner/profile`, {
+        method: "GET", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!r.ok) throw new Error(`Error ${r.status}`);
+      setUser(await r.json());
+    } catch (e) { console.error("Error fetching profile:", e); }
+    finally { setFetching(false); }
+  };
+
+  useEffect(() => { fetchProfile(); }, []);
+
   return (
     <div className="min-h-screen bg-[#F6F7FB]">
-      {/* Mobile Top ar */}
       <MobileTopBar />
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 xl:grid-cols-[1fr_300px]">
-        {/* Main Content */}
+        {/* Main */}
         <div className="w-full bg-white p-4 sm:p-8 sm:pr-0 shadow-sm sm:border-r">
-          <ProfileHeader />
+          <ProfileHeader
+            user={user}
+            loading={fetching}
+            onEdit={() => navigate("/app/edit-profile")}
+            onBusinessDetails={() => navigate(`/business-details/${user?.id}`)}
+            onOpenSite={() => user?.contact && window.open(`https://www.reparv.in/project-partner/${user.contact}`, "_blank")}
+          />
           <PostsGrid />
         </div>
-
         {/* Sidebar */}
         <aside className="hidden xl:flex flex-col bg-white">
           <SuggestedPartners />
