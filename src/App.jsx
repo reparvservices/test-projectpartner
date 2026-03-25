@@ -6,6 +6,8 @@ import "./App.css";
 import Layout from "./layout/Layout";
 import LayoutTwo from "./layout/Layout2";
 
+import Menu from "./layout/Menu";
+
 // ── Auth Guard ────────────────────────────────────────────────────────────────
 import { useAuth } from "./store/auth";
 import Login from "./pages/Login";
@@ -152,6 +154,8 @@ const App = () => (
         <Route element={<Layout />}>
           {/* Default redirect */}
           <Route index element={<Navigate to="dashboard" replace />} />
+          {/* Mobile Menu */}
+          <Route path="menu" element={<Menu />} />
 
           {/* Dashboard & Feed */}
           <Route path="dashboard" element={<Dashboard />} />

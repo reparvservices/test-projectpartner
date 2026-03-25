@@ -712,6 +712,8 @@ export default function Properties() {
         setImageFiles={setImageFiles}
         propertyId={propertyId}
         setPropertyId={setPropertyId}
+        propertyKey={propertyKey}
+        setPropertyKey={setPropertyKey}
         file={file}
         setFile={setFile}
         newAddInfo={newAddInfo}

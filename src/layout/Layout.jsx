@@ -1,4 +1,6 @@
 import { useAuth } from "../store/auth";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Outlet, NavLink } from "react-router-dom";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -65,6 +67,8 @@ const bottomMenu = [
 ];
 
 export default function Layout() {
+  const navigate = useNavigate();
+  const { delTokenInCookie, URI } = useAuth();
   const { moreOpen, setMoreOpen } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -92,6 +96,21 @@ export default function Layout() {
     `flex flex-col items-center text-[11px] ${
       isActive ? "text-[#5323DC]" : "text-[#8F86A8]"
     }`;
+
+  const userLogout = async () => {
+    try {
+      await axios.post(
+        URI+"/project-partner/logout",
+        {},
+        { withCredentials: true }
+      );
+      delTokenInCookie();
+      localStorage.removeItem("projectPartnerUser");
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.log("Logout failed:", error);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-[#F6F7FB] overflow-hidden">
@@ -246,7 +265,7 @@ export default function Layout() {
             </NavLink>
 
             <NavLink
-              to="/app/community"
+              to="/app/property/add"
               className={
                 "w-14 h-14 flex items-center justify-center -mt-10 bg-[#5323DC] text-white border-4 border-[#F3F0FF] rounded-full shadow-[0px_4px_10px_0px_#7C3AED66]"
               }
@@ -288,12 +307,12 @@ export default function Layout() {
               <h4 className="text-xs text-gray-400 mb-3">QUICK ACTIONS</h4>
 
               <div className="space-y-3">
-                <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
+                <Link to="/app/community" onClick={()=>{setMoreOpen(false)}} className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
                   <FiPlus /> Create Post
-                </button>
-                <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
+                </Link>
+                <Link to="/app/notifications" onClick={()=>{setMoreOpen(false)}} className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
                   <FiBell /> Notifications
-                </button>
+                </Link>
                 <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
                   <FiBookmark /> Saved
                 </button>
@@ -305,16 +324,16 @@ export default function Layout() {
                 <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
                   <FiSettings /> Settings
                 </button>
-                <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
+                <Link to="/app/profile" onClick={()=>{setMoreOpen(false)}} className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
                   <HiOutlineUserCircle /> Profile
-                </button>
+                </Link>
                 <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
                   <HiOutlineShieldCheck /> Permissions
                 </button>
                 <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
                   <HiOutlineChartBar /> Reports
                 </button>
-                <button className="flex gap-3 items-center w-full p-2 rounded-lg text-red-500 hover:bg-red-50">
+                <button onClick={userLogout} className="flex gap-3 items-center w-full p-2 rounded-lg text-red-500 hover:bg-red-50">
                   <FiLogOut /> Logout
                 </button>
               </div>

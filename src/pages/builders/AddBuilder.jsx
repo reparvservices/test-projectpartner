@@ -388,7 +388,7 @@ export default function AddBuilder() {
       </form>
 
       {/* ── Footer ── */}
-      <div className="sticky bottom-0 z-50 bg-white border-t border-gray-100 px-5 md:px-8 py-4 flex items-center justify-between gap-4">
+      <div className="w-full fixed md:sticky bottom-0 z-50 bg-white border-t border-gray-100 px-5 md:px-8 py-4 flex items-center justify-between gap-4">
         <button type="button" onClick={() => navigate(-1)}
           className="px-6 py-2.5 rounded-md border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
           Cancel

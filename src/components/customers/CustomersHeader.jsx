@@ -70,16 +70,11 @@ export default function CustomersHeader({ search, onSearch, range, setRange, tot
         </div>
 
         <div className="flex items-center gap-2 px-4">
-          <button className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-600 font-medium">
-            This Month <ChevronDown size={12} />
-          </button>
           <div className="flex-1" />
           <button className="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
             <Download size={15} className="text-[#5323DC]" />
           </button>
-          <button className="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
-            <SlidersHorizontal size={15} className="text-[#5323DC]" />
-          </button>
+          <CustomDateRangePicker range={range} setRange={setRange} />
         </div>
       </div>
     </div>

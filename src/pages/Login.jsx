@@ -112,10 +112,10 @@ function Login() {
         className="absolute inset-0 pointer-events-none"
         style={{
           background: `
-            linear-gradient(125deg, #5323DC 0%, transparent 40%),
-            linear-gradient(235deg, #8E61FF 0%, transparent 40%),
-            linear-gradient(355deg, #4f1fcf 0%, transparent 50%),
-            radial-gradient(ellipse at 50% 0%, #a78bfa44 0%, transparent 60%)
+            linear-gradient(125deg, #5323DC 0%, transparent 30%),
+            linear-gradient(235deg, #8E61FF 0%, transparent 30%),
+            linear-gradient(355deg, #4f1fcf 0%, transparent 40%),
+            radial-gradient(ellipse at 50% 0%, #a78bfa44 0%, transparent 40%)
           `,
         }}
       />

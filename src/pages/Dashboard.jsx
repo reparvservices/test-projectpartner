@@ -8,11 +8,12 @@ import BusinessOverview from "../components/dashboard/BusinessOverview";
 import RecentEnquiries from "../components/dashboard/RecentEnquiries";
 import BookedProperty from "../components/dashboard/BookedProperty";
 import PropertyTable from "../components/dashboard/PropertyTable";
+import { getImageURI } from "../utils/helper";
 
 export default function Dashboard() {
-  const { URI, dashboardFilter } = useAuth();
+  const { URI, user, dashboardFilter } = useAuth();
   const navigate = useNavigate();
-
+  console.log(user);
   // ── State ────────────────────────────────────────────────────────────────
   const [counts, setCounts] = useState({});
   const [enquiries, setEnquiries] = useState([]);
@@ -160,17 +161,17 @@ export default function Dashboard() {
       {/* Mobile greeting */}
       <div className="flex items-center justify-between mb-6 md:hidden mx-4">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-            Hello, David <span>👋</span>
+          <h1 className="text-[20px] font-bold text-gray-900 flex items-center gap-2">
+            Hello, {user?.name} <span>👋</span>
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Here's your daily update</p>
+          <p className="text-gray-500 text-sm mt-0.5">Here's your daily update</p>
         </div>
         <div
-          onClick={() => navigate("/profile")}
-          className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 cursor-pointer"
+          onClick={() => navigate("/app/profile")}
+          className="w-15 h-15 rounded-full overflow-hidden border-2 border-gray-200 cursor-pointer"
         >
           <img
-            src="https://randomuser.me/api/portraits/women/44.jpg"
+            src={getImageURI(user?.userImage)}
             alt="profile"
             className="w-full h-full object-cover"
           />
@@ -192,15 +193,15 @@ export default function Dashboard() {
       {/* Full property table with search + date filter + pagination */}
       <div className="hidden md:block">
         <PropertyTable
-        data={filteredData}
-        searchTerm={searchTerm}
-        onSearch={setSearchTerm}
-        range={range}
-        onRangeChange={setRange}
-        propertyCounts={propertyCounts}
-        URI={URI}
-        loading={loading}
-      />
+          data={filteredData}
+          searchTerm={searchTerm}
+          onSearch={setSearchTerm}
+          range={range}
+          onRangeChange={setRange}
+          propertyCounts={propertyCounts}
+          URI={URI}
+          loading={loading}
+        />
       </div>
     </div>
   );

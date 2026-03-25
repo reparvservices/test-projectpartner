@@ -104,7 +104,7 @@ export default function AddProperty() {
           payload[field] = urls;
         } else { payload[field] = []; }
       }
-      const res = await fetch(`${URI}/user/properties/add`, {
+      const res = await fetch(`${URI}/project-partner/properties/new/add`, {
         method: "POST", credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

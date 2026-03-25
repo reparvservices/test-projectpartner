@@ -141,6 +141,8 @@ export default function PropertyModals({
   setImages,
   propertyId,
   setPropertyId,
+  propertyKey,
+  setPropertyKey,
   file,
   setFile,
   newAddInfo,
@@ -495,8 +497,8 @@ export default function PropertyModals({
       {/* Update Images */}
       <UpdateImagesForm
         fetchImages={fetchImages}
-        propertyId={propertyId}
-        setPropertyId={setPropertyId}
+        propertyId={propertyKey}
+        setPropertyId={setPropertyKey}
         newProperty={propertyImageData}
         imageFiles={imageFiles}
         setImageFiles={setImageFiles}
