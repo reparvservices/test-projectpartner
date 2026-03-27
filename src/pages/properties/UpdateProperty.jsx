@@ -126,7 +126,7 @@ export default function UpdateProperty() {
         }
         // else keep existing URLs already in form
       }
-      const res = await fetch(`${URI}/project-partner/properties/new/edit/${id}`, {
+      const res = await fetch(`${URI}/project-partner/properties/v2/edit/${id}`, {
         method: "PUT", credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

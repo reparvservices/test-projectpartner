@@ -240,7 +240,7 @@ export default function UpdateImagesForm({
 
       // Send ONLY URLs to backend
       const res = await fetch(
-        `${URI}/project-partner/properties/images/new/edit/${propertyId}`,
+        `${URI}/project-partner/properties/images/v2/edit/${propertyId}`,
         {
           method: "PUT",
           credentials: "include",
