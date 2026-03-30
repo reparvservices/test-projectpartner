@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import Tickets from "./pages/tickets/Tickets";
 import AddTicket from "./pages/tickets/AddTicket";
 import EditProfile from "./pages/profile/EditProfile";
+import ScrollToTop from "./utils/ScrollToTop";
 
 // ── Lazy-loaded pages ─────────────────────────────────────────────────────────
 // Public
@@ -133,6 +134,7 @@ function NotFound() {
 // ── App ───────────────────────────────────────────────────────────────────────
 const App = () => (
   <Suspense fallback={<PageLoader />}>
+    <ScrollToTop />
     <Routes>
       {/* ════════════════════════════════════════════
           PUBLIC ROUTES — no auth required

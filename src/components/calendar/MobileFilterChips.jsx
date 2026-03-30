@@ -1,17 +1,10 @@
-const FILTERS = ["All", "Meetings", "Site Visits", "Follow-ups"];
+import { CAL_FILTERS } from "./CalendarGrid"; // same source as desktop
 
-/**
- * MobileFilterChips
- * Horizontally scrollable filter pill row.
- * Props:
- *   active   : string
- *   onChange : fn(filter)
- */
 export default function MobileFilterChips({ active = "All", onChange }) {
   return (
     <div className="bg-white px-4 py-3 border-b border-gray-100">
       <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-        {FILTERS.map(f => (
+        {CAL_FILTERS.map(f => (
           <button
             key={f}
             onClick={() => onChange?.(f)}

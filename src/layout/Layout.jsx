@@ -244,7 +244,7 @@ export default function Layout() {
       {/* Main */}
       <div className="flex flex-1 flex-col min-w-0 bg-[radial-gradient(98.95%_98.95%_at_50%_1.05%,_#EEEAFF_0%,_#FFFFFF_36.12%)]">
         <motion.main
-          className="flex-1 overflow-y-auto pb-25 md:pb-0"
+          className="flex-1 scroll-container overflow-y-auto pb-25 md:pb-0"
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
         >

@@ -160,7 +160,7 @@ export default function EnquiryCard({ item, onAction, isActiveSubscription, enqu
   const timeStr     = item.created_at?.split("|")[0]?.trim() || "—";
 
   return (
-    <div className="bg-white rounded-md border border-slate-200 w-full min-w-[300px] overflow-hidden">
+    <div className="bg-white rounded-md border border-slate-200 w-full min-w-75 overflow-hidden">
 
       {/* ── CARD BODY ── */}
       <div className="p-4 sm:p-5 md:p-6">

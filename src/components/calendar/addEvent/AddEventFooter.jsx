@@ -1,4 +1,4 @@
-import { CheckIcon } from "./AddEventIcons";
+import { Loader2, Check } from "lucide-react";
 
 /**
  * AddEventFooter
@@ -9,8 +9,7 @@ import { CheckIcon } from "./AddEventIcons";
  */
 export default function AddEventFooter({ onCancel, onSave, saving = false }) {
   return (
-    <div className="md:sticky bottom-0 bg-white border-t border-gray-100 px-4 md:px-8 py-4 flex items-center justify-between gap-3">
-      {/* Cancel */}
+    <div className="w-full fixed md:sticky bottom-0 z-50 bg-white border-t px-4 md:px-8 py-3 flex items-center justify-between gap-3 h-18">
       <button
         type="button"
         onClick={onCancel}
@@ -19,15 +18,23 @@ export default function AddEventFooter({ onCancel, onSave, saving = false }) {
         Cancel
       </button>
 
-      {/* Save Event */}
       <button
         type="button"
         onClick={onSave}
         disabled={saving}
-        className="flex items-center gap-2 px-6 py-2.5 bg-[#5323DC] hover:bg-[#5323DC] active:scale-95 disabled:opacity-60 text-white rounded-md text-sm font-semibold shadow-md shadow-violet-200 transition-all cursor-pointer"
+        className="flex items-center gap-2 px-6 py-2.5 bg-[#5E23DC] hover:bg-[#4c1bb5] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-md text-sm font-semibold transition-all cursor-pointer"
       >
-        <CheckIcon className="w-4 h-4" />
-        {saving ? "Saving..." : "Save Event"}
+        {saving ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Saving...
+          </>
+        ) : (
+          <>
+            <Check className="w-4 h-4" strokeWidth={2.5} />
+            Save Event
+          </>
+        )}
       </button>
     </div>
   );

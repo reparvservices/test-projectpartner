@@ -1,187 +1,339 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft, Check, X, ChevronDown } from "lucide-react";
+import { useAuth } from "../../store/auth";
+import SubscriptionPlan from "../../components/subscription/SubscriptionPlan";
 
-export default function ComparePlans() {
-  const [showDiff, setShowDiff] = useState(false);
+// ── Static comparison data structure ──────────────────────────────────────────
+// Each category has a label and rows. Row values can be:
+//   true  → show check icon
+//   false → show cross icon
+//   string → show the string as text
 
-  const plans = [
-    {
-      name: "Project Trial",
-      duration: "1 Month",
-      price: "₹8,259",
-      popular: false,
-    },
-    {
-      name: "Project Starter",
-      duration: "3 Months",
-      price: "₹53,098",
-      popular: false,
-    },
-    {
-      name: "Project Standard",
-      duration: "6 Months",
-      price: "₹1,16,819",
-      popular: true,
-    },
-    {
-      name: "Project Booster",
-      duration: "9 Months",
-      price: "₹1,73,459",
-      popular: false,
-    },
-    {
-      name: "Project Icon",
-      duration: "12 Months",
-      price: "₹3,42,199",
-      popular: false,
-    },
-  ];
 
-  const features = [
-    {
-      category: "Lead Generation",
-      items: [
-        { name: "Leads Included", values: ["50", "250", "600", "1200", "2500"] },
-        { name: "Site Visits", values: ["5", "25", "60", "120", "250"] },
-        { name: "AI Lead Filtration", values: ["✕", "✕", "✓", "✓", "✓"] },
-        { name: "Incoming Call System", values: ["✕", "✓", "✓", "✓", "✓"] },
-      ],
-    },
-    {
-      category: "Marketing Support",
-      items: [
-        { name: "Social Media Posts / Month", values: ["4", "8", "15", "30", "Unlimited"] },
-        { name: "Social Media Video Reels", values: ["✕", "2", "4", "8", "15"] },
-        { name: "Project PR", values: ["✕", "✕", "✕", "✓", "✓"] },
-        { name: "Marketing Material", values: ["✓", "✓", "✓", "✓", "✓"] },
-      ],
-    },
-  ];
+const COMPARE_CATEGORIES = [
+  {
+    label: "Lead Generation",
+    rows: [
+      { feature: "Guaranteed Leads", key: "guaranteedLeads" },
+      { feature: "Lead Quality Check", key: "leadQualityCheck" },
+      { feature: "Site Visits", key: "siteVisits" },
+      { feature: "Replacement Policy", key: "replacementPolicy" },
+    ],
+  },
+  {
+    label: "Marketing Support",
+    rows: [
+      { feature: "Social Media Posts", key: "socialMediaPosts" },
+      { feature: "Email Campaigns", key: "emailCampaigns" },
+      { feature: "WhatsApp Marketing", key: "whatsappMarketing" },
+    ],
+  },
+  {
+    label: "CRM & Tracking",
+    rows: [
+      { feature: "Dashboard Access", key: "dashboardAccess" },
+      { feature: "Call Tracking", key: "callTracking" },
+      { feature: "Auto Lead Assignment", key: "autoLeadAssignment" },
+    ],
+  },
+  {
+    label: "Support & Growth",
+    rows: [
+      { feature: "Dedicated Account Mgr", key: "dedicatedAccountMgr" },
+      { feature: "Priority Support", key: "prioritySupport" },
+      { feature: "Response Time", key: "responseTime" },
+    ],
+  },
+  {
+    label: "Branding & Visibility",
+    rows: [
+      { feature: "Featured Projects", key: "featuredProjects" },
+      { feature: "Verified Badge", key: "verifiedBadge" },
+    ],
+  },
+];
+
+// ── Map plan features string → structured comparison data ─────────────────────
+// Falls back to showing plain feature text if the key doesn't exist in planData
+const PLAN_DATA_MAP = {
+  "Project Trial": {
+    guaranteedLeads: "50",
+    leadQualityCheck: true,
+    siteVisits: "5",
+    replacementPolicy: "10%",
+    socialMediaPosts: false,
+    emailCampaigns: false,
+    whatsappMarketing: false,
+    dashboardAccess: true,
+    callTracking: true,
+    autoLeadAssignment: false,
+    dedicatedAccountMgr: false,
+    prioritySupport: "Email",
+    responseTime: "24 Hrs",
+    featuredProjects: false,
+    verifiedBadge: false,
+  },
+  "Project Starter": {
+    guaranteedLeads: "150",
+    leadQualityCheck: true,
+    siteVisits: "15",
+    replacementPolicy: "15%",
+    socialMediaPosts: "10/mo",
+    emailCampaigns: true,
+    whatsappMarketing: "5,000",
+    dashboardAccess: true,
+    callTracking: true,
+    autoLeadAssignment: true,
+    dedicatedAccountMgr: true,
+    prioritySupport: "Call & Email",
+    responseTime: "12 Hrs",
+    featuredProjects: "2 Slots",
+    verifiedBadge: true,
+  },
+  "Project Standard": {
+    guaranteedLeads: "300",
+    leadQualityCheck: true,
+    siteVisits: "30",
+    replacementPolicy: "20%",
+    socialMediaPosts: "20/mo",
+    emailCampaigns: true,
+    whatsappMarketing: "10,000",
+    dashboardAccess: true,
+    callTracking: true,
+    autoLeadAssignment: true,
+    dedicatedAccountMgr: true,
+    prioritySupport: "Call & Email",
+    responseTime: "6 Hrs",
+    featuredProjects: "5 Slots",
+    verifiedBadge: true,
+  },
+  "Project Booster": {
+    guaranteedLeads: "500",
+    leadQualityCheck: true,
+    siteVisits: "50",
+    replacementPolicy: "25%",
+    socialMediaPosts: "30/mo",
+    emailCampaigns: true,
+    whatsappMarketing: "20,000",
+    dashboardAccess: true,
+    callTracking: true,
+    autoLeadAssignment: true,
+    dedicatedAccountMgr: true,
+    prioritySupport: "Dedicated Manager",
+    responseTime: "4 Hrs",
+    featuredProjects: "10 Slots",
+    verifiedBadge: true,
+  },
+  "Project Icon": {
+    guaranteedLeads: "Unlimited",
+    leadQualityCheck: true,
+    siteVisits: "Unlimited",
+    replacementPolicy: "30%",
+    socialMediaPosts: "Unlimited",
+    emailCampaigns: true,
+    whatsappMarketing: "Unlimited",
+    dashboardAccess: true,
+    callTracking: true,
+    autoLeadAssignment: true,
+    dedicatedAccountMgr: true,
+    prioritySupport: "24/7 Hotline",
+    responseTime: "1 Hr",
+    featuredProjects: "Unlimited",
+    verifiedBadge: true,
+  },
+};
+
+// ── Cell renderer ─────────────────────────────────────────────────────────────
+function Cell({ value }) {
+  if (value === true)
+    return <Check size={18} className="text-[#5E23DC] mx-auto" />;
+  if (value === false)
+    return <X size={18} className="text-gray-300 mx-auto" />;
+  return (
+    <span className="text-xs font-semibold text-gray-800 text-center block leading-tight">
+      {value}
+    </span>
+  );
+}
+
+// ── Plan Selector Dropdown ────────────────────────────────────────────────────
+function PlanSelector({ label, plans, selected, onChange }) {
+  const [open, setOpen] = useState(false);
+  const current = plans.find((p) => p.planName === selected) || plans[0];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
+    <div className="relative">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">
+        {label}
+      </p>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between gap-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-left"
+      >
+        <div>
+          <p className="text-sm font-semibold text-gray-800 leading-tight truncate max-w-[110px]">
+            {current?.planName}
+          </p>
+          <p className="text-[11px] text-[#5E23DC] font-medium">
+            ₹{current?.totalPrice?.toLocaleString?.() ?? current?.totalPrice} •{" "}
+            {current?.planDuration}
+          </p>
+        </div>
+        <ChevronDown
+          size={16}
+          className={`text-gray-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
 
-      {/* Header */}
-      <div className="text-center mb-10">
-        <h2 className="text-3xl font-bold">Compare Plans</h2>
-        <p className="text-gray-500 mt-2">
-          Choose the right subscription for your business growth
-        </p>
-
-        <div className="flex justify-center items-center gap-3 mt-4">
-          <span className="text-sm">Show all features</span>
-
-          <button
-            onClick={() => setShowDiff(!showDiff)}
-            className={`w-12 h-6 flex items-center rounded-full p-1 transition ${
-              showDiff ? "bg-purple-600" : "bg-gray-300"
-            }`}
-          >
-            <div
-              className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${
-                showDiff ? "translate-x-6" : ""
+      {open && (
+        <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+          {plans.map((plan) => (
+            <button
+              key={plan.planName}
+              onClick={() => {
+                onChange(plan.planName);
+                setOpen(false);
+              }}
+              className={`w-full px-3 py-2.5 text-left hover:bg-purple-50 transition ${
+                plan.planName === selected ? "bg-purple-50" : ""
               }`}
-            />
-          </button>
+            >
+              <p className="text-sm font-semibold text-gray-800">{plan.planName}</p>
+              <p className="text-[11px] text-[#5E23DC]">
+                ₹{plan?.totalPrice?.toLocaleString?.() ?? plan?.totalPrice} •{" "}
+                {plan?.planDuration}
+              </p>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
-          <span className="text-sm">Differences only</span>
+// ── Main Component ────────────────────────────────────────────────────────────
+export default function ComparePlans() {
+  const { state } = useLocation();
+  const navigate = useNavigate();
+  const { showSubscription, setShowSubscription } = useAuth();
+
+  const plans = state?.plans || [];
+
+  const [planA, setPlanA] = useState(plans[0]?.planName || "");
+  const [planB, setPlanB] = useState(plans[1]?.planName || "");
+  const [selectedPlan, setSelectedPlan] = useState({});
+
+  const dataA = PLAN_DATA_MAP[planA] || {};
+  const dataB = PLAN_DATA_MAP[planB] || {};
+  const planAObj = plans.find((p) => p.planName === planA);
+  const planBObj = plans.find((p) => p.planName === planB);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#f6f4fb] to-white">
+
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 shadow-sm">
+        <div className="flex items-center px-4 py-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition"
+          >
+            <ArrowLeft size={20} className="text-gray-700" />
+          </button>
+          <div className="flex-1 text-center">
+            <h1 className="text-base font-bold text-gray-900">Compare Plans</h1>
+          </div>
+          <div className="w-9" />
+        </div>
+
+        {/* Plan selectors */}
+        <div className="px-4 pb-4 grid grid-cols-2 gap-3">
+          <PlanSelector
+            label="Plan A"
+            plans={plans}
+            selected={planA}
+            onChange={setPlanA}
+          />
+          <PlanSelector
+            label="Plan B"
+            plans={plans}
+            selected={planB}
+            onChange={setPlanB}
+          />
         </div>
       </div>
 
-      {/* Desktop Table */}
-      <div className="hidden md:block border rounded-xl overflow-hidden">
-
-        {/* Plan Header */}
-        <div className="grid grid-cols-6 bg-gray-50 border-b">
-          <div></div>
-
-          {plans.map((plan, i) => (
-            <div
-              key={i}
-              className={`p-4 text-center border-l ${
-                plan.popular ? "border-2 border-purple-500 bg-purple-50" : ""
-              }`}
-            >
-              {plan.popular && (
-                <div className="text-xs bg-purple-600 text-white px-2 py-1 rounded-full inline-block mb-2">
-                  MOST POPULAR
-                </div>
-              )}
-
-              <p className="font-medium">{plan.name}</p>
-              <p className="text-sm text-gray-500">{plan.duration}</p>
-
-              <p className="text-xl font-bold mt-1">{plan.price}</p>
-
-              <button className="mt-3 px-4 py-2 rounded-md border hover:bg-purple-600 hover:text-white">
-                Subscribe
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* Features */}
-        {features.map((section, i) => (
-          <div key={i}>
-            <div className="bg-gray-100 px-4 py-2 font-semibold text-sm">
-              {section.category}
+      {/* Comparison Table */}
+      <div className="px-4 py-6 space-y-5 mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {COMPARE_CATEGORIES.map((cat) => (
+          <div
+            key={cat.label}
+            className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+          >
+            {/* Category header */}
+            <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
+              <p className="text-sm font-bold text-gray-800">{cat.label}</p>
             </div>
 
-            {section.items.map((feature, idx) => (
+            {/* Rows */}
+            {cat.rows.map((row, ri) => (
               <div
-                key={idx}
-                className="grid grid-cols-6 border-t text-sm items-center"
+                key={row.key}
+                className={`grid grid-cols-[1fr_1px_80px_1px_80px] items-center px-4 py-3 ${
+                  ri !== cat.rows.length - 1 ? "border-b border-gray-50" : ""
+                }`}
               >
-                <div className="p-3 font-medium">{feature.name}</div>
-
-                {feature.values.map((val, j) => (
-                  <div key={j} className="text-center p-3 border-l">
-                    {val}
-                  </div>
-                ))}
+                <p className="text-sm text-gray-600 leading-snug pr-2">
+                  {row.feature}
+                </p>
+                {/* divider */}
+                <div className="bg-gray-100 self-stretch" />
+                <div className="flex items-center justify-center px-2">
+                  <Cell value={dataA[row.key] ?? false} />
+                </div>
+                {/* divider */}
+                <div className="bg-gray-100 self-stretch" />
+                <div className="flex items-center justify-center px-2">
+                  <Cell value={dataB[row.key] ?? false} />
+                </div>
               </div>
             ))}
           </div>
         ))}
-      </div>
 
-      {/* Mobile Cards */}
-      <div className="md:hidden space-y-6">
-
-        {plans.map((plan, i) => (
-          <div
-            key={i}
-            className={`border rounded-xl p-5 ${
-              plan.popular ? "border-purple-500 shadow-md" : ""
-            }`}
+        {/* CTA Buttons */}
+        <div className="col-span-1 lg:col-span-2 grid grid-cols-2 gap-3 pt-2 pb-10">
+          <button
+            onClick={() => {
+              if (planAObj) {
+                setSelectedPlan(planAObj);
+                setShowSubscription(true);
+              }
+            }}
+            className="py-3 rounded-xl border-2 border-[#5E23DC] text-[#5E23DC] font-semibold text-sm hover:bg-purple-50 transition"
           >
-            {plan.popular && (
-              <div className="text-xs bg-purple-600 text-white px-2 py-1 rounded-full inline-block mb-2">
-                MOST POPULAR
-              </div>
-            )}
-
-            <h3 className="font-semibold text-lg">{plan.name}</h3>
-            <p className="text-gray-500 text-sm">{plan.duration}</p>
-
-            <p className="text-2xl font-bold mt-2">{plan.price}</p>
-
-            <button className="w-full mt-4 bg-purple-600 text-white py-2 rounded-md">
-              Subscribe
-            </button>
-
-            <div className="mt-4 space-y-2 text-sm">
-              {features.map((section) =>
-                section.items.map((feature, idx) => (
-                  <div key={idx} className="flex justify-between border-b pb-1">
-                    <span className="text-gray-600">{feature.name}</span>
-                    <span>{feature.values[i]}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        ))}
+            Get {planA?.split(" ")[1] || "Plan A"}
+          </button>
+          <button
+            onClick={() => {
+              if (planBObj) {
+                setSelectedPlan(planBObj);
+                setShowSubscription(true);
+              }
+            }}
+            className="py-3 rounded-xl bg-[#5E23DC] text-white font-semibold text-sm hover:bg-[#4c1bb5] transition shadow-md"
+          >
+            Get {planB?.split(" ")[1] || "Plan B"}
+          </button>
+        </div>
       </div>
+
+      <SubscriptionPlan
+        showModal={showSubscription}
+        setShowModal={setShowSubscription}
+        plan={selectedPlan}
+      />
     </div>
   );
 }

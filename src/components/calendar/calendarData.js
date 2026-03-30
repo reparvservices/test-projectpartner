@@ -1,7 +1,7 @@
 export const CALENDAR_DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 export const CAL_FILTERS   = ["All", "Meetings", "Site Visits", "Follow-ups"];
 export const VIEW_OPTIONS  = ["Today", "Month", "Week", "Day"];
-export const NAV_TABS      = ["Schedule", "Tasks", "Notes"];
+export const NAV_TABS      = ["Schedule", "Notes"];
 
 export const FILTER_TYPE_MAP = {
   All: "all", Meetings: "meeting", "Site Visits": "visit", "Follow-ups": "followup",

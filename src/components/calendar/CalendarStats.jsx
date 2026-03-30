@@ -17,7 +17,7 @@ function StatCard({ label, value, iconBg, iconKey }) {
       <span className="text-[13px] font-medium text-violet-700">{label}</span>
       <div className="flex items-center justify-between">
         <span className="text-[32px] font-bold text-gray-900 leading-none">{value}</span>
-        <div className={`w-11 h-11 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
+        <div className={`w-11 h-11 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
           {ICON_MAP[iconKey]}
         </div>
       </div>

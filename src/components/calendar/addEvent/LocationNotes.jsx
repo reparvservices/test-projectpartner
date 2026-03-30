@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { PinIcon, LocationSmIcon, UploadIcon } from "./AddEventIcons";
+import { useRef, useState } from "react";
+import { MapPin, Upload, X, FileText } from "lucide-react";
 
 /**
  * LocationNotes
@@ -8,70 +8,92 @@ import { PinIcon, LocationSmIcon, UploadIcon } from "./AddEventIcons";
  *   onChange : fn(field, value)
  */
 export default function LocationNotes({ data, onChange }) {
-  const fileRef = useRef(null);
+  const fileRef  = useRef(null);
+  const [dragging, setDragging] = useState(false);
+
+  const addFiles = (files) => {
+    const newFiles = Array.from(files).filter(f =>
+      !data.attachments.some(ex => ex.name === f.name && ex.size === f.size)
+    );
+    onChange("attachments", [...data.attachments, ...newFiles]);
+  };
+
+  const removeFile = (i) => {
+    onChange("attachments", data.attachments.filter((_, idx) => idx !== i));
+  };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    const files = Array.from(e.dataTransfer.files);
-    onChange("attachments", [...(data.attachments || []), ...files]);
+    setDragging(false);
+    addFiles(e.dataTransfer.files);
   };
 
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    onChange("attachments", [...(data.attachments || []), ...files]);
+  const formatSize = (bytes) => {
+    if (bytes < 1024)       return `${bytes} B`;
+    if (bytes < 1048576)    return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1048576).toFixed(1)} MB`;
   };
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-      {/* Section header */}
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-100 bg-gray-50/60">
-        <PinIcon className="w-5 h-5 flex-shrink-0" />
-        <span className="text-[15px] font-bold text-gray-900">Location & Notes</span>
+    <div className="bg-white rounded-lg overflow-hidden border">
+      <div className="flex items-center gap-2.5 px-5 py-3.5 bg-gray-50 border-b border-gray-100">
+        <MapPin className="w-4 h-4 text-[#5E23DC]" />
+        <span className="text-sm font-semibold text-gray-900">Location & notes</span>
       </div>
 
       <div className="px-5 py-5 flex flex-col gap-5">
 
         {/* Location */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            Location
+          </label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-              <LocationSmIcon className="w-4 h-4" />
-            </span>
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
               type="text"
               value={data.location}
               onChange={e => onChange("location", e.target.value)}
               placeholder="Enter address or meeting link"
-              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-700 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all placeholder:text-gray-400"
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-700 outline-none focus:border-[#5E23DC] focus:ring-2 focus:ring-[#5E23DC]/10 transition-all placeholder:text-gray-300"
             />
           </div>
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            Description
+          </label>
           <textarea
             value={data.description}
             onChange={e => onChange("description", e.target.value)}
             placeholder="Add any relevant details about the event..."
             rows={4}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-700 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all placeholder:text-gray-400 resize-none"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-700 outline-none focus:border-[#5E23DC] focus:ring-2 focus:ring-[#5E23DC]/10 transition-all placeholder:text-gray-300 resize-none"
           />
         </div>
 
         {/* Attachments */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Attachments</label>
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            Attachments
+          </label>
+
           <div
             onDrop={handleDrop}
-            onDragOver={e => e.preventDefault()}
+            onDragOver={e => { e.preventDefault(); setDragging(true); }}
+            onDragLeave={() => setDragging(false)}
             onClick={() => fileRef.current?.click()}
-            className="border-2 border-dashed border-gray-200 rounded-xl p-8 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-violet-400 hover:bg-violet-50/30 transition-all group"
+            className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${
+              dragging
+                ? "border-[#5E23DC] bg-[#5E23DC]/5"
+                : "border-gray-200 hover:border-[#5E23DC]/50 hover:bg-gray-50"
+            }`}
           >
-            <UploadIcon className="w-10 h-10 text-gray-400 group-hover:text-violet-500 transition-colors" />
-            <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">
-              Click to upload or drag and drop
+            <Upload className={`w-8 h-8 transition-colors ${dragging ? "text-[#5E23DC]" : "text-gray-400"}`} />
+            <p className="text-sm text-gray-500 font-medium">
+              {dragging ? "Drop files here" : "Click to upload or drag and drop"}
             </p>
             <p className="text-xs text-gray-400">PDF, JPG, PNG up to 10MB</p>
             <input
@@ -80,22 +102,29 @@ export default function LocationNotes({ data, onChange }) {
               multiple
               accept=".pdf,.jpg,.jpeg,.png"
               className="hidden"
-              onChange={handleFileChange}
+              onChange={e => addFiles(e.target.files)}
             />
           </div>
 
-          {/* Attached file list */}
-          {data.attachments?.length > 0 && (
+          {/* File list */}
+          {data.attachments.length > 0 && (
             <div className="mt-3 flex flex-col gap-2">
-              {data.attachments.map((f, i) => (
-                <div key={i} className="flex items-center justify-between px-3 py-2 bg-violet-50 rounded-lg text-sm text-violet-700">
-                  <span className="truncate max-w-[80%]">{f.name}</span>
+              {data.attachments.map((file, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 px-3 py-2.5 bg-[#5E23DC]/5 rounded-xl border border-[#5E23DC]/10"
+                >
+                  <FileText className="w-4 h-4 text-[#5E23DC] flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-[#5E23DC] font-medium truncate">{file.name}</p>
+                    <p className="text-xs text-[#5E23DC]/60">{formatSize(file.size)}</p>
+                  </div>
                   <button
                     type="button"
-                    onClick={e => { e.stopPropagation(); onChange("attachments", data.attachments.filter((_, j) => j !== i)); }}
-                    className="text-violet-400 hover:text-violet-700 cursor-pointer ml-2 flex-shrink-0"
+                    onClick={e => { e.stopPropagation(); removeFile(i); }}
+                    className="text-[#5E23DC]/50 hover:text-[#5E23DC] transition-colors cursor-pointer flex-shrink-0"
                   >
-                    ✕
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               ))}

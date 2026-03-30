@@ -1,80 +1,197 @@
+import { useState, useMemo } from "react";
+import {
+  addDays,
+  startOfWeek,
+  addWeeks,
+  subWeeks,
+  isSameDay,
+} from "date-fns";
+import { toZonedTime, formatInTimeZone } from "date-fns-tz";
 import { ChevronLeftIcon, ChevronRightIcon } from "./CalendarIcons";
 
-const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-// Week of Oct 9–15 shown in image
-const WEEK_DATES = [9, 10, 11, 12, 13, 14, 15];
-const TODAY = 11;
+const IST     = "Asia/Kolkata";
+const FILTERS = ["Day", "Week", "Month", "Custom"];
+const WDAYS   = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+// ── IST helpers ───────────────────────────────────────────────────────────────
+const toIST = (date) => {
+  try {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return null;
+    return toZonedTime(d, IST);
+  } catch {
+    return null;
+  }
+};
+
+const formatIST = (date, fmt) => {
+  try {
+    return formatInTimeZone(date, IST, fmt);
+  } catch {
+    return "";
+  }
+};
 
 /**
- * MobileWeekStrip
- * Horizontal scrollable week row with today highlighted as violet pill.
+ * MobileWeekStrip — UI unchanged, IST-correct
+ *
  * Props:
- *   selectedDay  : number
- *   onSelectDay  : fn(day)
- *   monthLabel   : string
- *   onPrev       : fn()
- *   onNext       : fn()
+ *   selectedDate        : Date (IST-zoned)
+ *   onSelectDate        : fn(ISTDate)
+ *   meetings            : array (filteredMeetings)
+ *   notes               : array (filteredNotes)
+ *   activeFilter        : "Day"|"Week"|"Month"|"Custom"
+ *   onFilterChange      : fn(filter)
+ *   customFrom          : string "yyyy-MM-dd"
+ *   customTo            : string "yyyy-MM-dd"
+ *   onCustomFromChange  : fn(string)
+ *   onCustomToChange    : fn(string)
  */
 export default function MobileWeekStrip({
-  selectedDay,
-  onSelectDay,
-  monthLabel = "October 2023",
-  onPrev,
-  onNext,
+  selectedDate,
+  onSelectDate,
+  meetings         = [],
+  notes            = [],
+  activeFilter,
+  onFilterChange,
+  customFrom,
+  customTo,
+  onCustomFromChange,
+  onCustomToChange,
 }) {
+  const todayIST = toIST(new Date());
+
+  const [weekStart, setWeekStart] = useState(() => {
+    const sel = toIST(selectedDate || new Date());
+    return startOfWeek(sel || todayIST, { weekStartsOn: 1 });
+  });
+
+  // ── 7 days for the week strip ─────────────────────────────────────────────
+  const weekDays = useMemo(
+    () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
+    [weekStart]
+  );
+
+  // ── Month label in IST ────────────────────────────────────────────────────
+  const monthLabel = useMemo(() => formatIST(weekStart, "MMMM yyyy"), [weekStart]);
+
+  // ── Dot sets: IST date strings ────────────────────────────────────────────
+  const meetingDates = useMemo(() => {
+    const set = new Set();
+    meetings.forEach(m => {
+      const d = toIST(m.visitdate);
+      if (d) set.add(formatIST(d, "yyyy-MM-dd"));
+    });
+    return set;
+  }, [meetings]);
+
+  const noteDates = useMemo(() => {
+    const set = new Set();
+    notes.forEach(n => {
+      const d = toIST(n.date);
+      if (d) set.add(formatIST(d, "yyyy-MM-dd"));
+    });
+    return set;
+  }, [notes]);
+
+  const prevWeek = () => setWeekStart(w => subWeeks(w, 1));
+  const nextWeek = () => setWeekStart(w => addWeeks(w, 1));
+
+  const selIST = toIST(selectedDate);
+
+  // ── UI (unchanged) ────────────────────────────────────────────────────────
   return (
     <div className="bg-white px-4 pt-4 pb-3 border-b border-gray-100">
 
       {/* Month + Nav */}
       <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={onPrev}
-          className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-        >
+        <button onClick={prevWeek} className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors">
           <ChevronLeftIcon />
         </button>
-        <h2 className="text-lg font-bold text-gray-900">{monthLabel}</h2>
-        <button
-          onClick={onNext}
-          className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-        >
+        <h2 className="text-base font-semibold text-gray-900">{monthLabel}</h2>
+        <button onClick={nextWeek} className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors">
           <ChevronRightIcon />
         </button>
       </div>
 
-      {/* Week days */}
-      <div className="grid grid-cols-7 gap-1">
-        {WEEK_DAYS.map((day, i) => {
-          const date    = WEEK_DATES[i];
-          const isToday = date === TODAY;
-          const isSel   = date === selectedDay && !isToday;
+      {/* Week strip */}
+      <div className="grid grid-cols-7 gap-1 mb-3">
+        {weekDays.map(day => {
+          const dayIST    = toIST(day);
+          if (!dayIST) return null;
+          const dateStr   = formatIST(dayIST, "yyyy-MM-dd");
+          const isToday   = todayIST && isSameDay(dayIST, todayIST);
+          const isSelected = selIST && isSameDay(dayIST, selIST) && !isToday;
 
           return (
             <button
-              key={day}
-              onClick={() => onSelectDay?.(date)}
-              className="flex flex-col items-center gap-1 cursor-pointer"
+              key={dateStr}
+              onClick={() => onSelectDate?.(dayIST)}
+              className="flex flex-col items-center gap-1"
             >
-              {/* Day label */}
-              <span className={`text-[13px] font-medium ${isToday ? "text-white" : "text-gray-500"}`}>
-                {day}
+              <span className="text-[12px] text-gray-400">
+                {WDAYS[dayIST.getDay()]}
               </span>
-
-              {/* Date circle */}
-              <span className={`w-10 h-10 rounded-2xl flex items-center justify-center text-[17px] font-bold transition-all
-                ${isToday
-                  ? "bg-violet-600 text-white shadow-md shadow-violet-300"
-                  : isSel
-                  ? "bg-violet-100 text-violet-700"
-                  : "text-gray-900 hover:bg-gray-100"
+              <span
+                className={`w-9 h-9 rounded-xl flex items-center justify-center text-[15px] font-semibold transition-all ${
+                  isToday
+                    ? "bg-violet-600 text-white"
+                    : isSelected
+                      ? "bg-violet-100 text-violet-700"
+                      : "text-gray-900 hover:bg-gray-100"
                 }`}
               >
-                {date}
+                {dayIST.getDate()}
               </span>
+              <div className="flex gap-0.5 h-1.5">
+                {meetingDates.has(dateStr) && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-violet-600" />
+                )}
+                {noteDates.has(dateStr) && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                )}
+              </div>
             </button>
           );
         })}
       </div>
+
+      {/* Range filter pills */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+        {FILTERS.map(f => (
+          <button
+            key={f}
+            onClick={() => onFilterChange?.(f)}
+            className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${
+              f === activeFilter
+                ? "bg-violet-600 border-violet-600 text-white"
+                : "bg-white border-gray-200 text-gray-500 hover:border-violet-300"
+            }`}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      {/* Custom date range pickers */}
+      {activeFilter === "Custom" && (
+        <div className="flex items-center gap-2 mt-3">
+          <input
+            type="date"
+            value={customFrom}
+            onChange={e => onCustomFromChange?.(e.target.value)}
+            className="flex-1 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-700 outline-none focus:border-violet-400"
+          />
+          <span className="text-gray-400 text-xs">→</span>
+          <input
+            type="date"
+            value={customTo}
+            min={customFrom}
+            onChange={e => onCustomToChange?.(e.target.value)}
+            className="flex-1 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-700 outline-none focus:border-violet-400"
+          />
+        </div>
+      )}
     </div>
   );
 }

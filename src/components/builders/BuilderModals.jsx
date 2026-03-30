@@ -20,7 +20,7 @@ function Modal({ show, onClose, title, children, wide }) {
     <>
       <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" onClick={onClose} />
       {/* Mobile: bottom-sheet */}
-      <div className="md:hidden fixed inset-x-0 bottom-0 z-[71] bg-white rounded-t-3xl shadow-2xl max-h-[92vh] overflow-y-auto scrollbar-hide">
+      <div className="md:hidden fixed inset-x-0 bottom-0 z-[71] bg-white rounded-t-3xl shadow-2xl max-h-[92vh] overflow-y-auto">
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-slate-200" />
         </div>
@@ -29,7 +29,7 @@ function Modal({ show, onClose, title, children, wide }) {
       </div>
       {/* Desktop: centered modal */}
       <div className="hidden md:flex fixed inset-0 z-[71] items-center justify-center px-4">
-        <div className={`bg-white rounded-3xl shadow-2xl w-full ${wide ? "max-w-3xl" : "max-w-xl"} max-h-[90vh] overflow-y-auto scrollbar-hide`}>
+        <div className={`bg-white rounded-3xl shadow-2xl w-full ${wide ? "max-w-3xl" : "max-w-xl"} max-h-[90vh] overflow-y-auto`}>
           <ModalInner title={title} onClose={onClose}>{children}</ModalInner>
         </div>
       </div>
