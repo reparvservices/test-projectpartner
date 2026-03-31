@@ -1,11 +1,10 @@
-import { useState } from "react";
-import { Info, ChevronDown } from "lucide-react";
+import { Info } from "lucide-react";
 
 const EVENT_TYPES = ["Site Visit", "Meeting", "Follow-up", "Inspection", "Task", "Other"];
 const PRIORITIES  = [
-  { label: "Low",    color: "text-blue-600   bg-blue-50   border-blue-300"  },
-  { label: "Medium", color: "text-amber-600  bg-amber-50  border-amber-300" },
-  { label: "High",   color: "text-red-600    bg-red-50    border-red-300"   },
+  { label: "Low",    color: "text-blue-600  bg-blue-50  border-blue-300"  },
+  { label: "Medium", color: "text-amber-600 bg-amber-50 border-amber-300" },
+  { label: "High",   color: "text-red-600   bg-red-50   border-red-300"   },
 ];
 
 /**
@@ -17,7 +16,6 @@ const PRIORITIES  = [
 export default function EventBasicInfo({ data, onChange }) {
   return (
     <div className="bg-white rounded-lg overflow-hidden border">
-      {/* Section header */}
       <div className="flex items-center gap-2.5 px-5 py-3.5 bg-gray-50 border-b border-gray-100">
         <Info className="w-4 h-4 text-[#5E23DC]" />
         <span className="text-sm font-semibold text-gray-900">Event basic info</span>
@@ -39,7 +37,7 @@ export default function EventBasicInfo({ data, onChange }) {
           />
         </div>
 
-        {/* Event Type — chip grid */}
+        {/* Event type chips */}
         <div>
           <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
             Event type

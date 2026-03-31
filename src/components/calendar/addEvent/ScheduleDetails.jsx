@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Clock, Calendar, Bell, ChevronDown } from "lucide-react";
+import { Clock, Bell, ChevronDown } from "lucide-react";
 
 const REMINDERS = [
   "5 minutes before",
@@ -68,13 +68,21 @@ function Dropdown({ value, options, onChange, icon: Icon }) {
 
 /**
  * ScheduleDetails
+ *
+ * Maps to controller fields:
+ *   eventDate → event_date
+ *   startTime → start_time
+ *   endTime   → end_time
+ *   isAllDay  → is_all_day  (sent as 1/0)
+ *   reminder  → reminder
+ *
  * Props:
- *   data     : { date, startTime, endTime, allDay, reminder }
+ *   data     : { eventDate, startTime, endTime, isAllDay, reminder }
  *   onChange : fn(field, value)
  */
 export default function ScheduleDetails({ data, onChange }) {
   return (
-    <div className="bg-white rounded-lg overflow-hidden border">
+    <div className="bg-white rounded-lg border">
       <div className="flex items-center gap-2.5 px-5 py-3.5 bg-gray-50 border-b border-gray-100">
         <Clock className="w-4 h-4 text-[#5E23DC]" />
         <span className="text-sm font-semibold text-gray-900">Schedule details</span>
@@ -82,22 +90,20 @@ export default function ScheduleDetails({ data, onChange }) {
 
       <div className="px-5 py-5 flex flex-col gap-5">
 
-        {/* Date */}
+        {/* eventDate */}
         <div>
           <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
             Date <span className="text-red-400 normal-case tracking-normal font-normal">*</span>
           </label>
-          <div className="relative">
-            <input
-              type="date"
-              value={data.date}
-              onChange={e => onChange("date", e.target.value)}
-              className="w-full px-4 py-3 pr-10 border border-gray-200 rounded-xl text-sm text-gray-700 outline-none focus:border-[#5E23DC] focus:ring-2 focus:ring-[#5E23DC]/10 transition-all cursor-pointer"
-            />
-          </div>
+          <input
+            type="date"
+            value={data.eventDate}
+            onChange={e => onChange("eventDate", e.target.value)}
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-700 outline-none focus:border-[#5E23DC] focus:ring-2 focus:ring-[#5E23DC]/10 transition-all cursor-pointer"
+          />
         </div>
 
-        {/* Start + End time */}
+        {/* startTime + endTime */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
@@ -106,7 +112,7 @@ export default function ScheduleDetails({ data, onChange }) {
             <input
               type="time"
               value={data.startTime}
-              disabled={data.allDay}
+              disabled={data.isAllDay}
               onChange={e => onChange("startTime", e.target.value)}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-700 outline-none focus:border-[#5E23DC] focus:ring-2 focus:ring-[#5E23DC]/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             />
@@ -118,22 +124,22 @@ export default function ScheduleDetails({ data, onChange }) {
             <input
               type="time"
               value={data.endTime}
-              disabled={data.allDay}
+              disabled={data.isAllDay}
               onChange={e => onChange("endTime", e.target.value)}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-700 outline-none focus:border-[#5E23DC] focus:ring-2 focus:ring-[#5E23DC]/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
         </div>
 
-        {/* All day toggle */}
+        {/* isAllDay toggle */}
         <div className="flex items-center justify-between py-1">
           <span className="text-sm font-medium text-gray-700">All day event</span>
-          <Toggle checked={data.allDay} onChange={v => onChange("allDay", v)} />
+          <Toggle checked={data.isAllDay} onChange={v => onChange("isAllDay", v)} />
         </div>
 
         <div className="h-px bg-gray-100" />
 
-        {/* Reminder */}
+        {/* reminder */}
         <div>
           <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
             Reminder
