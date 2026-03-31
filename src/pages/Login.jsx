@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
-import { FaUser, FaLock, FaHandshake, FaUserTie } from "react-icons/fa";
-import { MdLocationOn } from "react-icons/md";
-import { IoEye } from "react-icons/io5";
-import { IoMdEyeOff } from "react-icons/io";
+import { MdLocationOn, MdOutlineMap } from "react-icons/md";
+import { FaHandshake, FaBriefcase } from "react-icons/fa";
+import { IoEye, IoEyeOff, IoMailOutline } from "react-icons/io5";
+import { LuLockKeyhole, LuSparkles } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../store/auth";
 import Loader from "../components/Loader";
 import ForgotPassword from "../components/ForgotPassword";
+import LoginBackImage from "../assets/login/LoginBackImage.svg";
 
 const roles = [
   {
     id: "project-partner",
     label: "Project Partner",
-    icon: <MdLocationOn size={17} />,
+    icon: FaBriefcase,
     endpoint: "/project-partner/login",
     tokenKey: "projectPartnerToken",
     userKey: "projectPartnerUser",
@@ -22,7 +23,7 @@ const roles = [
   {
     id: "sales-partner",
     label: "Sales Partner",
-    icon: <FaHandshake size={14} />,
+    icon: FaHandshake,
     endpoint: "/sales-partner/login",
     tokenKey: "salesPartnerToken",
     userKey: "salesPartnerUser",
@@ -31,7 +32,7 @@ const roles = [
   {
     id: "territory-partner",
     label: "Territory Partner",
-    icon: <FaUserTie size={14} />,
+    icon: MdOutlineMap,
     endpoint: "/territory-partner/login",
     tokenKey: "territoryPartnerToken",
     userKey: "territoryPartnerUser",
@@ -42,7 +43,7 @@ const roles = [
 function Login() {
   const { storeTokenInCookie, URI, setLoading } = useAuth();
 
-  const [selectedRole, setSelectedRole] = useState(null);
+  const [selectedRole, setSelectedRole] = useState("project-partner");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isPasswordShow, setIsPasswordShow] = useState(false);
   const [emailOrUsername, setEmailOrUsername] = useState("");
@@ -77,16 +78,15 @@ function Login() {
         {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
 
-      const token =
-        response.data[activeRole.tokenKey] || response.data.token;
+      const token = response.data[activeRole.tokenKey] || response.data.token;
 
       if (token) {
         localStorage.setItem(
           activeRole.userKey,
-          JSON.stringify(response.data.user)
+          JSON.stringify(response.data.user),
         );
         storeTokenInCookie(token);
         navigate(activeRole.redirect, { replace: true });
@@ -96,7 +96,7 @@ function Login() {
       }
     } catch (error) {
       setErrorMessage(
-        error.response?.data?.message || "Login failed. Please try again."
+        error.response?.data?.message || "Login failed. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -105,192 +105,160 @@ function Login() {
 
   return (
     <div
-      className="w-full min-h-screen flex items-center justify-center relative overflow-hidden"
+      className="w-full min-w-0 min-h-screen flex items-center justify-center overflow-hidden"
+      style={{
+        backgroundImage: `url(${LoginBackImage})`,
+        backgroundSize: "cover",
+      }}
     >
-      {/* ── Aurora Background ── */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: `
-            linear-gradient(125deg, #5323DC 0%, transparent 30%),
-            linear-gradient(235deg, #8E61FF 0%, transparent 30%),
-            linear-gradient(355deg, #4f1fcf 0%, transparent 40%),
-            radial-gradient(ellipse at 50% 0%, #a78bfa44 0%, transparent 40%)
-          `,
-        }}
-      />
-
-      {/* Floating orbs */}
-      <div className="absolute top-5 left-5 w-16 h-16 rounded-full bg-[#ae8bff]/15 pointer-events-none" />
-      <div className="absolute top-14 right-8 w-10 h-10 rounded-full bg-[#8E61FF]/20 pointer-events-none" />
-
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#3b0fa0]/50 to-transparent pointer-events-none" />
-
       {/* Card */}
-      <div className="relative z-10 w-full max-w-[410px] mx-4 my-8">
+      <div className="relative z-10 w-full max-w-115 mx-4 my-8">
         {!showForgotPassword ? (
-          <div className="border-2 rounded-3xl overflow-hidden shadow-2xl shadow-[#3a12c0]/40">
-
-            {/* ── Compact Gradient Header ── */}
-            <div
-              className="relative overflow-hidden px-7 py-6"
-              style={{
-                background: "linear-gradient(145deg, #ffffff 0%, #ede8ff 60%, #d8ccff 100%)",
-              }}
-            >
-              <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-[#8E61FF]/10 pointer-events-none" />
-              <div className="absolute -bottom-8 -left-5 w-24 h-24 rounded-full bg-[#5323DC]/5 pointer-events-none" />
-
-              <div className="relative z-10 flex items-center justify-between">
+          <div
+            className="bg-white rounded-3xl overflow-hidden"
+            style={{ boxShadow: "0 25px 60px rgba(80, 30, 180, 0.35)" }}
+          >
+            {/* Body */}
+            <div className="px-5 sm:px-8 py-6 sm:py-8">
+              {/* Header */}
+              <div className="flex items-start justify-between mb-6">
                 <div>
-                  <p className="text-xl font-semibold text-[#1a0f3c] leading-tight">Welcome back</p>
-                  <p className="text-xs text-[#8E61FF] font-medium mt-0.5">Sign in to continue</p>
+                  <h1 className="text-[26px] font-bold text-gray-900 leading-tight">
+                    Welcome Back 👋
+                  </h1>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Manage your leads, bookings &amp; partners seamlessly
+                  </p>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-[linear-gradient(135deg,#5323DC,#8E61FF)] flex items-center justify-center shrink-0">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2" strokeLinejoin="round" />
-                    <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2" strokeLinejoin="round" />
-                    <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinejoin="round" />
-                  </svg>
+                <div className="w-11 h-11 rounded-2xl bg-[#f0ebff] flex items-center justify-center shrink-0 ml-4">
+                  <LuSparkles size={20} className="text-[#6C35DE]" />
                 </div>
               </div>
-            </div>
 
-            {/* ── Body ── */}
-            <div className="bg-white px-7 pt-6 pb-7">
-
+              {/* Error */}
               {errorMessage && (
                 <div className="mb-4 bg-red-50 border border-red-200 text-red-500 text-xs px-4 py-2.5 rounded-xl">
                   {errorMessage}
                 </div>
               )}
 
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2.5">
-                Select your role
-              </p>
-
-              {/* Project Partner — full width */}
-              <button
-                type="button"
-                onClick={() => { setSelectedRole("project-partner"); setErrorMessage(""); }}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl border-2 mb-2 transition-all
-                  ${selectedRole === "project-partner"
-                    ? "border-[#5323DC] bg-[#f5f1ff]"
-                    : "border-[#ede8ff] hover:border-[#c4b8f5] hover:bg-[#faf8ff]"
-                  }`}
-              >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all
-                  ${selectedRole === "project-partner"
-                    ? "bg-[linear-gradient(135deg,#5323DC,#8E61FF)]"
-                    : "bg-[#f0ebff]"
-                  }`}>
-                  <MdLocationOn
-                    size={17}
-                    className={selectedRole === "project-partner" ? "text-white" : "text-[#8E61FF]"}
-                  />
-                </div>
-                <span className={`text-sm font-medium transition-all
-                  ${selectedRole === "project-partner" ? "text-[#5323DC]" : "text-gray-500"}`}>
-                  Project Partner
-                </span>
-                <div className={`ml-auto w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all
-                  ${selectedRole === "project-partner"
-                    ? "border-[#5323DC] bg-[#5323DC]"
-                    : "border-gray-300"
-                  }`}>
-                  {selectedRole === "project-partner" && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                  )}
-                </div>
-              </button>
-
-              {/* Sales + Territory — horizontal 2 col */}
-              <div className="grid grid-cols-2 gap-2 mb-5">
-                {roles.slice(1).map((role) => (
-                  <button
-                    key={role.id}
-                    type="button"
-                    onClick={() => { setSelectedRole(role.id); setErrorMessage(""); }}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all
-                      ${selectedRole === role.id
-                        ? "border-[#5323DC] bg-[#f5f1ff]"
-                        : "border-[#ede8ff] hover:border-[#c4b8f5] hover:bg-[#faf8ff]"
-                      }`}
-                  >
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all
-                      ${selectedRole === role.id
-                        ? "bg-[linear-gradient(135deg,#5323DC,#8E61FF)]"
-                        : "bg-[#f0ebff]"
-                      }`}>
-                      <span className={selectedRole === role.id ? "text-white" : "text-[#8E61FF]"}>
-                        {role.icon}
+              {/* Role Selector — 3 equal columns */}
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                {roles.map((role) => {
+                  const Icon = role.icon;
+                  const isActive = selectedRole === role.id;
+                  return (
+                    <button
+                      key={role.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedRole(role.id);
+                        setErrorMessage("");
+                      }}
+                      className={`flex flex-col items-center gap-2.5 py-4 px-2 rounded-2xl border-2 transition-all duration-200
+                        ${
+                          isActive
+                            ? "border-[#6C35DE] bg-[#f4efff]"
+                            : "border-gray-100 bg-gray-50 hover:border-[#c4b8f5] hover:bg-[#faf8ff]"
+                        }`}
+                    >
+                      <Icon
+                        size={22}
+                        className={
+                          isActive ? "text-[#6C35DE]" : "text-gray-400"
+                        }
+                      />
+                      <span
+                        className={`text-xs font-semibold text-center leading-tight transition-colors
+                          ${isActive ? "text-[#6C35DE]" : "text-gray-400"}`}
+                      >
+                        {role.label}
                       </span>
-                    </div>
-                    <span className={`text-xs font-medium transition-all
-                      ${selectedRole === role.id ? "text-[#5323DC]" : "text-gray-500"}`}>
-                      {role.label}
-                    </span>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Email */}
-              <div className={`group flex items-center border-2 rounded-2xl px-4 h-12 mb-3 transition-all
-                ${emailOrUsername ? "border-[#5323DC]" : "border-[#ede8ff] focus-within:border-[#5323DC]"}`}>
-                <FaUser className="text-[#c4b8f5] w-3.5 h-3.5 mr-3 group-focus-within:text-[#5323DC] transition-colors shrink-0" />
+              {/* Email Input */}
+              <div
+                className={`flex items-center border-2 rounded-2xl px-4 h-[54px] mb-3 transition-all duration-200
+                  ${emailOrUsername ? "border-[#6C35DE]" : "border-gray-200 focus-within:border-[#6C35DE]"}`}
+              >
+                <IoMailOutline
+                  size={19}
+                  className="text-gray-400 mr-3 shrink-0"
+                />
                 <input
                   value={emailOrUsername}
                   required
                   onChange={(e) => setEmailOrUsername(e.target.value)}
                   type="text"
-                  placeholder="Email or username"
-                  className="w-full border-none outline-none text-sm text-gray-700 placeholder:text-[#c4b8f5] bg-transparent"
+                  placeholder="Enter your email or username"
+                  className="w-full border-none outline-none text-sm text-gray-700 placeholder:text-gray-300 bg-transparent"
                 />
               </div>
 
-              {/* Password */}
-              <div className={`group flex items-center border-2 rounded-2xl px-4 h-12 mb-2 transition-all
-                ${password ? "border-[#5323DC]" : "border-[#ede8ff] focus-within:border-[#5323DC]"}`}>
-                <FaLock className="text-[#c4b8f5] w-3.5 h-3.5 mr-3 group-focus-within:text-[#5323DC] transition-colors shrink-0" />
+              {/* Password Input */}
+              <div
+                className={`flex items-center border-2 rounded-2xl px-4 h-[54px] mb-3 transition-all duration-200
+                  ${password ? "border-[#6C35DE]" : "border-gray-200 focus-within:border-[#6C35DE]"}`}
+              >
+                <LuLockKeyhole
+                  size={18}
+                  className="text-gray-400 mr-3 shrink-0"
+                />
                 <input
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   type={isPasswordShow ? "text" : "password"}
                   required
-                  placeholder="Password"
-                  className="w-full border-none outline-none text-sm text-gray-700 placeholder:text-[#c4b8f5] bg-transparent"
+                  placeholder="Enter your password"
+                  className="w-full border-none outline-none text-sm text-gray-700 placeholder:text-gray-300 bg-transparent"
                 />
-                <button type="button" onClick={() => setIsPasswordShow(!isPasswordShow)} className="ml-2 shrink-0">
-                  {isPasswordShow
-                    ? <IoMdEyeOff className="text-[#c4b8f5] text-lg hover:text-[#8E61FF]" />
-                    : <IoEye className="text-[#c4b8f5] text-lg hover:text-[#8E61FF]" />
-                  }
+                <button
+                  type="button"
+                  onClick={() => setIsPasswordShow(!isPasswordShow)}
+                  className="ml-2 shrink-0"
+                >
+                  {isPasswordShow ? (
+                    <IoEyeOff
+                      size={18}
+                      className="text-gray-400 hover:text-[#6C35DE] transition-colors"
+                    />
+                  ) : (
+                    <IoEye
+                      size={18}
+                      className="text-gray-400 hover:text-[#6C35DE] transition-colors"
+                    />
+                  )}
                 </button>
               </div>
 
-              {/* Forgot + Loader */}
-              <div className="flex items-center justify-between mb-5">
+              {/* Forgot Password + Loader row */}
+              <div className="flex items-center justify-between mb-6">
                 <Loader />
-                <p
+                <button
+                  type="button"
                   onClick={() => setShowForgotPassword(true)}
-                  className="text-xs text-[#8E61FF] cursor-pointer hover:underline"
+                  className="text-xs font-semibold text-[#6C35DE] hover:underline"
                 >
                   Forgot password?
-                </p>
+                </button>
               </div>
 
-              {/* Submit */}
+              {/* Submit Button */}
               <button
                 onClick={userLogin}
-                className="w-full h-12 bg-[linear-gradient(135deg,#5323DC,#8E61FF)] text-white rounded-2xl text-sm font-semibold transition hover:opacity-90 active:scale-95 shadow-lg shadow-purple-200"
+                className="w-full h-[54px] bg-[#6C35DE] text-white rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:bg-[#5a28c4] active:scale-[0.98]"
+                style={{ boxShadow: "0 8px 24px rgba(108, 53, 222, 0.35)" }}
               >
                 Sign In
+                <span className="text-base">→</span>
               </button>
             </div>
           </div>
         ) : (
-          <div className="rounded-3xl overflow-hidden shadow-2xl shadow-[#3a12c0]/40">
+          <div className="rounded-3xl overflow-hidden shadow-2xl">
             <ForgotPassword setShowForgotPassword={setShowForgotPassword} />
           </div>
         )}

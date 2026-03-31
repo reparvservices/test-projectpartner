@@ -7,9 +7,6 @@ import {
   endOfWeek,
   startOfMonth,
   endOfMonth,
-  isWithinInterval,
-  startOfDay,
-  endOfDay,
 } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 
@@ -26,11 +23,19 @@ import NoteModal from "../../components/calendar/NoteModal";
 
 const IST = "Asia/Kolkata";
 
-// ── IST helpers (stable, defined outside component so no re-creation) ────────
+// ── IST helpers ───────────────────────────────────────────────────────────────
+
+// Convert any date value to an IST-zoned Date object
 const toIST = (date) => {
   if (!date) return null;
   try {
-    const d = new Date(date);
+    let raw = date;
+    // date-only strings (e.g. "2025-07-15") are UTC midnight in JS → prev day in IST.
+    // Append T00:00:00 to treat as local/wall-clock before zoning.
+    if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      raw = date + "T00:00:00";
+    }
+    const d = new Date(raw);
     if (isNaN(d.getTime())) return null;
     return toZonedTime(d, IST);
   } catch {
@@ -47,40 +52,49 @@ const formatIST = (date, fmt) => {
   }
 };
 
-// Returns "yyyy-MM-dd" in IST or null
+// Returns "yyyy-MM-dd" string in IST for any date value
 const toISTDateStr = (date) => {
   if (!date) return null;
   const d = toIST(date);
   return d ? formatIST(d, "yyyy-MM-dd") : null;
 };
 
+// Generate every "yyyy-MM-dd" string between two IST date strings (inclusive)
+const dateStrRange = (fromStr, toStr) => {
+  const dates = [];
+  const cur = new Date(fromStr + "T00:00:00");
+  const end = new Date(toStr + "T00:00:00");
+  while (cur <= end) {
+    dates.push(formatInTimeZone(cur, IST, "yyyy-MM-dd"));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return new Set(dates);
+};
+
 export default function Calendar() {
   const { URI, showNotePopup, setShowNotePopup } = useAuth();
 
-  // ── UI state ─────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState("Schedule");
   const [activeView, setActiveView] = useState("Month");
   const [calFilter, setCalFilter] = useState("All");
   const [search, setSearch] = useState("");
 
-  // currentDate  = month shown in the desktop grid
-  // selectedDate = the day the user clicked (IST-zoned Date object)
   const [currentDate, setCurrentDate] = useState(() => toIST(new Date()));
   const [selectedDate, setSelectedDate] = useState(() => toIST(new Date()));
 
-  // Mobile panel mode: Day | Week | Month | Custom
   const [mobileFilter, setMobileFilter] = useState("Day");
   const [customFrom, setCustomFrom] = useState(toISTDateStr(new Date()));
   const [customTo, setCustomTo] = useState(toISTDateStr(new Date()));
 
-  // ── Data ─────────────────────────────────────────────────────────────────────
   const [meetings, setMeetings] = useState([]);
-  const [notes, setNotes] = useState([]);
+  const [allNotes, setAllNotes] = useState([]);
+  const [dailyNotes, setDailyNotes] = useState([]);
+
   const [newNote, setNewNote] = useState("");
   const [noteTime, setNoteTime] = useState("09:00");
   const [noteSaving, setNoteSaving] = useState(false);
 
-  // ── API: Fetch meetings ───────────────────────────────────────────────────────
+  // ── API ───────────────────────────────────────────────────────────────────
   const fetchMeetings = useCallback(async () => {
     try {
       const res = await fetch(`${URI}/project-partner/calender/meetings`, {
@@ -93,18 +107,30 @@ export default function Calendar() {
     }
   }, [URI]);
 
-  // ── API: Fetch notes (with optional IST date filter) ─────────────────────────
-  const fetchNotes = useCallback(
-    async (date = null) => {
+  const fetchAllNotes = useCallback(async () => {
+    try {
+      const res = await fetch(`${URI}/project-partner/calender/notes`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      setAllNotes(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("fetchAllNotes:", err);
+    }
+  }, [URI]);
+
+  const fetchDailyNotes = useCallback(
+    async (date) => {
       try {
-        let url = `${URI}/project-partner/calender/notes`;
         const d = toISTDateStr(date);
-        if (d) url += `?date=${d}`;
+        const url = d
+          ? `${URI}/project-partner/calender/notes?date=${d}`
+          : `${URI}/project-partner/calender/notes`;
         const res = await fetch(url, { credentials: "include" });
         const data = await res.json();
-        setNotes(Array.isArray(data) ? data : []);
+        setDailyNotes(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("fetchNotes:", err);
+        console.error("fetchDailyNotes:", err);
       }
     },
     [URI],
@@ -112,14 +138,15 @@ export default function Calendar() {
 
   useEffect(() => {
     fetchMeetings();
-    fetchNotes(); // load all notes on mount (for dot coverage)
-  }, [fetchMeetings, fetchNotes]);
+    fetchAllNotes();
+    fetchDailyNotes(new Date());
+  }, [fetchMeetings, fetchAllNotes, fetchDailyNotes]);
 
   useEffect(() => {
-    fetchNotes(selectedDate); // reload when selected day changes
-  }, [selectedDate, fetchNotes]);
+    fetchDailyNotes(selectedDate);
+  }, [selectedDate, fetchDailyNotes]);
 
-  // ── API: Add note ─────────────────────────────────────────────────────────────
+  // ── Add / Delete note ─────────────────────────────────────────────────────
   const addNote = async (e) => {
     e?.preventDefault();
     if (!newNote.trim()) return;
@@ -138,7 +165,8 @@ export default function Calendar() {
       setNewNote("");
       setNoteTime("09:00");
       setShowNotePopup(false);
-      fetchNotes(selectedDate);
+      fetchAllNotes();
+      fetchDailyNotes(selectedDate);
     } catch (err) {
       console.error("addNote:", err);
     } finally {
@@ -146,7 +174,6 @@ export default function Calendar() {
     }
   };
 
-  // ── API: Delete note ──────────────────────────────────────────────────────────
   const deleteNote = async (id) => {
     if (!window.confirm("Delete this note?")) return;
     try {
@@ -156,7 +183,8 @@ export default function Calendar() {
       );
       const data = await res.json();
       if (res.ok) {
-        setNotes((prev) => prev.filter((n) => n.id !== id));
+        setAllNotes((prev) => prev.filter((n) => n.id !== id));
+        setDailyNotes((prev) => prev.filter((n) => n.id !== id));
       } else {
         alert(data.message || "Failed to delete note");
       }
@@ -165,7 +193,7 @@ export default function Calendar() {
     }
   };
 
-  // ── Filtered sets (search + calFilter) ───────────────────────────────────────
+  // ── Filtered sets ─────────────────────────────────────────────────────────
   const filteredMeetings = useMemo(
     () =>
       meetings?.filter((m) => {
@@ -173,25 +201,37 @@ export default function Calendar() {
         if (!text.includes(search.toLowerCase())) return false;
         if (calFilter === "Meetings") return m.type !== "site_visit";
         if (calFilter === "Site Visits") return m.type === "site_visit";
-        if (calFilter === "Notes") return false; // meetings hidden when Notes-only
-        return true; // "All"
+        if (calFilter === "Notes") return false;
+        return true;
       }),
     [meetings, search, calFilter],
   );
 
+  // allNotes-backed — used for mobile range filtering & dot indicators
   const filteredNotes = useMemo(
     () =>
-      notes?.filter((n) => {
+      allNotes?.filter((n) => {
         const text = (n.note || "").toLowerCase();
         if (!text.includes(search.toLowerCase())) return false;
-        if (calFilter === "Meetings" || calFilter === "Site Visits")
-          return false;
-        return true; // "All" or "Notes"
+        if (calFilter === "Meetings" || calFilter === "Site Visits") return false;
+        return true;
       }),
-    [notes, search, calFilter],
+    [allNotes, search, calFilter],
   );
 
-  // ── Build lookup maps (IST date string → items[]) ────────────────────────────
+  // dailyNotes-backed — date-scoped for desktop DayPanel only
+  const filteredDailyNotes = useMemo(
+    () =>
+      dailyNotes?.filter((n) => {
+        const text = (n.note || "").toLowerCase();
+        if (!text.includes(search.toLowerCase())) return false;
+        if (calFilter === "Meetings" || calFilter === "Site Visits") return false;
+        return true;
+      }),
+    [dailyNotes, search, calFilter],
+  );
+
+  // ── Lookup maps (by IST date string) ─────────────────────────────────────
   const meetingMap = useMemo(() => {
     const map = new Map();
     filteredMeetings.forEach((m) => {
@@ -206,7 +246,7 @@ export default function Calendar() {
   const noteMap = useMemo(() => {
     const map = new Map();
     filteredNotes.forEach((n) => {
-      const ds = toISTDateStr(n.date) || n.date; // fallback to raw string
+      const ds = toISTDateStr(n.date || n.event_date);
       if (!ds) return;
       if (!map.has(ds)) map.set(ds, []);
       map.get(ds).push(n);
@@ -214,104 +254,97 @@ export default function Calendar() {
     return map;
   }, [filteredNotes]);
 
-  // ── Selected day derived data ─────────────────────────────────────────────────
   const selectedDateStr = toISTDateStr(selectedDate);
   const todayStr = toISTDateStr(new Date());
 
   const dailyMeetings = meetingMap.get(selectedDateStr) || [];
-  const dailyNotes = noteMap.get(selectedDateStr) || [];
   const todayMeetings = meetingMap.get(todayStr) || [];
 
-  // ── Live stats ────────────────────────────────────────────────────────────────
+  // ── Stats ─────────────────────────────────────────────────────────────────
   const liveStats = useMemo(() => {
-    let siteVisits = 0,
-      followUps = 0;
+    let siteVisits = 0, followUps = 0;
     meetings.forEach((m) => {
       if (m.type === "site_visit") siteVisits++;
       if (m.status === "scheduled") followUps++;
     });
     return [
-      {
-        label: "Today's Meetings",
-        value: String(todayMeetings?.length),
-        iconKey: "users",
-        iconBg: "bg-violet-100",
-      },
-      {
-        label: "Site Visits",
-        value: String(siteVisits),
-        iconKey: "map",
-        iconBg: "bg-emerald-100",
-      },
-      {
-        label: "Follow-ups",
-        value: String(followUps),
-        iconKey: "phone",
-        iconBg: "bg-orange-100",
-      },
-      {
-        label: "Notes",
-        value: String(notes?.length),
-        iconKey: "check",
-        iconBg: "bg-blue-100",
-      },
+      { label: "Today's Meetings", value: String(todayMeetings?.length), iconKey: "users", iconBg: "bg-violet-100" },
+      { label: "Site Visits", value: String(siteVisits), iconKey: "map", iconBg: "bg-emerald-100" },
+      { label: "Follow-ups", value: String(followUps), iconKey: "phone", iconBg: "bg-orange-100" },
+      { label: "Notes", value: String(allNotes?.length), iconKey: "check", iconBg: "bg-blue-100" },
     ];
-  }, [meetings, todayMeetings, notes]);
+  }, [meetings, todayMeetings, allNotes]);
 
-  // ── Mobile range filter ───────────────────────────────────────────────────────
-  const mobileRange = useMemo(() => {
-    const sel = toIST(selectedDate);
-    if (!sel) return null;
-    if (mobileFilter === "Day")
-      return { from: startOfDay(sel), to: endOfDay(sel) };
-    if (mobileFilter === "Week")
-      return {
-        from: startOfDay(startOfWeek(sel, { weekStartsOn: 1 })),
-        to: endOfDay(endOfWeek(sel, { weekStartsOn: 1 })),
-      };
-    if (mobileFilter === "Month")
-      return {
-        from: startOfDay(startOfMonth(sel)),
-        to: endOfDay(endOfMonth(sel)),
-      };
-    if (mobileFilter === "Custom" && customFrom && customTo) {
-      const f = toIST(customFrom),
-        t = toIST(customTo);
-      if (f && t && f <= t) return { from: startOfDay(f), to: endOfDay(t) };
+  // ── Mobile date range as a Set of "yyyy-MM-dd" strings ───────────────────
+  // Using string comparison avoids ALL timezone/interval edge cases entirely.
+  const mobileDateSet = useMemo(() => {
+    const selStr = toISTDateStr(selectedDate);
+    if (!selStr) return new Set();
+
+    if (mobileFilter === "Day") {
+      return new Set([selStr]);
     }
-    return { from: startOfDay(sel), to: endOfDay(sel) };
+
+    if (mobileFilter === "Week") {
+      const sel = toIST(selectedDate);
+      const weekBegin = startOfWeek(sel, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(sel, { weekStartsOn: 1 });
+      return dateStrRange(
+        formatInTimeZone(weekBegin, IST, "yyyy-MM-dd"),
+        formatInTimeZone(weekEnd, IST, "yyyy-MM-dd"),
+      );
+    }
+
+    if (mobileFilter === "Month") {
+      const sel = toIST(selectedDate);
+      const monthBegin = startOfMonth(sel);
+      const monthEnd = endOfMonth(sel);
+      return dateStrRange(
+        formatInTimeZone(monthBegin, IST, "yyyy-MM-dd"),
+        formatInTimeZone(monthEnd, IST, "yyyy-MM-dd"),
+      );
+    }
+
+    if (mobileFilter === "Custom" && customFrom && customTo && customFrom <= customTo) {
+      return dateStrRange(customFrom, customTo);
+    }
+
+    return new Set([selStr]);
   }, [mobileFilter, selectedDate, customFrom, customTo]);
 
+  // ── Mobile events — filter meetingMap by mobileDateSet ───────────────────
   const mobileEvents = useMemo(() => {
-    if (!mobileRange) return [];
-    return filteredMeetings
-      .filter((m) => {
+    const results = [];
+    mobileDateSet.forEach((ds) => {
+      const dayMeetings = meetingMap.get(ds) || [];
+      dayMeetings.forEach((m) => {
         const d = toIST(m.visitdate);
-        return d && isWithinInterval(d, mobileRange);
-      })
-      .map((m) => {
-        const d = toIST(m.visitdate);
-        return {
+        results.push({
           id: m.followupid,
-          date: toISTDateStr(d),
+          date: ds,
           time: m.visittime || (d ? formatIST(d, "hh:mm a") : ""),
           title: m.customer || "Visit",
           sub: m.remark || "",
           accent: m.status === "completed" ? "bg-emerald-500" : "bg-violet-600",
           type: m.type === "site_visit" ? "site_visit" : "meeting",
-        };
+        });
       });
-  }, [filteredMeetings, mobileRange]);
-
-  const mobileNotes = useMemo(() => {
-    if (!mobileRange) return [];
-    return filteredNotes.filter((n) => {
-      const d = toIST(n.event_date || n.date);
-      return d && isWithinInterval(d, mobileRange);
     });
-  }, [filteredNotes, mobileRange]);
+    // Sort by date string ascending
+    return results.sort((a, b) => a.date.localeCompare(b.date));
+  }, [meetingMap, mobileDateSet]);
 
-  // ── DayPanel transformed data for "Day" tab ───────────────────────────────────
+  // ── Mobile notes — filter noteMap by mobileDateSet ────────────────────────
+  const mobileNotes = useMemo(() => {
+    const results = [];
+    mobileDateSet.forEach((ds) => {
+      const dayNotes = noteMap.get(ds) || [];
+      dayNotes.forEach((n) => results.push(n));
+    });
+    return results;
+  }, [noteMap, mobileDateSet]);
+
+  // ── DayPanel data ─────────────────────────────────────────────────────────
   const dayPanelData = useMemo(
     () => ({
       meetings: dailyMeetings
@@ -345,16 +378,12 @@ export default function Calendar() {
     [dailyMeetings],
   );
 
-  // ── Month navigation ──────────────────────────────────────────────────────────
-  const handlePrevMonth = () =>
-    setCurrentDate((prev) => toIST(subMonths(prev, 1)));
-  const handleNextMonth = () =>
-    setCurrentDate((prev) => toIST(addMonths(prev, 1)));
+  // ── Navigation ────────────────────────────────────────────────────────────
+  const handlePrevMonth = () => setCurrentDate((prev) => toIST(subMonths(prev, 1)));
+  const handleNextMonth = () => setCurrentDate((prev) => toIST(addMonths(prev, 1)));
 
   const handleDaySelect = (day) => {
-    const d = toIST(
-      new Date(currentDate.getFullYear(), currentDate.getMonth(), day),
-    );
+    const d = toIST(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
     setSelectedDate(d);
   };
 
@@ -426,7 +455,7 @@ export default function Calendar() {
             selectedDate={selectedDate}
             currentDate={currentDate}
             data={dayPanelData}
-            dailyNotes={dailyNotes}
+            dailyNotes={filteredDailyNotes}
             allMeetings={filteredMeetings}
             allNotes={filteredNotes}
             onQuickAdd={openModal}

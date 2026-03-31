@@ -13,7 +13,7 @@ import { getImageURI } from "../utils/helper";
 export default function Dashboard() {
   const { URI, user, dashboardFilter } = useAuth();
   const navigate = useNavigate();
-  console.log(user);
+
   // ── State ────────────────────────────────────────────────────────────────
   const [counts, setCounts] = useState({});
   const [enquiries, setEnquiries] = useState([]);
@@ -81,7 +81,9 @@ export default function Dashboard() {
         headers: { "Content-Type": "application/json" },
       });
       if (!res.ok) throw new Error("Failed to fetch counts");
-      setCounts(await res.json());
+      const data = await res.json();
+      setCounts(data);
+      console.log(data);
     } catch (err) {
       console.error("fetchCounts error:", err);
     }

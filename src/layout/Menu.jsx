@@ -631,11 +631,6 @@ export default function Menu() {
             onClick={() => navigate("/app/enquiries")}
           />
           <MenuItem
-            icon={<UserCheckIcon />}
-            label="Employees"
-            onClick={() => navigate("/app/employees")}
-          />
-          <MenuItem
             icon={<TicketIcon />}
             label="Tickets"
             onClick={() => navigate("/app/tickets")}

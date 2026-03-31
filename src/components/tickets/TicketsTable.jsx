@@ -165,7 +165,7 @@ function TicketMobileCard({ row, onAction, onChangeStatus, onViewTicket }) {
 
         {/* Row 4: priority + assigned to */}
         <div className="flex items-center justify-between gap-2">
-          <span className={`text-[12.5px] font-semibold flex items-center gap-1.5 ${priorityCls}`}>
+          <span className={`text-[12.5px] font-semibold flex items-center gap-1.5 px-2 rounded-md ${priorityCls}`}>
             <span>{priorityDot[row.priority] || "●"}</span>
             {row.priority || "—"} Priority
           </span>

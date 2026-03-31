@@ -151,7 +151,7 @@ export default function AddTicket() {
 
       {/* ── Body ── */}
       <form id="ticket-form" onSubmit={handleSubmit} className="flex-1">
-        <div className="max-w-6xl px-5 md:px-6 py-8 space-y-6 md:space-y-8" >
+        <div className="max-w-6xl md:px-6 py-8 space-y-6 md:space-y-8" >
 
           {/* Card */}
           <div className="bg-white p-6 md:p-8">

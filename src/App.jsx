@@ -139,9 +139,9 @@ const App = () => (
       {/* ════════════════════════════════════════════
           PUBLIC ROUTES — no auth required
       ════════════════════════════════════════════ */}
+      <Route path="/login" element={<Login />} />
       <Route path="/" element={<LayoutTwo />}>
         <Route index element={<PartnerPage />} />
-        <Route path="login" element={<Login />} />
         <Route path="partners" element={<PartnersPage />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="terms-and-conditions" element={<TermsAndConditions />} />

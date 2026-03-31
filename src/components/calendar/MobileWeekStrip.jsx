@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   addDays,
   startOfWeek,
@@ -16,7 +16,12 @@ const WDAYS   = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 // ── IST helpers ───────────────────────────────────────────────────────────────
 const toIST = (date) => {
   try {
-    const d = new Date(date);
+    // FIX: date-only strings like "2025-07-15" → append T00:00:00 to avoid UTC shift
+    let raw = date;
+    if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      raw = date + "T00:00:00";
+    }
+    const d = new Date(raw);
     if (isNaN(d.getTime())) return null;
     return toZonedTime(d, IST);
   } catch {
@@ -32,21 +37,6 @@ const formatIST = (date, fmt) => {
   }
 };
 
-/**
- * MobileWeekStrip — UI unchanged, IST-correct
- *
- * Props:
- *   selectedDate        : Date (IST-zoned)
- *   onSelectDate        : fn(ISTDate)
- *   meetings            : array (filteredMeetings)
- *   notes               : array (filteredNotes)
- *   activeFilter        : "Day"|"Week"|"Month"|"Custom"
- *   onFilterChange      : fn(filter)
- *   customFrom          : string "yyyy-MM-dd"
- *   customTo            : string "yyyy-MM-dd"
- *   onCustomFromChange  : fn(string)
- *   onCustomToChange    : fn(string)
- */
 export default function MobileWeekStrip({
   selectedDate,
   onSelectDate,
@@ -66,16 +56,32 @@ export default function MobileWeekStrip({
     return startOfWeek(sel || todayIST, { weekStartsOn: 1 });
   });
 
+  // FIX: when selectedDate changes externally (parent navigates to a different
+  // month/day), re-anchor the strip's weekStart to that date's week.
+  // Without this, tapping a day in the desktop grid while on mobile view
+  // would update selectedDate but leave the strip showing the wrong week.
+  useEffect(() => {
+    if (!selectedDate) return;
+    const sel = toIST(selectedDate);
+    if (!sel) return;
+    const newWeekStart = startOfWeek(sel, { weekStartsOn: 1 });
+    setWeekStart((prev) => {
+      // Only update if the selected date falls outside the currently shown week
+      const weekEnd = addDays(prev, 6);
+      if (sel < prev || sel > weekEnd) return newWeekStart;
+      return prev;
+    });
+  }, [selectedDate]);
+
   // ── 7 days for the week strip ─────────────────────────────────────────────
   const weekDays = useMemo(
     () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
     [weekStart]
   );
 
-  // ── Month label in IST ────────────────────────────────────────────────────
   const monthLabel = useMemo(() => formatIST(weekStart, "MMMM yyyy"), [weekStart]);
 
-  // ── Dot sets: IST date strings ────────────────────────────────────────────
+  // ── Dot sets ──────────────────────────────────────────────────────────────
   const meetingDates = useMemo(() => {
     const set = new Set();
     meetings.forEach(m => {
@@ -88,7 +94,8 @@ export default function MobileWeekStrip({
   const noteDates = useMemo(() => {
     const set = new Set();
     notes.forEach(n => {
-      const d = toIST(n.date);
+      // Support both field names; toIST handles date-only strings
+      const d = toIST(n.date || n.event_date);
       if (d) set.add(formatIST(d, "yyyy-MM-dd"));
     });
     return set;
@@ -99,7 +106,6 @@ export default function MobileWeekStrip({
 
   const selIST = toIST(selectedDate);
 
-  // ── UI (unchanged) ────────────────────────────────────────────────────────
   return (
     <div className="bg-white px-4 pt-4 pb-3 border-b border-gray-100">
 

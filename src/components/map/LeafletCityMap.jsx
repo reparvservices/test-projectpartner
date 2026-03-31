@@ -114,7 +114,7 @@ function FlyToCity({ selectedCity }) {
 
 export default function LeafletCityMap({ properties, selectedCity }) {
   return (
-    <div className="h-[100%] w-full rounded-lg overflow-hidden shadow-md">
+    <div className="h-[100%] w-full overflow-hidden shadow-md">
       <MapContainer
         center={[21.1458, 79.0882]} // fallback center (Nagpur, India)
         zoom={5}

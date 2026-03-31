@@ -1,13 +1,11 @@
 import { PlusIcon, LocationPinIcon, BuildingIcon } from "./CalendarIcons";
 import { Trash2 } from "lucide-react";
 
-// ── Sub-icon (UI UNCHANGED) ───────────────────────────────────────────────────
 function SubIcon({ type }) {
   if (type === "location") return <LocationPinIcon />;
   return <BuildingIcon />;
 }
 
-// ── Event card (UI UNCHANGED) ─────────────────────────────────────────────────
 function EventCard({ time, title, sub, subIcon, accent, assignedTo, assignedAvatar }) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -41,7 +39,6 @@ function EventCard({ time, title, sub, subIcon, accent, assignedTo, assignedAvat
   );
 }
 
-// ── Note card (UI UNCHANGED) ──────────────────────────────────────────────────
 function NoteCard({ note, onDelete }) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -66,22 +63,6 @@ function NoteCard({ note, onDelete }) {
   );
 }
 
-/**
- * MobileEventCards — UI unchanged, filter logic fixed
- *
- * Props:
- *   events       : array  — meeting/visit events (pre-filtered by mobileRange in parent)
- *   dailyNotes   : array  — notes (pre-filtered by mobileRange in parent)
- *   activeFilter : string — "All"|"Meetings"|"Site Visits"|"Notes"
- *   onQuickAdd   : fn()
- *   onDeleteNote : fn(id)
- *
- * Filter logic:
- *   "All"        → show meetings + site visits + notes
- *   "Meetings"   → show only type === "meeting" (not site_visit)
- *   "Site Visits"→ show only type === "site_visit"
- *   "Notes"      → show only notes, hide meetings entirely
- */
 export default function MobileEventCards({
   events       = [],
   dailyNotes   = [],
@@ -89,12 +70,11 @@ export default function MobileEventCards({
   onQuickAdd,
   onDeleteNote,
 }) {
-  // Apply type filter to events array
   const filteredEvents = events.filter(e => {
     if (activeFilter === "All")         return true;
     if (activeFilter === "Meetings")    return e.type === "meeting";
     if (activeFilter === "Site Visits") return e.type === "site_visit";
-    return false; // "Notes" — hide all meeting-type events
+    return false;
   });
 
   const showNotes  = activeFilter === "All" || activeFilter === "Notes";
@@ -103,24 +83,20 @@ export default function MobileEventCards({
   return (
     <div className="px-4 py-4 flex flex-col gap-3 pb-32">
 
-      {/* Meeting / site-visit cards */}
       {filteredEvents.map(e => (
         <EventCard key={e.id} {...e} />
       ))}
 
-      {/* Note cards */}
       {showNotes && dailyNotes.map((n, i) => (
         <NoteCard key={n.id ?? i} note={n} onDelete={onDeleteNote} />
       ))}
 
-      {/* Empty state */}
       {!hasContent && (
         <p className="text-center text-sm text-gray-400 italic py-8">
           No {activeFilter === "All" ? "events" : activeFilter.toLowerCase()} for this period
         </p>
       )}
 
-      {/* Quick add */}
       <button
         onClick={onQuickAdd}
         className="w-full mt-2 border-2 border-dashed border-gray-200 rounded-2xl py-4 flex items-center justify-center gap-2 text-sm text-gray-400 cursor-pointer hover:border-violet-400 hover:text-violet-500 transition-colors bg-white"
