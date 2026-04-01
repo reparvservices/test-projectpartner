@@ -6,15 +6,30 @@ import { useAuth } from "../store/auth";
 function LogoutButton() {
   const navigate = useNavigate();
   const { delTokenInCookie, URI } = useAuth();
+
   const userLogout = async () => {
     try {
-      await axios.post(
-        URI+"/project-partner/logout",
-        {},
-        { withCredentials: true }
-      );
+      let endpoint = "";
+
+      if (localStorage.getItem("projectPartnerUser")) {
+        endpoint = "/project-partner/logout";
+      } else if (localStorage.getItem("salesUser")) {
+        endpoint = "/sales/logout";
+      } else if (localStorage.getItem("territoryUser")) {
+        endpoint = "/territory-partner/logout";
+      }
+
+      if (endpoint) {
+        await axios.post(URI + endpoint, {}, { withCredentials: true });
+      }
+
+      // Clear everything
       delTokenInCookie();
+
       localStorage.removeItem("projectPartnerUser");
+      localStorage.removeItem("salesUser");
+      localStorage.removeItem("territoryUser");
+
       navigate("/", { replace: true });
     } catch (error) {
       console.log("Logout failed:", error);

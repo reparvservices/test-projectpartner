@@ -24,9 +24,9 @@ const roles = [
     id: "sales-partner",
     label: "Sales Partner",
     icon: FaHandshake,
-    endpoint: "/sales-partner/login",
-    tokenKey: "salesPartnerToken",
-    userKey: "salesPartnerUser",
+    endpoint: "/sales/login",
+    tokenKey: "salesToken",
+    userKey: "salesUser",
     redirect: "/app/dashboard",
   },
   {
@@ -34,8 +34,8 @@ const roles = [
     label: "Territory Partner",
     icon: MdOutlineMap,
     endpoint: "/territory-partner/login",
-    tokenKey: "territoryPartnerToken",
-    userKey: "territoryPartnerUser",
+    tokenKey: "territoryToken",
+    userKey: "territoryUser",
     redirect: "/app/dashboard",
   },
 ];

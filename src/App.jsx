@@ -109,6 +109,19 @@ function RequireAuth() {
   return <Outlet />;
 }
 
+function RequireRole({ allowedRoles }) {
+  const { user } = useAuth();
+
+  if (!user) return <Navigate to="/" replace />;
+
+  // role comes from your stored user
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to="/app/dashboard" replace />;
+  }
+
+  return <Outlet />;
+}
+
 // ── 404 page ──────────────────────────────────────────────────────────────────
 function NotFound() {
   const navigate = useNavigate();
@@ -169,17 +182,6 @@ const App = () => (
           <Route path="calendar" element={<Calendar />} />
           <Route path="calendar/event/add" element={<AddEvent />} />
 
-          {/* Properties */}
-          <Route path="properties" element={<Properties />} />
-          <Route path="properties/map-view" element={<Map />} />
-          <Route path="property/add" element={<AddProperty />} />
-          <Route path="property/add/mobile" element={<AddPropertyMobile />} />
-          <Route path="property/update/:id" element={<UpdateProperty />} />
-          <Route
-            path="property/additional-info/:propertyid"
-            element={<PropertiesFlatAndPlotInfo />}
-          />
-
           {/* Enquiries */}
           <Route path="enquiries" element={<Enquiries />} />
           <Route path="enquiry/add" element={<AddEnquiry />} />
@@ -187,30 +189,43 @@ const App = () => (
           {/* Customers */}
           <Route path="customers" element={<Customers />} />
 
-          {/* Builders */}
-          <Route path="builders" element={<Builders />} />
-          <Route path="builder/add" element={<AddBuilder />} />
-          <Route path="builder/update/:id" element={<AddBuilder />} />
+          <Route element={<RequireRole allowedRoles={["Project Partner"]} />}>
+            {/* Properties */}
+            <Route path="properties" element={<Properties />} />
+            <Route path="properties/map-view" element={<Map />} />
+            <Route path="property/add" element={<AddProperty />} />
+            <Route path="property/add/mobile" element={<AddPropertyMobile />} />
+            <Route path="property/update/:id" element={<UpdateProperty />} />
+            <Route
+              path="property/additional-info/:propertyid"
+              element={<PropertiesFlatAndPlotInfo />}
+            />
 
-          {/* Sales Partners */}
-          <Route path="sales-partners" element={<SalesPartners />} />
-          <Route path="sales-partner/add" element={<AddSalesPartner />} />
+            {/* Builders */}
+            <Route path="builders" element={<Builders />} />
+            <Route path="builder/add" element={<AddBuilder />} />
+            <Route path="builder/update/:id" element={<AddBuilder />} />
 
-          <Route
-            path="sales-partner/update/:id"
-            element={<UpdateSalesPartner />}
-          />
+            {/* Sales Partners */}
+            <Route path="sales-partners" element={<SalesPartners />} />
+            <Route path="sales-partner/add" element={<AddSalesPartner />} />
+            <Route
+              path="sales-partner/update/:id"
+              element={<UpdateSalesPartner />}
+            />
 
-          {/* Territory Partners */}
-          <Route path="territory-partners" element={<TerritoryPartners />} />
-          <Route
-            path="territory-partner/add"
-            element={<AddTerritoryPartner />}
-          />
+            {/* Territory Partners */}
+            <Route path="territory-partners" element={<TerritoryPartners />} />
+            <Route
+              path="territory-partner/add"
+              element={<AddTerritoryPartner />}
+            />
+          </Route>
 
-          {/* Employees */}
+          {/* Employees 
           <Route path="employees" element={<Employees />} />
           <Route path="employee/add" element={<AddEmployee />} />
+          */}
 
           {/* Tickets */}
           <Route path="tickets" element={<Tickets />} />

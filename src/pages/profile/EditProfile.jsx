@@ -568,7 +568,13 @@ function StepContentPreferences({ prefs, setPrefs }) {
 ════════════════════════════════════════════════════════════ */
 export default function EditProfile() {
   const navigate = useNavigate();
-  const { URI, setLoading } = useAuth();
+  const { URI, setLoading, role } = useAuth();
+  const isProjectPartner = role === "Project Partner";
+  const getBasePath = () => {
+    if (role === "Project Partner") return "/project-partner";
+    if (role === "Territory Partner") return "/territory-partner";
+    return "/sales"; // Sales Partner
+  };
 
   // ── form state: keys = DB column names ──────────────────
   const [form, setForm] = useState({
@@ -636,7 +642,7 @@ export default function EditProfile() {
   /* ── fetch: API response keys already match DB ── */
   const fetchProfile = async () => {
     try {
-      const r = await fetch(`${URI}/project-partner/profile`, {
+      const r = await fetch(`${URI}${getBasePath()}/profile`, {
         method: "GET",
         credentials: "include",
       });
@@ -718,7 +724,7 @@ export default function EditProfile() {
 
     try {
       setLoading(true);
-      const r = await fetch(`${URI}/project-partner/profile/v2/edit`, {
+      const r = await fetch(`${URI}/${getBasePath()}/profile/v2/edit`, {
         method: "PUT",
         credentials: "include",
         body: fd,
@@ -742,7 +748,7 @@ export default function EditProfile() {
     }
     try {
       setLoading(true);
-      const r = await fetch(`${URI}/project-partner/profile/changepassword`, {
+      const r = await fetch(`${URI}/${getBasePath()}/profile/changepassword`, {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

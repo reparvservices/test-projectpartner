@@ -18,6 +18,7 @@ export default function ProfileHeader({
   onBusinessDetails,
   onOpenSite,
 }) {
+  const isProjectPartner = user?.role === "Project Partner";
   const avatarSrc = user?.userimage
     ? getImageURI(user.userimage)
     : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullname || "U")}&background=5323DC&color=fff&size=150`;
@@ -85,7 +86,7 @@ export default function ProfileHeader({
                     <span>@{user.username}</span>
                   </>
                 )}
-                {user?.contact && (
+                {isProjectPartner && user?.contact && (
                   <button
                     onClick={onOpenSite}
                     className="flex items-center gap-1 text-[#5323DC] hover:underline"

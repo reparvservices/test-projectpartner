@@ -5,11 +5,21 @@ import { useNavigate } from "react-router-dom";
 import SubscriptionPlan from "../../components/subscription/SubscriptionPlan";
 import FormatPrice from "../../components/FormatPrice";
 
-const partnerType = "Project Partner";
-
 export default function Subscription() {
-  const { URI, user, showSubscription, setShowSubscription } = useAuth();
+  const { URI, user, role, showSubscription, setShowSubscription } = useAuth();
   const navigate = useNavigate();
+
+  const isProjectPartner = role === "Project Partner";
+  const getBasePath = () => {
+    if (role === "Project Partner") return "/project-partner";
+    if (role === "Territory Partner") return "/territory-partner";
+    return "/sales"; // Sales Partner
+  };
+  const getPartnerType = () => {
+    if (role === "Project Partner") return "Project Partner";
+    if (role === "Territory Partner") return "Territory Partner";
+    return "Sales Partner";
+  };
 
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState({});
@@ -26,8 +36,12 @@ export default function Subscription() {
     try {
       setLoadingPlans(true);
       const response = await fetch(
-        `${URI}/admin/subscription/pricing/plans/${partnerType}`,
-        { method: "GET", credentials: "include", headers: { "Content-Type": "application/json" } }
+        `${URI}/admin/subscription/pricing/plans/${getPartnerType()}`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        },
       );
       const data = await response.json();
       setPlans(data);
@@ -42,8 +56,12 @@ export default function Subscription() {
     try {
       setLoadingActive(true);
       const response = await fetch(
-        `${URI}/project-partner/subscription/user/${user?.id}`,
-        { method: "GET", credentials: "include", headers: { "Content-Type": "application/json" } }
+        `${URI}${getBasePath()}/subscription/user/${user?.id}`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        },
       );
       const data = await response.json();
       setActiveSubscription(data);
@@ -61,7 +79,6 @@ export default function Subscription() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f6f4fb] to-white">
-
       {/* Mobile Header */}
       <div className="md:hidden flex items-center px-4 pt-5 pb-4 bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
         <button
@@ -71,7 +88,9 @@ export default function Subscription() {
           <ArrowLeft size={20} className="text-gray-700" />
         </button>
         <div className="flex-1 text-center">
-          <h1 className="text-base font-bold text-gray-900">Choose Your Plan</h1>
+          <h1 className="text-base font-bold text-gray-900">
+            Choose Your Plan
+          </h1>
           <p className="text-xs text-gray-400">Flexible subscription options</p>
         </div>
         {/* Spacer to balance back arrow */}
@@ -79,7 +98,6 @@ export default function Subscription() {
       </div>
 
       <div className="py-8 md:py-16 px-4 md:px-6">
-
         {/* Desktop Header */}
         <div className="hidden md:block text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
@@ -102,20 +120,34 @@ export default function Subscription() {
             <div className="bg-white p-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">{activeSubscription.planName}</h2>
-                  <p className="text-gray-400 text-sm mt-0.5">{activeSubscription.planDuration}</p>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    {activeSubscription.planName}
+                  </h2>
+                  <p className="text-gray-400 text-sm mt-0.5">
+                    {activeSubscription.planDuration}
+                  </p>
                   <div className="text-2xl font-bold text-[#5E23DC] mt-2">
-                    <FormatPrice price={parseFloat(activeSubscription?.amount)} />
+                    <FormatPrice
+                      price={parseFloat(activeSubscription?.amount)}
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Start Date</p>
-                    <p className="font-medium text-gray-800">{activeSubscription.start_date}</p>
+                    <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">
+                      Start Date
+                    </p>
+                    <p className="font-medium text-gray-800">
+                      {activeSubscription.start_date}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Expiry Date</p>
-                    <p className="font-medium text-gray-800">{activeSubscription.end_date}</p>
+                    <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">
+                      Expiry Date
+                    </p>
+                    <p className="font-medium text-gray-800">
+                      {activeSubscription.end_date}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -133,7 +165,9 @@ export default function Subscription() {
         {/* Compare All Plans — Mobile only, ABOVE cards */}
         <div className="md:hidden mb-5">
           <button
-            onClick={() => navigate("/app/subscription/compare-plans", { state: { plans } })}
+            onClick={() =>
+              navigate("/app/subscription/compare-plans", { state: { plans } })
+            }
             className="w-full flex items-center justify-center gap-2 border-2 border-[#5E23DC] text-[#5E23DC] rounded-2xl py-3.5 font-semibold text-sm hover:bg-[#5E23DC]/10 transition"
           >
             Compare All Plans
@@ -150,7 +184,9 @@ export default function Subscription() {
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {plans.map((plan, index) => {
               const features = plan?.features?.split(",") || [];
-              const visible = expandedCards[index] ? features : features.slice(0, 4);
+              const visible = expandedCards[index]
+                ? features
+                : features.slice(0, 4);
 
               return (
                 <div
@@ -171,7 +207,9 @@ export default function Subscription() {
 
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-base font-semibold text-gray-800">{plan?.planName}</h3>
+                      <h3 className="text-base font-semibold text-gray-800">
+                        {plan?.planName}
+                      </h3>
                       <span className="text-xs bg-purple-100 text-[#5E23DC] px-3 py-1 rounded-full font-medium">
                         {plan?.planDuration}
                       </span>
@@ -186,8 +224,14 @@ export default function Subscription() {
 
                     <ul className="space-y-2 mb-3">
                       {visible.map((feature, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                          <Check size={15} className="text-[#5E23DC] mt-[2px] shrink-0" />
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-sm text-gray-600"
+                        >
+                          <Check
+                            size={15}
+                            className="text-[#5E23DC] mt-[2px] shrink-0"
+                          />
                           {feature.trim()}
                         </li>
                       ))}
@@ -198,7 +242,9 @@ export default function Subscription() {
                         onClick={() => toggleCard(index)}
                         className="text-xs font-semibold text-[#5E23DC] hover:underline mb-2"
                       >
-                        {expandedCards[index] ? "Show Less" : `+${features.length - 4} more features`}
+                        {expandedCards[index]
+                          ? "Show Less"
+                          : `+${features.length - 4} more features`}
                       </button>
                     )}
                   </div>
@@ -227,7 +273,9 @@ export default function Subscription() {
         {/* Compare All Plans — Desktop, BELOW cards */}
         <div className="hidden md:flex justify-center mt-14">
           <button
-            onClick={() => navigate("/app/subscription/compare-plans", { state: { plans } })}
+            onClick={() =>
+              navigate("/app/subscription/compare-plans", { state: { plans } })
+            }
             className="flex items-center gap-2 border-2 border-[#5E23DC] text-[#5E23DC] rounded-2xl px-8 py-3.5 font-semibold text-sm hover:bg-[#5E23DC]/10 transition"
           >
             Compare All Plans

@@ -8,17 +8,24 @@ import SuggestedPartners from "../../components/profile/SuggestedPartners";
 import PlatformUpdates from "../../components/profile/PlatformUpdates";
 
 export default function Profile() {
-  const { URI, setLoading } = useAuth();
+  const { URI, setLoading, role } = useAuth();
   const navigate = useNavigate();
+  const isProjectPartner = role === "Project Partner";
 
   const [user, setUser]         = useState({ fullname:"", username:"", email:"", contact:"", role:"", referral:"", userimage:"", id:"", status:"" });
   const [fetching, setFetching] = useState(true);
+
+  const getBasePath = () => {
+    if (role === "Project Partner") return "/project-partner";
+    if (role === "Territory Partner") return "/territory-partner";
+    return "/sales"; // Sales Partner
+  };
 
   /* ── fetch profile (same as old code) ── */
   const fetchProfile = async () => {
     try {
       setFetching(true);
-      const r = await fetch(`${URI}/project-partner/profile`, {
+      const r = await fetch(`${URI}${getBasePath()}/profile`, {
         method: "GET", credentials: "include",
         headers: { "Content-Type": "application/json" },
       });

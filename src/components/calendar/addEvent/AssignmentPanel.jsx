@@ -44,13 +44,13 @@ const getColor = (index) => COLOR_POOL[index % COLOR_POOL.length];
  *   onChange : fn(field, value)
  */
 export default function AssignmentPanel({ data, onChange }) {
-  const { URI, user } = useAuth();
-
-  // ── Tab: "sales" | "territory" ────────────────────────────────────────────────
-  const isProjectPartner =
-    !user?.role ||
-    user?.role?.toLowerCase()?.includes("project") ||
-    user?.role?.toLowerCase()?.includes("partner");
+  const { URI, user, role } = useAuth();
+  const isProjectPartner = role === "Project Partner";
+  const getBasePath = () => {
+    if (role === "Project Partner") return "/project-partner";
+    if (role === "Territory Partner") return "/territory-partner";
+    return "/sales"; // Sales Partner
+  };
 
   const [activeTab, setActiveTab] = useState(
     isProjectPartner ? "sales" : "territory",
@@ -80,7 +80,7 @@ export default function AssignmentPanel({ data, onChange }) {
     setLoadingSales(true);
     setErrorSales("");
     try {
-      const res = await fetch(`${URI}/project-partner/partner/salespartner`, {
+      const res = await fetch(`${URI}${getBasePath()}/partner/salespartner`, {
         credentials: "include",
       });
       const raw = await res.json();
@@ -100,7 +100,7 @@ export default function AssignmentPanel({ data, onChange }) {
     setErrorTerritory("");
     try {
       const res = await fetch(
-        `${URI}/project-partner/partner/territorypartner`,
+        `${URI}${getBasePath()}/partner/territorypartner`,
         {
           credentials: "include",
         },

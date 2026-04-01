@@ -7,6 +7,7 @@ import { handlePayment } from "../../utils/payment.js";
 
 import "swiper/css";
 import "swiper/css/pagination";
+import { getImageURI } from "../../utils/helper.js";
 
 const SubscriptionPlan = ({ plan }) => {
   const [amount, setAmount] = useState(plan?.totalPrice);
@@ -153,7 +154,7 @@ const SubscriptionPlan = ({ plan }) => {
                   {images.map((url, index) => (
                     <SwiperSlide key={index}>
                       <img
-                        src={URI + url}
+                        src={getImageURI(url)}
                         alt={`Banner ${index + 1}`}
                         className="w-full h-44 object-cover"
                       />

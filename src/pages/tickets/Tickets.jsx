@@ -14,13 +14,20 @@ import {
 export default function Tickets() {
   const navigate = useNavigate();
   const {
-    URI,
+    URI, role,
     setLoading,
     showTicket,
     setShowTicket,
     showResponseForm,
     setShowResponseForm,
   } = useAuth();
+
+  const isProjectPartner = role === "Project Partner";
+  const getBasePath = () => {
+    if (role === "Project Partner") return "/project-partner";
+    if (role === "Territory Partner") return "/territory-partner";
+    return "/sales"; // Sales Partner
+  };
 
   /* ── data ── */
   const [data, setData] = useState([]);
@@ -49,7 +56,7 @@ export default function Tickets() {
     try {
       setLoading(true);
       const r = await fetch(
-        `${URI}/project-partner/tickets/get/${selectedGenerator}`,
+        `${URI}${getBasePath()}/tickets/get/${selectedGenerator}`,
         {
           method: "GET",
           credentials: "include",
@@ -77,7 +84,7 @@ export default function Tickets() {
   /* ── view ticket ── */
   const viewTicket = async (id) => {
     try {
-      const r = await fetch(`${URI}/project-partner/tickets/${id}`, {
+      const r = await fetch(`${URI}${getBasePath()}/tickets/${id}`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -93,7 +100,7 @@ export default function Tickets() {
   /* ── fetch response data ── */
   const fetchResponse = async (id) => {
     try {
-      const r = await fetch(`${URI}/project-partner/tickets/${id}`, {
+      const r = await fetch(`${URI}${getBasePath()}/tickets/${id}`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -113,7 +120,7 @@ export default function Tickets() {
     try {
       setLoading(true);
       const r = await fetch(
-        `${URI}/project-partner/tickets/response/add/${ticketId}`,
+        `${URI}${getBasePath()}/tickets/response/add/${ticketId}`,
         {
           method: "PUT",
           credentials: "include",
@@ -139,7 +146,7 @@ export default function Tickets() {
   const changeStatus = async (id, label) => {
     try {
       const r = await fetch(
-        `${URI}/project-partner/tickets/status/change/${id}`,
+        `${URI}${getBasePath()}/tickets/status/change/${id}`,
         {
           method: "PUT",
           credentials: "include",
@@ -160,7 +167,7 @@ export default function Tickets() {
   const del = async (id) => {
     if (!window.confirm("Delete this ticket?")) return;
     try {
-      const r = await fetch(`${URI}/project-partner/tickets/delete/${id}`, {
+      const r = await fetch(`${URI}${getBasePath()}/tickets/delete/${id}`, {
         method: "DELETE",
         credentials: "include",
       });

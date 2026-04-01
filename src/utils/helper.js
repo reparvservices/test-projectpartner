@@ -8,7 +8,7 @@ export const getImageURI = (path) => {
   }
 
   const base = import.meta.env.VITE_S3_IMAGE_URL;
-
+  //const base = import.meta.env.VITE_BACKEND_URL;
   // Ensure single slash between base and path
   return `${base}/${path.replace(/^\/+/, "")}`;
 };

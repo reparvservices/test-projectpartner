@@ -15,10 +15,17 @@ const TABS = [
 
 export default function Customers() {
   const {
-    URI, setLoading,
+    URI, role, setLoading,
     showCustomer, setShowCustomer,
     showCustomerPaymentForm, setShowCustomerPaymentForm,
   } = useAuth();
+
+  const isProjectPartner = role === "Project Partner";
+  const getBasePath = () => {
+    if (role === "Project Partner") return "/project-partner";
+    if (role === "Territory Partner") return "/territory-partner";
+    return "/sales"; // Sales Partner
+  };
 
   const [searchTerm, setSearchTerm]       = useState("");
   const [activeTab, setActiveTab]         = useState("all");
@@ -45,7 +52,7 @@ export default function Customers() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res  = await fetch(`${URI}/project-partner/customers`, { method: "GET", credentials: "include", headers: { "Content-Type": "application/json" } });
+      const res  = await fetch(`${URI}${getBasePath()}/customers`, { method: "GET", credentials: "include", headers: { "Content-Type": "application/json" } });
       if (!res.ok) throw new Error();
       setCustomers(await res.json());
     } catch (e) { console.error(e); } finally { setLoading(false); }
@@ -53,7 +60,7 @@ export default function Customers() {
 
   const viewCustomer = async (id) => {
     try {
-      const res  = await fetch(`${URI}/project-partner/customers/${id}`, { method: "GET", credentials: "include", headers: { "Content-Type": "application/json" } });
+      const res  = await fetch(`${URI}${getBasePath()}/customers/${id}`, { method: "GET", credentials: "include", headers: { "Content-Type": "application/json" } });
       if (!res.ok) throw new Error();
       const data = await res.json();
       setCustomer(data);
@@ -64,7 +71,7 @@ export default function Customers() {
 
   const fetchPaymentData = async (id, cust) => {
     try {
-      const res  = await fetch(`${URI}/project-partner/customers/payment/get/${id}`, { method: "GET", credentials: "include", headers: { "Content-Type": "application/json" } });
+      const res  = await fetch(`${URI}${getBasePath()}/customers/payment/get/${id}`, { method: "GET", credentials: "include", headers: { "Content-Type": "application/json" } });
       if (!res.ok) throw new Error();
       const data = await res.json();
       calculateBalance(data, cust);
@@ -80,7 +87,7 @@ export default function Customers() {
     if (selectedImage) formData.append("paymentImage", selectedImage);
     try {
       setLoading(true);
-      const res  = await fetch(`${URI}/project-partner/customers/payment/add/${enquirerId}`, { method: "POST", credentials: "include", body: formData });
+      const res  = await fetch(`${URI}${getBasePath()}/customers/payment/add/${enquirerId}`, { method: "POST", credentials: "include", body: formData });
       const data = await res.json();
       if (res.ok) {
         alert("Payment added successfully!");

@@ -12,18 +12,42 @@ export const AuthProvider = ({ children }) => {
     Cookies.set("accessToken", token);
     setAccessToken(Cookies.get("accessToken"));
   };
+
   const delTokenInCookie = () => {
     setAccessToken();
     Cookies.remove("accessToken");
+
+    localStorage.removeItem("projectPartnerUser");
+    localStorage.removeItem("salesUser");
+    localStorage.removeItem("territoryUser");
+
+    setUser(null);
+    setRole(null);
   };
 
   //const URI = "http://localhost:3000";
   //const URI = "https://api.reparv.in";
   const URI = "https://aws-api.reparv.in";
 
-  const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("projectPartnerUser")),
-  );
+  const getStoredUser = () => {
+    const keys = ["projectPartnerUser", "salesUser", "territoryUser"];
+
+    for (let key of keys) {
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        const parsedUser = JSON.parse(stored);
+        return parsedUser; // role already inside
+      }
+    }
+
+    return null;
+  };
+
+  const storedUser = getStoredUser();
+
+  const [user, setUser] = useState(storedUser);
+  const [role, setRole] = useState(storedUser?.role || null);
+
   const [loading, setLoading] = useState(false);
   const [successScreen, setSuccessScreen] = useState({
     show: false,
@@ -99,7 +123,6 @@ export const AuthProvider = ({ children }) => {
   const [projectPartner, setProjectPartners] = useState([]);
   const [currentProjectPartner, setCurrentProjectPartner] = useState(null);
   const [showInquiryForm, setShowInquiryForm] = useState(false);
-  const [role, setRole] = useState("sales");
 
   return (
     <AuthContext.Provider

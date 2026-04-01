@@ -13,6 +13,7 @@ import { getImageURI } from "../utils/helper";
 export default function Dashboard() {
   const { URI, user, dashboardFilter } = useAuth();
   const navigate = useNavigate();
+  const isProjectPartner = user?.role === "Project Partner";
 
   // ── State ────────────────────────────────────────────────────────────────
   const [counts, setCounts] = useState({});
@@ -24,6 +25,12 @@ export default function Dashboard() {
     { startDate: null, endDate: null, key: "selection" },
   ]);
   const [loading, setLoading] = useState(true);
+
+  const getBasePath = () => {
+    if (user?.role === "Project Partner") return "/project-partner";
+    if (user?.role === "Territory Partner") return "/territory-partner";
+    return "/sales"; // Sales Partner
+  };
 
   // ── Derived counts (Enquired / Booked) ───────────────────────────────────
   const propertyCounts = properties.reduce(
@@ -75,7 +82,8 @@ export default function Dashboard() {
   // ── API: fetch dashboard counts ──────────────────────────────────────────
   const fetchCounts = async () => {
     try {
-      const res = await fetch(`${URI}/project-partner/dashboard/count`, {
+      const endpoint = `${URI}${getBasePath()}/dashboard/count`;
+      const res = await fetch(endpoint, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -92,7 +100,7 @@ export default function Dashboard() {
   // ── API: fetch enquiries list ───────────────────────────────────────────
   const fetchRecentEnquiries = async () => {
     try {
-      const res = await fetch(`${URI}/project-partner/dashboard/enquiries`, {
+      const res = await fetch(`${URI}${getBasePath()}/dashboard/enquiries`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -107,7 +115,7 @@ export default function Dashboard() {
   // ── API: fetch properties list ───────────────────────────────────────────
   const fetchProperties = async () => {
     try {
-      const res = await fetch(`${URI}/project-partner/dashboard/properties`, {
+      const res = await fetch(`${URI}${getBasePath()}/dashboard/properties`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -123,7 +131,7 @@ export default function Dashboard() {
   const fetchBookedProperties = async () => {
     try {
       const res = await fetch(
-        `${URI}/project-partner/dashboard/properties/booked`,
+        `${URI}${getBasePath()}/dashboard/properties/booked`,
         {
           method: "GET",
           credentials: "include",
@@ -141,18 +149,19 @@ export default function Dashboard() {
     const init = async () => {
       setLoading(true);
 
-      await Promise.allSettled([
-        fetchCounts(),
-        fetchProperties(),
-        fetchRecentEnquiries(),
-        fetchBookedProperties(),
-      ]);
+      const promises = [fetchCounts(), fetchRecentEnquiries()];
+
+      if (user?.role === "Project Partner") {
+        promises.push(fetchProperties(), fetchBookedProperties());
+      }
+
+      await Promise.allSettled(promises);
 
       setLoading(false);
     };
 
     init();
-  }, []);
+  }, [user]);
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
@@ -166,7 +175,9 @@ export default function Dashboard() {
           <h1 className="text-[20px] font-bold text-gray-900 flex items-center gap-2">
             Hello, {user?.name} <span>👋</span>
           </h1>
-          <p className="text-gray-500 text-sm mt-0.5">Here's your daily update</p>
+          <p className="text-gray-500 text-sm mt-0.5">
+            Here's your daily update
+          </p>
         </div>
         <div
           onClick={() => navigate("/app/profile")}
@@ -193,18 +204,20 @@ export default function Dashboard() {
       </div>
 
       {/* Full property table with search + date filter + pagination */}
-      <div className="hidden md:block">
-        <PropertyTable
-          data={filteredData}
-          searchTerm={searchTerm}
-          onSearch={setSearchTerm}
-          range={range}
-          onRangeChange={setRange}
-          propertyCounts={propertyCounts}
-          URI={URI}
-          loading={loading}
-        />
-      </div>
+      {isProjectPartner && (
+        <div className="hidden md:block">
+          <PropertyTable
+            data={filteredData}
+            searchTerm={searchTerm}
+            onSearch={setSearchTerm}
+            range={range}
+            onRangeChange={setRange}
+            propertyCounts={propertyCounts}
+            URI={URI}
+            loading={loading}
+          />
+        </div>
+      )}
     </div>
   );
 }

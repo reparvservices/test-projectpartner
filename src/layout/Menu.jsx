@@ -646,8 +646,8 @@ export default function Menu() {
           />
           <MenuItem
             icon={<StarIcon />}
-            label="Events"
-            onClick={() => navigate("/app/events")}
+            label="Add Event"
+            onClick={() => navigate("/app/calendar/event/add")}
           />
           <MenuItem
             icon={<MessageIcon />}
@@ -663,11 +663,11 @@ export default function Menu() {
             label="Subscription Plan"
             onClick={() => navigate("/app/subscription")}
           />
-          <MenuItem
+          {/*<MenuItem
             icon={<SettingsIcon />}
             label="Settings"
             onClick={() => navigate("/app/settings")}
-          />
+          />*/}
           <MenuItem
             icon={<ShareIcon />}
             label="Invite Friends"

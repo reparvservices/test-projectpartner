@@ -72,7 +72,13 @@ const dateStrRange = (fromStr, toStr) => {
 };
 
 export default function Calendar() {
-  const { URI, showNotePopup, setShowNotePopup } = useAuth();
+  const { URI, role, showNotePopup, setShowNotePopup } = useAuth();
+  const isProjectPartner = role === "Project Partner";
+  const getBasePath = () => {
+    if (role === "Project Partner") return "/project-partner";
+    if (role === "Territory Partner") return "/territory-partner";
+    return "/sales"; // Sales Partner
+  };
 
   const [activeTab, setActiveTab] = useState("Schedule");
   const [activeView, setActiveView] = useState("Month");
@@ -97,7 +103,7 @@ export default function Calendar() {
   // ── API ───────────────────────────────────────────────────────────────────
   const fetchMeetings = useCallback(async () => {
     try {
-      const res = await fetch(`${URI}/project-partner/calender/meetings`, {
+      const res = await fetch(`${URI}${getBasePath()}/calender/meetings`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -109,7 +115,7 @@ export default function Calendar() {
 
   const fetchAllNotes = useCallback(async () => {
     try {
-      const res = await fetch(`${URI}/project-partner/calender/notes`, {
+      const res = await fetch(`${URI}${getBasePath()}/calender/notes`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -124,8 +130,8 @@ export default function Calendar() {
       try {
         const d = toISTDateStr(date);
         const url = d
-          ? `${URI}/project-partner/calender/notes?date=${d}`
-          : `${URI}/project-partner/calender/notes`;
+          ? `${URI}${getBasePath()}/calender/notes?date=${d}`
+          : `${URI}${getBasePath()}/calender/notes`;
         const res = await fetch(url, { credentials: "include" });
         const data = await res.json();
         setDailyNotes(Array.isArray(data) ? data : []);
@@ -152,7 +158,7 @@ export default function Calendar() {
     if (!newNote.trim()) return;
     setNoteSaving(true);
     try {
-      await fetch(`${URI}/project-partner/calender/note/add`, {
+      await fetch(`${URI}${getBasePath()}/calender/note/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -178,7 +184,7 @@ export default function Calendar() {
     if (!window.confirm("Delete this note?")) return;
     try {
       const res = await fetch(
-        `${URI}/project-partner/calender/note/delete/${id}`,
+        `${URI}${getBasePath()}/calender/note/delete/${id}`,
         { method: "DELETE", credentials: "include" },
       );
       const data = await res.json();

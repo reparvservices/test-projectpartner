@@ -10,13 +10,27 @@ export default function DashboardHeader() {
 
   const userLogout = async () => {
     try {
-      await axios.post(
-        URI + "/project-partner/logout",
-        {},
-        { withCredentials: true },
-      );
+      let endpoint = "";
+
+      if (localStorage.getItem("projectPartnerUser")) {
+        endpoint = "/project-partner/logout";
+      } else if (localStorage.getItem("salesUser")) {
+        endpoint = "/sales/logout";
+      } else if (localStorage.getItem("territoryUser")) {
+        endpoint = "/territory-partner/logout";
+      }
+
+      if (endpoint) {
+        await axios.post(URI + endpoint, {}, { withCredentials: true });
+      }
+
+      // Clear everything
       delTokenInCookie();
+
       localStorage.removeItem("projectPartnerUser");
+      localStorage.removeItem("salesUser");
+      localStorage.removeItem("territoryUser");
+
       navigate("/", { replace: true });
     } catch (error) {
       console.log("Logout failed:", error);
@@ -29,7 +43,7 @@ export default function DashboardHeader() {
       <div className="flex items-center gap-3">
         {/* Mobile hamburger → opens sidebar */}
         <button
-          onClick={()=>navigate("/app/menu")}
+          onClick={() => navigate("/app/menu")}
           className="md:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
         >
           <FiMenu className="text-2xl text-gray-700" />
@@ -73,7 +87,10 @@ export default function DashboardHeader() {
 
         {/* Desktop logout */}
         {user?.id && (
-          <FiLogOut onClick={userLogout} className="hidden md:block w-6 h-6 text-gray-500 cursor-pointer hover:text-red-500 transition-colors" />
+          <FiLogOut
+            onClick={userLogout}
+            className="hidden md:block w-6 h-6 text-gray-500 cursor-pointer hover:text-red-500 transition-colors"
+          />
         )}
       </div>
     </header>

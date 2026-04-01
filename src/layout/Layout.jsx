@@ -30,47 +30,68 @@ import {
   HiOutlineChartBar,
 } from "react-icons/hi";
 
-const topMenu = [
-  { label: "Feed", to: "/app/feed", icon: <AiFillHome size={18} /> },
-  { label: "Dashboard", to: "/app/dashboard", icon: <MdDashboard size={18} /> },
-  { label: "Community", to: "/app/community", icon: <HiUsers size={18} /> },
-  { label: "Calendar", to: "/app/calendar", icon: <IoIosListBox size={18} /> },
-];
-
-const middleMenu = [
-  {
-    label: "Builders",
-    to: "/app/builders",
-    icon: <PiBuildingsFill size={18} />,
-  },
-  { label: "Customers", to: "/app/customers", icon: <HiUsers size={18} /> },
-  {
-    label: "Sales Partners",
-    to: "/app/sales-partners",
-    icon: <FaHandshake size={18} />,
-  },
-  {
-    label: "Territory Partners",
-    to: "/app/territory-partners",
-    icon: <FaUserTie size={18} />,
-  },
-  { label: "Tickets", to: "/app/tickets", icon: <FaTicket size={18} /> },
-];
-
-const bottomMenu = [
-  { label: "Profile", to: "/app/profile", icon: <FaUserCircle size={18} /> },
-  {
-    label: "Subscription",
-    to: "/app/subscription",
-    icon: <BiSolidDiamond size={18} />,
-  },
-];
-
 export default function Layout() {
   const navigate = useNavigate();
-  const { delTokenInCookie, URI } = useAuth();
+  const { delTokenInCookie, URI, role, user } = useAuth();
   const { moreOpen, setMoreOpen } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const topMenu = [
+    { label: "Feed", to: "/app/feed", icon: <AiFillHome size={18} /> },
+    {
+      label: "Dashboard",
+      to: "/app/dashboard",
+      icon: <MdDashboard size={18} />,
+    },
+    { label: "Community", to: "/app/community", icon: <HiUsers size={18} /> },
+    {
+      label: "Calendar",
+      to: "/app/calendar",
+      icon: <IoIosListBox size={18} />,
+    },
+  ];
+
+  const middleMenu = [
+    {
+      label: "Builders",
+      to: "/app/builders",
+      icon: <PiBuildingsFill size={18} />,
+      hide: user.role !== "Project Partner" ? true : false,
+    },
+    {
+      label: "Customers",
+      to: "/app/customers",
+      icon: <HiUsers size={18} />,
+      hide: false,
+    },
+    {
+      label: "Sales Partners",
+      to: "/app/sales-partners",
+      icon: <FaHandshake size={18} />,
+      hide: user.role !== "Project Partner" ? true : false,
+    },
+    {
+      label: "Territory Partners",
+      to: "/app/territory-partners",
+      icon: <FaUserTie size={18} />,
+      hide: user.role !== "Project Partner" ? true : false,
+    },
+    {
+      label: "Tickets",
+      to: "/app/tickets",
+      icon: <FaTicket size={18} />,
+      hide: false,
+    },
+  ];
+
+  const bottomMenu = [
+    { label: "Profile", to: "/app/profile", icon: <FaUserCircle size={18} /> },
+    {
+      label: "Subscription",
+      to: "/app/subscription",
+      icon: <BiSolidDiamond size={18} />,
+    },
+  ];
 
   const dashboardPaths = [
     "/app/dashboard",
@@ -86,7 +107,7 @@ export default function Layout() {
 
     return `flex items-center gap-3 px-4 py-2.5 rounded-full text-sm transition
     ${
-       isActive || isCustomActive
+      isActive || isCustomActive
         ? "bg-[linear-gradient(93.29deg,#5E23DC_5.34%,#8B5CF6_102.64%)] text-white font-semibold shadow-sm"
         : "text-[#4B5563] hover:bg-gray-100"
     }`;
@@ -100,9 +121,9 @@ export default function Layout() {
   const userLogout = async () => {
     try {
       await axios.post(
-        URI+"/project-partner/logout",
+        URI + "/project-partner/logout",
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
       delTokenInCookie();
       localStorage.removeItem("projectPartnerUser");
@@ -122,7 +143,11 @@ export default function Layout() {
 
         <nav className="px-4 space-y-2 mt-2">
           {topMenu.map((item) => (
-            <NavLink key={item.to} to={item.to} className={(props) => linkClass(props, item.to)}>
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={(props) => linkClass(props, item.to)}
+            >
               {item.icon}
               {item.label}
             </NavLink>
@@ -132,19 +157,29 @@ export default function Layout() {
         <div className="my-5 mx-6 h-[1px] bg-gray-200" />
 
         <nav className="px-4 space-y-2 flex-1 overflow-y-auto">
-          {middleMenu.map((item) => (
-            <NavLink key={item.to} to={item.to} className={(props) => linkClass(props, item.to)}>
-              {item.icon}
-              {item.label}
-            </NavLink>
-          ))}
+          {middleMenu
+            .filter((item) => !item.hide)
+            .map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={(props) => linkClass(props, item.to)}
+              >
+                {item.icon}
+                {item.label}
+              </NavLink>
+            ))}
         </nav>
 
         <div className="my-5 mx-6 h-[1px] bg-gray-200" />
 
         <nav className="px-4 space-y-2 tall:flex-1 pb-2">
           {bottomMenu.map((item) => (
-            <NavLink key={item.to} to={item.to} className={(props) => linkClass(props, item.to)}>
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={(props) => linkClass(props, item.to)}
+            >
               {item.icon}
               {item.label}
             </NavLink>
@@ -199,17 +234,18 @@ export default function Layout() {
               <div className="my-5 mx-6 h-[1px] bg-gray-200" />
 
               <nav className="px-4 space-y-2 flex-1 overflow-y-auto">
-                {middleMenu.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => setMobileOpen(false)}
-                    className={(props) => linkClass(props, item.to)}
-                  >
-                    {item.icon}
-                    {item.label}
-                  </NavLink>
-                ))}
+                {middleMenu
+                  .filter((item) => !item.hide)
+                  .map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={(props) => linkClass(props, item.to)}
+                    >
+                      {item.icon}
+                      {item.label}
+                    </NavLink>
+                  ))}
               </nav>
 
               <div className="my-5 mx-6 h-[1px] bg-gray-200" />
@@ -265,7 +301,11 @@ export default function Layout() {
             </NavLink>
 
             <NavLink
-              to="/app/property/add"
+              to={
+                user.role === "Project Partner"
+                  ? "/app/property/add"
+                  : "/app/enquiry/add"
+              }
               className={
                 "w-14 h-14 flex items-center justify-center -mt-10 bg-[#5323DC] text-white border-4 border-[#F3F0FF] rounded-full shadow-[0px_4px_10px_0px_#7C3AED66]"
               }
@@ -307,10 +347,22 @@ export default function Layout() {
               <h4 className="text-xs text-gray-400 mb-3">QUICK ACTIONS</h4>
 
               <div className="space-y-3">
-                <Link to="/app/community" onClick={()=>{setMoreOpen(false)}} className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
+                <Link
+                  to="/app/community"
+                  onClick={() => {
+                    setMoreOpen(false);
+                  }}
+                  className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100"
+                >
                   <FiPlus /> Create Post
                 </Link>
-                <Link to="/app/notifications" onClick={()=>{setMoreOpen(false)}} className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
+                <Link
+                  to="/app/notifications"
+                  onClick={() => {
+                    setMoreOpen(false);
+                  }}
+                  className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100"
+                >
                   <FiBell /> Notifications
                 </Link>
                 <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
@@ -324,7 +376,13 @@ export default function Layout() {
                 <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
                   <FiSettings /> Settings
                 </button>
-                <Link to="/app/profile" onClick={()=>{setMoreOpen(false)}} className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
+                <Link
+                  to="/app/profile"
+                  onClick={() => {
+                    setMoreOpen(false);
+                  }}
+                  className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100"
+                >
                   <HiOutlineUserCircle /> Profile
                 </Link>
                 <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
@@ -333,7 +391,10 @@ export default function Layout() {
                 <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
                   <HiOutlineChartBar /> Reports
                 </button>
-                <button onClick={userLogout} className="flex gap-3 items-center w-full p-2 rounded-lg text-red-500 hover:bg-red-50">
+                <button
+                  onClick={userLogout}
+                  className="flex gap-3 items-center w-full p-2 rounded-lg text-red-500 hover:bg-red-50"
+                >
                   <FiLogOut /> Logout
                 </button>
               </div>
