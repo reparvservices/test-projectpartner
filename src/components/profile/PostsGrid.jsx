@@ -4,7 +4,7 @@ import { FiGrid, FiVideo, FiBookmark, FiTag, FiFolder, FiPlay } from "react-icon
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIG — must match your Feed.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-const API_BASE = "/api/feed";
+const API_BASE = "http://localhost:3000/api/feed";
 const ACTOR = { user_id: 319, user_role: "Project Partner" }; // ← from Redux
 
 // ─────────────────────────────────────────────────────────────────────────────

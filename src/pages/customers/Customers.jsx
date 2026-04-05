@@ -135,6 +135,7 @@ export default function Customers() {
       <CustomersHeader
         search={searchTerm}
         onSearch={setSearchTerm}
+        filteredData={filteredData}
         range={range}
         setRange={setRange}
         total={filteredData.length}

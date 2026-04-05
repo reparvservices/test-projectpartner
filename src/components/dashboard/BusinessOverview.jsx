@@ -117,6 +117,16 @@ export default function BusinessOverview({ counts = {} }) {
       ),
     },
     {
+      label: "Employees", value: counts?.totalEmployee, route: "/app/employees",
+      icon: (
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <rect width="36" height="36" rx="10" fill="#F5F3FF" />
+          <path d="M21 24V12C21 11.1721 20.3279 10.5 19.5 10.5H16.5C15.6721 10.5 15 11.1721 15 12V24" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M12 13.5H24C24.8279 13.5 25.5 14.1721 25.5 15V22.5C25.5 23.3279 24.8279 24 24 24H12C11.1721 24 10.5 23.3279 10.5 22.5V15C10.5 14.1721 11.1721 13.5 12 13.5" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+    },
+    {
       label: "Sales Partners",
       value: counts?.totalSalesPartner,
       route: "/app/sales-partners",

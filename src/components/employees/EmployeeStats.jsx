@@ -1,48 +1,5 @@
 import { Users, UserCheck, HardHat, IndianRupee, TrendingUp } from "lucide-react";
 
-const stats = [
-  {
-    label: "Total Employees",
-    value: "124",
-    sub: "+12% this month",
-    subColor: "text-emerald-500",
-    subIcon: TrendingUp,
-    iconBg: "bg-blue-50",
-    iconColor: "text-blue-500",
-    Icon: Users,
-  },
-  {
-    label: "Active Employees",
-    value: "112",
-    sub: "Currently working",
-    subColor: "text-gray-400",
-    subIcon: null,
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-500",
-    Icon: UserCheck,
-  },
-  {
-    label: "Site Engineers",
-    value: "45",
-    sub: "Across 12 sites",
-    subColor: "text-gray-400",
-    subIcon: null,
-    iconBg: "bg-orange-50",
-    iconColor: "text-orange-500",
-    Icon: HardHat,
-  },
-  {
-    label: "Monthly Salary",
-    value: "₹ 48.5 L",
-    sub: "Last processed Oct 01",
-    subColor: "text-gray-400",
-    subIcon: null,
-    iconBg: "bg-violet-50",
-    iconColor: "text-violet-500",
-    Icon: IndianRupee,
-  },
-];
-
 function StatCard({ s }) {
   return (
     <div className="bg-white rounded-[14px] border border-gray-100 px-5 py-5 shadow-sm hover:shadow-md transition-shadow shrink-0">
@@ -61,7 +18,59 @@ function StatCard({ s }) {
   );
 }
 
-export default function EmployeeStats() {
+/**
+ * EmployeeStats
+ * @param {Array} employees - live employee array from parent
+ */
+export default function EmployeeStats({ employees = [] }) {
+  const total = employees.length;
+  const active = employees.filter(e => e.status === "Active").length;
+  const engineers = employees.filter(e => e.role?.toLowerCase().includes("engineer")).length;
+  const salaryTotal = employees.reduce((s, e) => s + parseFloat(e.salary || 0), 0);
+
+  const stats = [
+    {
+      label: "Total Employees",
+      value: String(total),
+      sub: "All records",
+      subColor: "text-gray-400",
+      subIcon: null,
+      iconBg: "bg-blue-50",
+      iconColor: "text-blue-500",
+      Icon: Users,
+    },
+    {
+      label: "Active Employees",
+      value: String(active),
+      sub: "Currently working",
+      subColor: "text-emerald-500",
+      subIcon: TrendingUp,
+      iconBg: "bg-emerald-50",
+      iconColor: "text-emerald-500",
+      Icon: UserCheck,
+    },
+    {
+      label: "Engineers",
+      value: String(engineers),
+      sub: "Across all sites",
+      subColor: "text-gray-400",
+      subIcon: null,
+      iconBg: "bg-orange-50",
+      iconColor: "text-orange-500",
+      Icon: HardHat,
+    },
+    {
+      label: "Monthly Salary",
+      value: `₹${(salaryTotal / 100000).toFixed(1)}L`,
+      sub: "Total payroll",
+      subColor: "text-gray-400",
+      subIcon: null,
+      iconBg: "bg-violet-50",
+      iconColor: "text-violet-500",
+      Icon: IndianRupee,
+    },
+  ];
+
   return (
     <>
       {/* Mobile: horizontal scroll */}

@@ -250,11 +250,8 @@ function Navbar({ unread, onBell }) {
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100">
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5 shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-violet-600 flex items-center justify-center shadow-sm shadow-violet-200">
-            <Icon name="home" size={15} className="text-white" />
-          </div>
-          <span className="text-base font-bold text-gray-900 tracking-tight">
-            <span className="text-violet-600">Feed</span>
+          <span className="text-xl font-semibold text-gray-900 tracking-tight">
+            <span className="text-black">Feed</span>
           </span>
         </div>
         <div className="hidden md:flex flex-1 max-w-sm">

@@ -1,10 +1,11 @@
 import { Search, Calendar, Download, MessageCircle, Plus, ChevronDown, SlidersHorizontal, ArrowLeft } from "lucide-react";
 import CustomDateRangePicker from "../CustomDateRangePicker";
 import { useNavigate } from "react-router-dom";
+import DownloadCSV from "../DownloadCSV";
 
 const GRADIENT = "linear-gradient(110.73deg, #5323DC 0%, #8E61FF 100%)";
 
-export default function CustomersHeader({ search, onSearch, range, setRange, total }) {
+export default function CustomersHeader({ search, onSearch, filteredData, range, setRange, total }) {
   const navigate = useNavigate();
   return (
     <div className=" border-b ">
@@ -29,9 +30,7 @@ export default function CustomersHeader({ search, onSearch, range, setRange, tot
 
           <CustomDateRangePicker range={range} setRange={setRange} />
 
-          <button className="flex items-center gap-2 border border-slate-200 rounded-md px-3.5 py-2 text-xs text-slate-600 hover:bg-slate-50 transition-colors">
-            <Download size={14} className="text-slate-400" /> Export
-          </button>
+          <DownloadCSV data={filteredData} filename="Customers.csv" />
 
           <button
             className="flex items-center gap-2 border border-[#5323DC] rounded-md px-4 py-2 text-xs font-semibold hover:opacity-90 transition-opacity"

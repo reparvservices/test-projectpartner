@@ -20,6 +20,11 @@ import AddTicket from "./pages/tickets/AddTicket";
 import EditProfile from "./pages/profile/EditProfile";
 import ScrollToTop from "./utils/ScrollToTop";
 
+// Refer
+import Refer from "./pages/refer/Refer";
+import ReferScreen from "./pages/refer/ReferScreen";
+
+
 // ── Lazy-loaded pages ─────────────────────────────────────────────────────────
 // Public
 const PartnerPage = lazy(() => import("./pages/PartnerPage"));
@@ -222,10 +227,10 @@ const App = () => (
             />
           </Route>
 
-          {/* Employees 
+          {/* Employees */}
           <Route path="employees" element={<Employees />} />
           <Route path="employee/add" element={<AddEmployee />} />
-          */}
+          
 
           {/* Tickets */}
           <Route path="tickets" element={<Tickets />} />
@@ -239,6 +244,10 @@ const App = () => (
           {/* Profile */}
           <Route path="profile" element={<Profile />} />
           <Route path="edit-profile" element={<EditProfile />} />
+
+          {/* Refer Screen */}
+          <Route path="invite" element={<Refer />} />
+          <Route path="refer-screen" element={<ReferScreen />} />
         </Route>
       </Route>
 
