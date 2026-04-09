@@ -573,7 +573,7 @@ export default function Menu() {
             {
               icon: <PenIcon />,
               label: "Create Post",
-              path: "/app/create-post",
+              path: "/app/community",
             },
             {
               icon: <CardIcon />,

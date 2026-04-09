@@ -2,6 +2,7 @@ import { FiShare2 } from "react-icons/fi";
 import { MdOutlineVerified } from "react-icons/md";
 import { CgWebsite } from "react-icons/cg";
 import { getImageURI } from "../../utils/helper";
+import { useNavigate } from "react-router-dom";
 
 const GRADIENT = "linear-gradient(110.73deg, #5323DC 0%, #8E61FF 97.17%)";
 
@@ -14,10 +15,12 @@ function Skeleton({ className }) {
 export default function ProfileHeader({
   user = {},
   loading = false,
+  counts = {},
   onEdit,
   onBusinessDetails,
   onOpenSite,
 }) {
+  const navigate = useNavigate();
   const isProjectPartner = user?.role === "Project Partner";
   const avatarSrc = user?.userimage
     ? getImageURI(user.userimage)
@@ -117,11 +120,19 @@ export default function ProfileHeader({
           {/* Stats */}
           <div className="flex gap-6 sm:gap-10 mt-2 sm:mt-4">
             {[
-              ["—", "Followers"],
-              ["—", "Following"],
-              ["—", "Posts"],
+              [counts?.followers ?? "—", "Followers"],
+              [counts?.following ?? "—", "Following"],
+              [counts?.posts ?? "—", "Posts"],
             ].map(([v, l]) => (
-              <div key={l} className="text-center sm:text-left">
+              <div
+                onClick={() => {
+                  l == "Posts"
+                    ? navigate("/app/community")
+                    : navigate("/app/network");
+                }}
+                key={l}
+                className="text-center sm:text-left"
+              >
                 <p className="text-sm font-semibold text-[#0F1724]">{v}</p>
                 <p className="text-xs text-[#9CA3AF]">{l}</p>
               </div>
@@ -143,6 +154,9 @@ export default function ProfileHeader({
               <FiShare2 size={16} />
             </button>
             <button
+              onClick={() => {
+                navigate("/app/community");
+              }}
               className="flex items-center gap-2 px-4 sm:px-5 py-2 rounded-lg text-white text-sm font-medium shadow hover:opacity-90 transition-opacity active:scale-95"
               style={{ background: GRADIENT }}
             >

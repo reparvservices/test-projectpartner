@@ -40,6 +40,7 @@ const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Feed = lazy(() => import("./pages/Feed"));
 const Community = lazy(() => import("./pages/Community"));
+const Network = lazy(() => import("./pages/Network"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 
 // App — Properties
@@ -181,6 +182,7 @@ const App = () => (
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="feed" element={<Feed />} />
           <Route path="community" element={<Community />} />
+          <Route path="network" element={<Network />} />
           <Route path="notifications" element={<Notifications />} />
 
           {/* Calendar */}

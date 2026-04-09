@@ -141,7 +141,7 @@ const SubscriptionPlan = ({ plan }) => {
           <div className="px-6 py-6 flex flex-col gap-6">
 
             {/* Image Slider */}
-            {images.length > 0 && (
+            {images?.length > 0 && (
               <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
                 <Swiper
                   modules={[Autoplay, Pagination]}
@@ -151,7 +151,7 @@ const SubscriptionPlan = ({ plan }) => {
                   spaceBetween={0}
                   slidesPerView={1}
                 >
-                  {images.map((url, index) => (
+                  {images?.map((url, index) => (
                     <SwiperSlide key={index}>
                       <img
                         src={getImageURI(url)}
@@ -170,7 +170,7 @@ const SubscriptionPlan = ({ plan }) => {
                 What's included
               </p>
               <ul className="space-y-2">
-                {features.map((feature, i) => (
+                {features?.map((feature, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
                     <CheckCircle2 size={15} className="text-[#5E23DC] mt-[2px] shrink-0" />
                     {feature.trim()}
