@@ -25,9 +25,9 @@ export const AuthProvider = ({ children }) => {
     setRole(null);
   };
 
-  //const URI = "http://localhost:3000";
+  const URI = "http://localhost:3000";
   //const URI = "https://api.reparv.in";
-  const URI = "https://aws-api.reparv.in";
+  //const URI = "https://aws-api.reparv.in";
 
   const getStoredUser = () => {
     const keys = ["projectPartnerUser", "salesUser", "territoryUser"];

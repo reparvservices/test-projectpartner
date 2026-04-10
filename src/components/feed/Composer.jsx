@@ -183,8 +183,8 @@ export default function Composer({ actor, onPosted }) {
               {previews.map((p, i) => (
                 <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                   {p.type === "video"
-                    ? <video src={p.url} className="w-full h-full object-cover" />
-                    : <img src={p.url} alt="" className="w-full h-full object-cover" />}
+                    ? <video src={p.url} className="w-full h-full object-contain" />
+                    : <img src={p.url} alt="" className="w-full h-full object-contain" />}
                   {uploading && uploadProg[i] !== undefined && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                       <span className="text-white text-xs font-bold">{uploadProg[i]}%</span>
@@ -251,7 +251,7 @@ export default function Composer({ actor, onPosted }) {
           ) : (
             <div className="space-y-4">
               <div className="relative rounded-2xl overflow-hidden bg-black mx-auto" style={{ maxWidth: 260, aspectRatio: "9/16" }}>
-                <video src={reelPreview} controls className="w-full h-full object-cover" />
+                <video src={reelPreview} controls className="w-full h-full object-contain" />
                 {uploading && (
                   <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-3">
                     <div className="relative w-16 h-16 flex items-center justify-center">

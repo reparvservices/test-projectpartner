@@ -97,7 +97,7 @@ export default function TerritoryFilters({ filters, onChange, onClear, states = 
             <Filter size={14} className="text-violet-500 shrink-0" />
             <span className="text-[12.5px] font-bold text-gray-700 whitespace-nowrap">Filters</span>
           </div>
-          <div className="flex items-center gap-2 overflow-x-auto py-3 px-3 flex-1 scrollbar-none">
+          <div className="flex items-center gap-2 overflow-x-auto py-3 px-3 flex-1 scrollbar-hide">
             {filterConfigs.map(cfg => (
               <button key={cfg.key} onClick={() => setOpenKey(cfg.key)}
                 className={`relative shrink-0 appearance-none border rounded-full pl-3 pr-5 py-1.5 text-[12px] bg-white cursor-pointer outline-none whitespace-nowrap transition-colors

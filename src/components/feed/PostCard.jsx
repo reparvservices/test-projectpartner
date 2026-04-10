@@ -24,8 +24,8 @@ function MediaGrid({ urls }) {
             style={{ aspectRatio: count === 1 ? "16/9" : "1/1" }}
           >
             {isVideo(url)
-              ? <video src={url} controls className="w-full h-full object-cover" />
-              : <img src={url} alt="" className="w-full h-full object-cover transition-transform hover:scale-[1.02] duration-300" />}
+              ? <video src={url} controls className="w-full h-full object-contain" />
+              : <img src={url} alt="" className="w-full h-full object-contain transition-transform hover:scale-[1.02] duration-300" />}
             {i === 3 && urls.length > 4 && (
               <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
                 <span className="text-white text-2xl font-bold">+{urls.length - 4}</span>

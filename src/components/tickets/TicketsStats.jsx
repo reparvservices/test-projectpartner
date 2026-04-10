@@ -59,7 +59,7 @@ export default function TicketsStats({ stats = {} }) {
   return (
     <>
       {/* Mobile: horizontal scroll */}
-      <div className="flex md:hidden gap-3 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory">
+      <div className="flex md:hidden gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
         {cards.map((c, i) => (
           <div key={i} className="snap-start w-[52vw] min-w-[165px] max-w-[200px]">
             <StatCard {...c} />

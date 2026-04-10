@@ -30,7 +30,7 @@ export default function TerritoryStats({ stats }) {
   return (
     <>
       {/* Mobile: horizontal scroll */}
-      <div className="flex md:hidden gap-3 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory">
+      <div className="flex md:hidden gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
         {data.map((s, i) => (
           <div key={i} className="snap-start w-[52vw] min-w-[175px] max-w-[210px]">
             <StatCard s={s} />

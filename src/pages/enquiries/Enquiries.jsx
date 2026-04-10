@@ -678,8 +678,8 @@ export default function Enquiries() {
           setActiveTab={(tab) => setEnquiryFilter(tab === "All" ? "" : tab)}
         />
 
-        <div className="grid p-4 sm:p-6 xl:grid-cols-3 gap-4 sm:gap-6">
-          <div className="xl:col-span-2 space-y-4">
+        <div className="w-full grid p-4 sm:p-6 xl:grid-cols-3 gap-4 sm:gap-6">
+          <div className="col-span-1 xl:col-span-2 space-y-4">
             {filteredData.length === 0 ? (
               <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400">
                 No enquiries found.

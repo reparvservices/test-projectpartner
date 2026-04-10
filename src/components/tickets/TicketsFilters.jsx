@@ -152,7 +152,7 @@ export default function TicketsFilters({
       </div>
 
       {/* Mobile */}
-      <div className="flex md:hidden items-center gap-2 overflow-x-auto scrollbar-none pb-1">
+      <div className="flex md:hidden items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
         <div className="flex items-center gap-1.5 shrink-0">
           <SlidersHorizontal size={13} className="text-[#5323DC]" />
           <span className="text-[12px] font-bold text-gray-600 whitespace-nowrap">Filters</span>

@@ -103,7 +103,7 @@ function ReelSlide({ post, actor, isActive, onLikeChange }) {
   };
 
   return (
-    <div className="relative w-full flex-shrink-0" style={{ height: "100dvh" }} onClick={handleDoubleTap}>
+    <div className="relative w-full max-w-lg mx-auto flex-shrink-0" style={{ height: "100dvh" }} onClick={handleDoubleTap}>
       {/* Video */}
       <video
         ref={videoRef} src={videoUrl} loop muted={muted} playsInline

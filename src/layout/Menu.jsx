@@ -563,7 +563,7 @@ export default function Menu() {
         </div>
 
         {/* Quick Actions */}
-        <div className="flex gap-3 mb-4 overflow-x-auto pb-1 no-scrollbar">
+        <div className="flex gap-3 mb-4 overflow-x-auto pb-1 no-scrollbar scrollbar-hide">
           {[
             {
               icon: <BellIcon />,
@@ -573,7 +573,7 @@ export default function Menu() {
             {
               icon: <PenIcon />,
               label: "Create Post",
-              path: "/app/community",
+              path: "/app/feed",
             },
             {
               icon: <CardIcon />,

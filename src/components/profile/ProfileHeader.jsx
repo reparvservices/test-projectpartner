@@ -127,7 +127,7 @@ export default function ProfileHeader({
               <div
                 onClick={() => {
                   l == "Posts"
-                    ? navigate("/app/community")
+                    ? navigate("/app/feed")
                     : navigate("/app/network");
                 }}
                 key={l}
@@ -155,7 +155,7 @@ export default function ProfileHeader({
             </button>
             <button
               onClick={() => {
-                navigate("/app/community");
+                navigate("/app/feed");
               }}
               className="flex items-center gap-2 px-4 sm:px-5 py-2 rounded-lg text-white text-sm font-medium shadow hover:opacity-90 transition-opacity active:scale-95"
               style={{ background: GRADIENT }}

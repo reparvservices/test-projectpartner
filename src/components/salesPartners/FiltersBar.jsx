@@ -153,7 +153,7 @@ export default function FiltersBar({
   return (
     <>
       {/* ── MOBILE: horizontal scroll pills ── */}
-      <div className="flex md:hidden items-center gap-2.5 overflow-x-auto scrollbar-none pb-1 snap-x">
+      <div className="flex md:hidden items-center gap-2.5 overflow-x-auto scrollbar-hide pb-1 snap-x">
         {filters.map((f, i) => (
           <FilterPill key={i} label={f.label} active={f.active} onClick={f.onOpen} mobile />
         ))}
