@@ -25,6 +25,7 @@
     "dotenv": "^17.2.3",
     "framer-motion": "^12.34.3",
     "js-cookie": "^3.0.5",
+    "jspdf": "^4.2.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.577.0",
     "moment-timezone": "^0.5.47",

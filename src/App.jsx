@@ -24,13 +24,14 @@ import ScrollToTop from "./utils/ScrollToTop";
 import Refer from "./pages/refer/Refer";
 import ReferScreen from "./pages/refer/ReferScreen";
 
-
 // ── Lazy-loaded pages ─────────────────────────────────────────────────────────
 // Public
 const PartnerPage = lazy(() => import("./pages/PartnerPage"));
 const PartnersPage = lazy(
   () => import("./components/partnerPageUpdated/PartnersPage"),
 );
+import PartnerRegistration from "./pages/PartnerRegistration";
+import PaymentSuccessModal from "./components/pricingPages/PaymentSuccessModal";
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
 const AccountCancellation = lazy(() => import("./pages/AccountCancellation"));
@@ -162,6 +163,8 @@ const App = () => (
       <Route path="/" element={<LayoutTwo />}>
         <Route index element={<PartnerPage />} />
         <Route path="partners" element={<PartnersPage />} />
+        <Route path="/subscribe/:id" element={<PartnerRegistration />} />
+        <Route path="/paymentSuccess" element={<PaymentSuccessModal />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="terms-and-conditions" element={<TermsAndConditions />} />
         <Route path="account-cancellation" element={<AccountCancellation />} />
@@ -232,7 +235,6 @@ const App = () => (
           {/* Employees */}
           <Route path="employees" element={<Employees />} />
           <Route path="employee/add" element={<AddEmployee />} />
-          
 
           {/* Tickets */}
           <Route path="tickets" element={<Tickets />} />

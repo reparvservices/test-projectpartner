@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function PricingCard({
   plan,
@@ -12,6 +13,7 @@ export default function PricingCard({
   couponMsg,
   handleRedeem,
 }) {
+  const navigate = useNavigate();
   return (
     <div
       className={`
@@ -50,7 +52,7 @@ export default function PricingCard({
 
       {/* COUPON SECTION */}
       {plan.totalPrice !== "0" && (
-        <div className="mt-5">
+        <div className="mt-5 hidden">
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -73,7 +75,9 @@ export default function PricingCard({
           {couponMsg && (
             <p
               className={`mt-2 text-sm font-medium ${
-                couponMsg.includes("Applied") ? "text-green-600" : "text-red-500"
+                couponMsg.includes("Applied")
+                  ? "text-green-600"
+                  : "text-red-500"
               }`}
             >
               {couponMsg}
@@ -84,7 +88,12 @@ export default function PricingCard({
 
       {/* CTA BUTTON */}
       <button
-        onClick={() => onChoose(plan)}
+        onClick={() => {
+          console.log(plan, "plansbs");
+
+          // onChoose(plan);
+          navigate(`/subscribe/${plan?.id}`);
+        }}
         className={`mt-6 w-full py-3 rounded-xl transition font-medium ${plan.buttonClass}`}
       >
         {plan.buttonText}
@@ -92,57 +101,58 @@ export default function PricingCard({
 
       {/* FEATURES */}
       <ul className="mt-6 space-y-2 text-left">
-        {(expandedPlans[plan.id] ? plan.features : plan.features.slice(0, 6)).map(
-          (feature, idx) => (
-            <li key={idx} className="flex gap-3">
-              <span className="text-[#5E23DC]">
-                {plan.mostPopular ? (
-                  <svg
-                    width="27"
-                    height="29"
-                    viewBox="0 0 27 29"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <rect
-                      y="2"
-                      width="26.4"
-                      height="26.4"
-                      rx="13.2"
-                      fill="#DFD0FF"
-                      fillOpacity="0.28"
-                    />
-                    <path
-                      d="M19.0663 10.7998L10.9997 18.8665L7.33301 15.1998"
-                      stroke="#5E23DC"
-                      strokeWidth="1.46667"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    width="24"
-                    height="26"
-                    viewBox="0 0 24 26"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <rect y="2" width="24" height="24" rx="12" fill="#EFF6FF" />
-                    <path
-                      d="M17.3334 10L10.0001 17.3333L6.66675 14"
-                      stroke="#4A5565"
-                      strokeWidth="1.33333"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
-              </span>
-              <span className="text-sm text-[#364153]">{feature}</span>
-            </li>
-          )
-        )}
+        {(expandedPlans[plan.id]
+          ? plan.features
+          : plan.features.slice(0, 6)
+        ).map((feature, idx) => (
+          <li key={idx} className="flex gap-3">
+            <span className="text-[#5E23DC]">
+              {plan.mostPopular ? (
+                <svg
+                  width="27"
+                  height="29"
+                  viewBox="0 0 27 29"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect
+                    y="2"
+                    width="26.4"
+                    height="26.4"
+                    rx="13.2"
+                    fill="#DFD0FF"
+                    fillOpacity="0.28"
+                  />
+                  <path
+                    d="M19.0663 10.7998L10.9997 18.8665L7.33301 15.1998"
+                    stroke="#5E23DC"
+                    strokeWidth="1.46667"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  width="24"
+                  height="26"
+                  viewBox="0 0 24 26"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect y="2" width="24" height="24" rx="12" fill="#EFF6FF" />
+                  <path
+                    d="M17.3334 10L10.0001 17.3333L6.66675 14"
+                    stroke="#4A5565"
+                    strokeWidth="1.33333"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </span>
+            <span className="text-sm text-[#364153]">{feature}</span>
+          </li>
+        ))}
       </ul>
 
       {/* SHOW MORE */}
@@ -151,7 +161,9 @@ export default function PricingCard({
           onClick={() => toggleFeatures(plan.id)}
           className="mt-3 text-sm font-medium text-[#7C3AED] hover:underline self-start"
         >
-          {expandedPlans[plan.id] ? "Show less" : `View all ${plan.features.length} features`}
+          {expandedPlans[plan.id]
+            ? "Show less"
+            : `View all ${plan.features.length} features`}
         </button>
       )}
     </div>

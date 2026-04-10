@@ -5,7 +5,7 @@ import RegistrationForm from "../partnerPageUpdated/RegistartionForm";
 import { planIcons } from "../../utils";
 import PricingCard from "../partnerPageUpdated/PricingCard";
 import { useAuth } from "../../store/auth";
-import ContactForm from "../ContactForm"
+import ContactForm from "./ContactForm";
 
 export default function PricingSection({ auth }) {
   const { URI, setSuccessScreen } = useAuth();
@@ -45,11 +45,11 @@ export default function PricingSection({ auth }) {
       setLoading(true);
       const res = await axios.get(
         `${URI}/admin/subscription/pricing/plans/Project%20Partner`,
-        { headers: { Authorization: `Bearer ${auth?.token}` } }
+        { headers: { Authorization: `Bearer ${auth?.token}` } },
       );
 
       const activePlans = res.data.filter(
-        (p) => p.partnerType === "Project Partner" && p.status === "Active"
+        (p) => p.partnerType === "Project Partner" && p.status === "Active",
       );
 
       const uniquePlansMap = new Map();
@@ -74,7 +74,7 @@ export default function PricingSection({ auth }) {
             monthlyPrice: `₹${item.totalPrice}`,
             totalPrice: `${item.totalPrice}`,
             yearlyPrice: `₹${Math.round(
-              (item.totalPrice / parseInt(item.planDuration)) * 12
+              (item.totalPrice / parseInt(item.planDuration)) * 12,
             )}`,
             billPrice: `${item.totalPrice}`,
             features,
@@ -100,7 +100,7 @@ export default function PricingSection({ auth }) {
               </svg>
             ),
           };
-        }
+        },
       );
 
       // Add Free Trial Plan
@@ -112,9 +112,7 @@ export default function PricingSection({ auth }) {
         totalPrice: "0",
         yearlyPrice: "Free",
         billPrice: "0",
-        features: [
-          "All Features Included"
-        ],
+        features: ["All Features Included"],
         mostPopular: false,
         iconBg: "linear-gradient(135deg, #AD46FF 0%, #9810FA 100%)",
         buttonText: "Start Free Trial",
@@ -137,10 +135,10 @@ export default function PricingSection({ auth }) {
       // Order: Free → Most Popular → Rest
       const freePlan = formattedPlans.find((p) => p.totalPrice === "0");
       const mostPopularPlan = formattedPlans.find(
-        (p) => p.mostPopular && p.totalPrice !== "0"
+        (p) => p.mostPopular && p.totalPrice !== "0",
       );
       const remainingPlans = formattedPlans.filter(
-        (p) => p !== freePlan && p !== mostPopularPlan
+        (p) => p !== freePlan && p !== mostPopularPlan,
       );
       const orderedPlans = [
         ...(freePlan ? [freePlan] : []),
@@ -192,7 +190,7 @@ export default function PricingSection({ auth }) {
           user_id: userId,
           code: code.trim(),
           planid: plan.id,
-        }
+        },
       );
 
       if (res.data.success) {
@@ -222,7 +220,7 @@ export default function PricingSection({ auth }) {
     const { plan, discount } = redeemConfirm;
 
     const originalPrice = Number(plan.billPrice);
-    const discountedPrice = Math.max(originalPrice - discount, 0);
+    const discountedPrice = Number(originalPrice - discount, 0);
 
     const updatedPlan = {
       ...plan,
@@ -258,7 +256,7 @@ export default function PricingSection({ auth }) {
             <button
               type="button"
               onClick={() => setSelectedPlan(null)}
-              className="max-w-55 flex gap-1 items-center justify-center mb-4 bg-[#5E23DC] px-4 pl-5 py-1.5 rounded-full text-white cursor-pointer transition hover:scale-105 active:scale-95"
+              className="max-w-[220px] flex gap-1 items-center justify-center mb-4 bg-[#5E23DC] px-4 pl-5 py-1.5 rounded-full text-white cursor-pointer transition hover:scale-105 active:scale-95"
             >
               <span className="font-semibold">Go Back to Plans</span>
               <FiArrowUpLeft className="w-5 h-5" />
@@ -289,7 +287,6 @@ export default function PricingSection({ auth }) {
     );
   }
 
-  
   return (
     <section id="pricing" className="w-full bg-[#F8FAFF] py-20 px-4">
       <div className="max-w-6xl mx-auto text-center">
@@ -318,7 +315,7 @@ export default function PricingSection({ auth }) {
                 ref={sliderRef}
                 onScroll={(e) => {
                   const index = Math.round(
-                    e.target.scrollLeft / e.target.clientWidth
+                    e.target.scrollLeft / e.target.clientWidth,
                   );
                   setActiveIndex(index);
                 }}
@@ -326,7 +323,7 @@ export default function PricingSection({ auth }) {
                 {plans.map((plan) => (
                   <div
                     key={plan.id}
-                    className="w-[98%] snap-center shrink-0"
+                    className="w-[98%] snap-center flex-shrink-0"
                   >
                     <PricingCard
                       plan={plan}
@@ -466,14 +463,14 @@ export default function PricingSection({ auth }) {
           onClick={() => {
             setShowContactForm(true);
           }}
-          className="mt-3 inline-flex items-center justify-center w-73.75 h-11.5 bg-[#5E23DC] rounded-[11px] text-white font-semibold hover:bg-[#4b1bb4]"
+          className="mt-3 inline-flex items-center justify-center w-[295px] h-[46px] bg-[#5E23DC] rounded-[11px] text-white font-semibold hover:bg-[#4b1bb4]"
         >
           Contact Reparv Sales →
         </button>
       </div>
-      {showContactForm && <ContactForm onClose={()=>setShowContactForm(false)} />}
-      
-         
+      {showContactForm && (
+        <ContactForm onClose={() => setShowContactForm(false)} />
+      )}
     </section>
   );
 }

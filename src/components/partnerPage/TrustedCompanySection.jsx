@@ -5,17 +5,13 @@ import handSheck from "../../assets/company/handsheck.png";
 import user from "../../assets/company/user.png";
 import building from "../../assets/company/building.png";
 import like from "../../assets/company/like.png";
-import { FaHandshake, FaBuilding, FaCity, FaStar } from "react-icons/fa";
-//import PartnerRegistrationModal from "../ProjectPartnerUpdated/PartnerRegistrationModal";
-import { Link } from "react-router-dom";
-import { BiRightArrow } from "react-icons/bi";
-import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
 import { useAuth } from "../../store/auth";
 import PartnerRegistrationModal from "../partnerPageUpdated/PartnerModel";
-import RegistrationSuccessModal from "../partnerPageUpdated/RegisterSuccess";
+import RegistrationSuccessModal from "./RegisterSuccess";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
+import { getImageURI } from "../../utils/helper";
 
 export default function TrustedSection() {
   const {
@@ -158,7 +154,7 @@ export default function TrustedSection() {
                           <img
                             src={
                               logo?.businessLogo
-                                ? `${URI}/${logo.businessLogo.replace(/^\/+/, "")}`
+                                ? `${getImageURI(logo.businessLogo)}`
                                 : dlogo
                             }
                             alt={logo.name}
@@ -288,7 +284,7 @@ function Stat({ icon, value, label }) {
   return (
     <div className="flex items-center sm:items-start gap-4 sm:gap-2 justify-start sm:justify-center w-full">
       {/* ICON BOX (FIXED SIZE) */}
-      <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[#5E23DC] rounded-lg flex items-center justify-center flex-shrink-0">
+      <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[#5E23DC] rounded-lg flex items-center justify-center">
         <img
           src={icon}
           alt={label}
