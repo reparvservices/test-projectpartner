@@ -348,7 +348,7 @@ export default function Layout() {
 
               <div className="space-y-3">
                 <Link
-                  to="/app/community"
+                  to="/app/feed"
                   onClick={() => {
                     setMoreOpen(false);
                   }}

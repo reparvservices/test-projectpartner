@@ -26,7 +26,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   //const URI = "http://localhost:3000";
-  //const URI = "https://api.reparv.in";
   const URI = "https://aws-api.reparv.in";
 
   const getStoredUser = () => {

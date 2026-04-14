@@ -78,7 +78,7 @@ export default function Subscription() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f6f4fb] to-white">
+    <div className="min-h-screen">
       {/* Mobile Header */}
       <div className="md:hidden flex items-center px-4 pt-5 pb-4 bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
         <button
@@ -100,8 +100,8 @@ export default function Subscription() {
       <div className="py-8 md:py-16 px-4 md:px-6">
         {/* Desktop Header */}
         <div className="hidden md:block text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-            Choose Your <span className="text-[#5E23DC]">Plan</span>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+            Choose Your <span className="bg-[#5E23DC] text-white px-5 py-1 rounded-full">Plan</span>
           </h1>
           <p className="text-gray-500 mt-4 text-lg">
             Flexible duration plans designed for business growth

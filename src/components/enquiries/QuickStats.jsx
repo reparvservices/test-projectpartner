@@ -12,14 +12,14 @@ export default function QuickStats({ counts = {}, total = 0 }) {
   return (
     <div className="bg-white rounded-md border border-slate-200 p-5">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm font-semibold text-slate-900">Quick Stats</p>
+        <p className="text-sm font-bold text-black">Quick Stats</p>
         <span className="text-xs text-slate-400">Live</span>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3">
         {stats.map((s) => (
-          <div key={s.label} className={`${s.bg} rounded-xl p-3.5`}>
-            <p className={`text-2xl font-bold ${s.text}`}>{s.value}</p>
-            <p className="text-xs text-slate-400 mt-0.5 font-medium">{s.label}</p>
+          <div key={s.label} className={`flex items-center justify-between bg-[#F2F4FF] rounded-md px-4 py-3`}>
+            <p className="text-sm mt-0.5">{s.label}</p>
+            <p className={`text-base font-bold ${s.text}`}>{s.value}</p>
           </div>
         ))}
       </div>
