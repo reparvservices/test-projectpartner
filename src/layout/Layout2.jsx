@@ -7,6 +7,7 @@ import { useAuth } from "../store/auth";
 import SuccessScreen from "../components/SuccessScreen";
 import { Link } from "react-router-dom";
 import { IoLocationOutline } from "react-icons/io5";
+import { MdAddCall } from "react-icons/md";
 import Footer from "./Footer";
 
 function LayoutTwo() {
@@ -69,6 +70,14 @@ function LayoutTwo() {
             <NavLink to="https://www.reparv.in/contact-us" className={getNavLinkClass("/contact")}>
               Contact Us
             </NavLink> */}
+            
+
+            <a href="tel:+918237601315">
+              <button className="flex items-center gap-2 px-2 md:px-4 py-2 bg-violet-600 text-white rounded-lg font-semibold">
+                <MdAddCall size={20} />
+                <span className="hidden md:block">Call Now</span>
+              </button>
+            </a>
 
             <Link
               to="/login"
@@ -94,7 +103,13 @@ function LayoutTwo() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden">
+          <div className="flex gap-4 items-center justify-center md:hidden">
+            <a href="tel:+918237601315">
+              <button className="flex items-center gap-2 px-2 md:px-4 py-2 bg-[#5a2ae0] text-white rounded-lg font-semibold">
+                <MdAddCall size={20} />
+                <span className="hidden md:block">Call Now</span>
+              </button>
+            </a>
             <Link
               to="/login"
               className="

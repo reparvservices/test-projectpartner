@@ -65,40 +65,10 @@ function Footer({ footerRef }) {
               <p
                 className="cursor-pointer hover:underline"
                 onClick={() =>
-                  window.open("https://partners.reparv.in/promoter", "_blank")
-                }
-              >
-                Promoter
-              </p>
-              <p
-                className="cursor-pointer hover:underline"
-                onClick={() =>
                   window.open("https://partners.reparv.in", "_blank")
                 }
               >
                 Project Partner
-              </p>
-              <p
-                className="cursor-pointer hover:underline"
-                onClick={() =>
-                  window.open(
-                    "https://partners.reparv.in/sales-partner",
-                    "_blank",
-                  )
-                }
-              >
-                Sales Partner
-              </p>
-              <p
-                className="cursor-pointer hover:underline"
-                onClick={() =>
-                  window.open(
-                    "https://partners.reparv.in/territory-partner",
-                    "_blank",
-                  )
-                }
-              >
-                Territory Partner
               </p>
             </div>
 
@@ -128,28 +98,6 @@ function Footer({ footerRef }) {
                 }
               >
                 Project Partner
-              </p>
-              <p
-                className="cursor-pointer hover:underline"
-                onClick={() =>
-                  window.open(
-                    "https://play.google.com/store/apps/details?id=com.reparvnewsalesapp",
-                    "_blank",
-                  )
-                }
-              >
-                Sales Partner
-              </p>
-              <p
-                className="cursor-pointer hover:underline"
-                onClick={() =>
-                  window.open(
-                    "https://play.google.com/store/apps/details?id=com.newreparvterritory_app",
-                    "_blank",
-                  )
-                }
-              >
-                Territory Partner
               </p>
             </div>
 
@@ -266,15 +214,7 @@ function Footer({ footerRef }) {
               Become a Professional
             </h3>
             <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs">
-              <span
-                className="cursor-pointer hover:underline"
-                onClick={() =>
-                  window.open("https://partners.reparv.in/promoter", "_blank")
-                }
-              >
-                Promoter
-              </span>{" "}
-              |
+              
               <span
                 className="cursor-pointer hover:underline"
                 onClick={() =>
@@ -283,30 +223,6 @@ function Footer({ footerRef }) {
               >
                 Project Partner
               </span>{" "}
-              |
-              <span
-                className="cursor-pointer hover:underline"
-                onClick={() =>
-                  window.open(
-                    "https://partners.reparv.in/sales-partner",
-                    "_blank",
-                  )
-                }
-              >
-                Sales Partner
-              </span>{" "}
-              |
-              <span
-                className="cursor-pointer hover:underline"
-                onClick={() =>
-                  window.open(
-                    "https://partners.reparv.in/territory-partner",
-                    "_blank",
-                  )
-                }
-              >
-                Territory Partner
-              </span>
             </div>
           </div>
 
@@ -336,30 +252,6 @@ function Footer({ footerRef }) {
               >
                 Project Partner
               </span>{" "}
-              |
-              <span
-                className="cursor-pointer hover:underline"
-                onClick={() =>
-                  window.open(
-                    "https://play.google.com/store/apps/details?id=com.reparvnewsalesapp",
-                    "_blank",
-                  )
-                }
-              >
-                Sales Partner
-              </span>{" "}
-              |
-              <span
-                className="cursor-pointer hover:underline"
-                onClick={() =>
-                  window.open(
-                    "https://play.google.com/store/apps/details?id=com.newreparvterritory_app",
-                    "_blank",
-                  )
-                }
-              >
-                Territory Partner
-              </span>
             </div>
           </div>
 
