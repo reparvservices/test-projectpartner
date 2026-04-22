@@ -11,15 +11,18 @@ const btnPrimary = "flex items-center gap-2 px-5 py-2.5 text-white text-sm font-
 const btnSecondary = "px-5 py-2.5 text-sm font-medium rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 active:scale-95 transition-all";
 
 /* ── Shared ── */
-function Modal({ show, onClose, title, children, wide }) {
+function Modal({ show, onClose, title, subtitle, children, wide }) {
   if (!show) return null;
   return (
     <div className="fixed inset-0 z-[61] flex items-end md:items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className={`relative z-10 bg-white rounded-t-3xl md:rounded-2xl shadow-2xl w-full ${wide ? "md:max-w-2xl" : "md:max-w-md"} max-h-[90vh] overflow-y-auto scrollbar-hide`}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 sticky top-0 bg-white rounded-t-3xl md:rounded-t-2xl z-10">
-          <h2 className="text-base font-semibold text-slate-900">{title}</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+        <div className="flex items-start justify-between px-6 py-4 border-b border-slate-100 sticky top-0 bg-white rounded-t-3xl md:rounded-t-2xl z-10">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+            {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors mt-0.5">
             <IoMdClose size={18} className="text-slate-500" />
           </button>
         </div>
@@ -32,7 +35,7 @@ function Modal({ show, onClose, title, children, wide }) {
 function Field({ label, required, children }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+      <label className="text-sm font-semibold text-slate-700">
         {label}{required && <span className="text-red-400 ml-1">*</span>}
       </label>
       {children}
@@ -47,6 +50,65 @@ const STATUS_COLOR = {
   "Cancelled": "text-red-500 bg-red-100",
   "Follow Up": "text-violet-600 bg-violet-100",
 };
+
+/* ── Enquiry summary card used inside Assign modal ── */
+function EnquirySummaryCard({ enquiry }) {
+  if (!enquiry || !enquiry.enquirersid) return null;
+
+  const initial = enquiry.customer?.charAt(0)?.toUpperCase() || "?";
+  const colors = ["#6D28D9", "#0EA5E9", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"];
+  const bg = colors[(enquiry.customer?.charCodeAt(0) || 0) % colors.length];
+
+  function fmtBudget(val) {
+    const n = Number(val);
+    if (!n) return "—";
+    if (n >= 10000000) return "₹" + (n / 10000000).toFixed(1).replace(/\.0$/, "") + "Cr";
+    if (n >= 100000) return "₹" + (n / 100000).toFixed(1).replace(/\.0$/, "") + "L";
+    if (n >= 1000) return "₹" + (n / 1000).toFixed(0) + "k";
+    return "₹" + n.toLocaleString("en-IN");
+  }
+
+  const budget = enquiry.minbudget || enquiry.maxbudget
+    ? fmtBudget(enquiry.minbudget) + (enquiry.maxbudget ? " – " + fmtBudget(enquiry.maxbudget) : "")
+    : enquiry.budget
+    ? fmtBudget(enquiry.budget)
+    : "—";
+
+  const location = [enquiry.location, enquiry.city, enquiry.state].filter(Boolean).join(", ") || "—";
+
+  return (
+    <div className="bg-[#F2F4FF] rounded-2xl p-4 mb-5">
+      <div className="flex items-center gap-3 mb-4">
+        <div
+          className="w-11 h-11 rounded-full flex items-center justify-center text-white text-base font-bold shrink-0"
+          style={{ background: bg }}
+        >
+          {initial}
+        </div>
+        <div className="min-w-0">
+          <p className="font-bold text-slate-900 text-base leading-tight truncate">
+            {enquiry.customer || "—"}
+          </p>
+          <p className="text-sm text-slate-500 mt-0.5">{enquiry.contact || "—"}</p>
+        </div>
+      </div>
+      <div className="border-t border-slate-200 pt-3 grid grid-cols-3 gap-3">
+        <div>
+          <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-1">Budget</p>
+          <p className="text-sm font-bold text-slate-800">{budget}</p>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-1">Category</p>
+          <p className="text-sm font-bold text-slate-800 truncate">{enquiry.category || "—"}</p>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-1">Location</p>
+          <p className="text-sm font-bold text-slate-800 truncate">{location}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ── Main export ── */
 export default function EnquiryModals({
@@ -77,6 +139,9 @@ export default function EnquiryModals({
 }) {
   const customStyle = { menuList: (p) => ({ ...p, maxHeight: "200px", paddingTop: 0, paddingBottom: 0 }) };
   const categories = ["NewFlat","NewPlot","RentalFlat","RentalShop","RentalOffice","Resale","RowHouse","Lease","FarmLand","FarmHouse","CommercialFlat","CommercialPlot","IndustrialSpace"];
+
+  /* helper: find current enquiry data for the assign modal */
+  const assignEnquiryData = enquiry?.enquirersid ? enquiry : null;
 
   return (
     <>
@@ -157,24 +222,100 @@ export default function EnquiryModals({
         </form>
       </Modal>
 
-      {/* ── Assign Sales ── */}
-      <Modal show={showAssignSalesForm} onClose={() => setShowAssignSalesForm(false)} title="Assign to Sales Person">
-        <form onSubmit={onAssignSales} className="space-y-4">
-          <Field label="Select Sales Person" required>
-            <Select
-              styles={customStyle}
-              className="text-sm"
-              options={salesPersonList?.filter((sp) => sp.status === "Active").map((sp) => ({ value: { salespersonid: sp.salespersonsid, salesperson: sp.fullname, salespersoncontact: sp.contact }, label: `${sp.fullname} | ${sp.contact}` }))}
-              placeholder="Search sales person..."
-              value={salesPersonAssign ? salesPersonList?.filter((sp) => sp.status === "Active").map((sp) => ({ value: { salespersonid: sp.salespersonsid, salesperson: sp.fullname, salespersoncontact: sp.contact }, label: `${sp.fullname} | ${sp.contact}` })).find((o) => o.value.salespersonid === salesPersonAssign.salespersonid) || null : null}
-              onChange={(s) => setSalesPersonAssign(s?.value || null)}
+      {/* ── Assign Sales Partner (new design) ── */}
+      <Modal
+        show={showAssignSalesForm}
+        onClose={() => setShowAssignSalesForm(false)}
+        title="Change Sales Partner"
+        subtitle={assignEnquiryData?.enquirersid ? `IM #LM-${assignEnquiryData.enquirersid} · ${assignEnquiryData.created_at || ""}` : undefined}
+      >
+        <form onSubmit={onAssignSales} className="space-y-5">
+          {/* Enquiry summary card */}
+          <EnquirySummaryCard enquiry={assignEnquiryData} />
+
+          {/* Sales Partner */}
+          <Field label="Sales Partner" required>
+            <div className="relative">
+              <Select
+                styles={{
+                  ...customStyle,
+                  control: (base) => ({
+                    ...base,
+                    borderRadius: "12px",
+                    borderColor: "#e2e8f0",
+                    minHeight: "48px",
+                    boxShadow: "none",
+                    "&:hover": { borderColor: "#5323DC" },
+                  }),
+                  placeholder: (base) => ({ ...base, color: "#94a3b8", fontSize: "14px" }),
+                }}
+                className="text-sm"
+                options={salesPersonList?.filter((sp) => sp.status === "Active").map((sp) => ({
+                  value: { salespersonid: sp.salespersonsid, salesperson: sp.fullname, salespersoncontact: sp.contact },
+                  label: `${sp.fullname} | ${sp.contact}`,
+                }))}
+                placeholder="Select Sales Partner"
+                value={
+                  salesPersonAssign
+                    ? salesPersonList
+                        ?.filter((sp) => sp.status === "Active")
+                        .map((sp) => ({
+                          value: { salespersonid: sp.salespersonsid, salesperson: sp.fullname, salespersoncontact: sp.contact },
+                          label: `${sp.fullname} | ${sp.contact}`,
+                        }))
+                        .find((o) => o.value.salespersonid === salesPersonAssign.salespersonid) || null
+                    : null
+                }
+                onChange={(s) => setSalesPersonAssign(s?.value || null)}
+              />
+            </div>
+          </Field>
+
+          {/* Status */}
+          <Field label="Status">
+            <select
+              value={salesPersonAssign?.status || ""}
+              onChange={(e) => setSalesPersonAssign({ ...salesPersonAssign, status: e.target.value })}
+              className={selectCls}
+              style={{ borderRadius: "12px", minHeight: "48px" }}
+            >
+              <option value="">Select Status</option>
+              {["New", "In Progress", "Visit Scheduled", "Follow Up", "Token", "Cancelled"].map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </Field>
+
+          {/* Assignment Notes */}
+          <Field label="Assignment Notes">
+            <textarea
+              rows={4}
+              placeholder="Client is interested in..."
+              value={salesPersonAssign?.notes || ""}
+              onChange={(e) => setSalesPersonAssign({ ...salesPersonAssign, notes: e.target.value })}
+              className={inputCls}
+              style={{ borderRadius: "12px", resize: "none" }}
             />
           </Field>
-          <div className="flex justify-end gap-3">
-            <button type="button" onClick={() => setShowAssignSalesForm(false)} className={btnSecondary}>Cancel</button>
-            <button type="submit" className={btnPrimary} style={{ background: GRADIENT }}>Assign</button>
-            <Loader />
+
+          {/* Footer buttons */}
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setShowAssignSalesForm(false)}
+              className="flex-1 py-3 text-sm font-semibold rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50 active:scale-95 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 py-3 text-sm font-semibold text-white rounded-2xl hover:opacity-90 active:scale-95 transition-all"
+              style={{ background: GRADIENT }}
+            >
+              Assign Sales Partner
+            </button>
           </div>
+          <Loader />
         </form>
       </Modal>
 
