@@ -35,8 +35,8 @@ function fmtBudget(val) {
 /* ── Status badge ─────────────────────────────────────────── */
 const STATUS = {
   New: { bg: "#EEF2FF", color: "#6366F1", label: "New" },
-  "Follow Up": { bg: "#FEE2E2", color: "#EF4444", label: "Hot Lead" },
-  "Visit Scheduled": { bg: "#DCFCE7", color: "#16A34A", label: "Assigned" },
+  "Follow Up": { bg: "#FEE2E2", color: "#EF4444", label: "Follow Up" },
+  "Visit Scheduled": { bg: "#DCFCE7", color: "#16A34A", label: "Visit Scheduled" },
   Token: { bg: "#FEF9C3", color: "#CA8A04", label: "Token" },
   Cancelled: { bg: "#F1F5F9", color: "#94A3B8", label: "Cancelled" },
 };
