@@ -3,10 +3,10 @@ import FAQLeftImage from "../../assets/FAQLeftImage.svg";
 import { FiPlusCircle, FiMinusCircle } from "react-icons/fi";
 import ContactForm from "../ContactForm";
 import ScheduleForm from "../ScheduleForm";
-
-const URI = "https://api.reparv.in";
+import { useAuth } from "../../store/auth";
 
 function FAQSection({ location = "Partners Project Partner Page" }) {
+  const { URI } = useAuth();
   const [faqs, setFaqs] = useState([]);
   const [activeIndex, setActiveIndex] = useState(null);
   const [showContactForm, setShowContactForm] = useState(false);
