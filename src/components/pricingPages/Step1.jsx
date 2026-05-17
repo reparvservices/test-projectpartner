@@ -27,7 +27,7 @@ export default function PartnerRegistrationStep1({
 
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { auth } = useAuth();
+  const { URI } = useAuth();
 
   useEffect(() => {
     fetchPlans();
@@ -36,34 +36,22 @@ export default function PartnerRegistrationStep1({
   const fetchPlans = async () => {
     try {
       const res = await axios.get(
-        `https://aws-api.reparv.in/admin/subscription/pricing/plans/Project%20Partner`,
-        { headers: { Authorization: `Bearer ${auth?.token}` } },
+        `${URI}/api/subscription/partner-plans/${encodeURIComponent("Project Partner")}`,
       );
+      const rows = Array.isArray(res.data) ? res.data : [];
+      const activePlans = rows.map((p) => ({
+        ...p,
+        partnerType: "Project Partner",
+        highlight: p.highlight || "False",
+        isTrial: String(p.plan_type || p.planType || "").toLowerCase() === "trial",
+      }));
 
-      const activePlans = res.data.filter(
-        (p) => p.partnerType === "Project Partner" && p.status === "Active",
-      );
+      setPlans(activePlans);
 
-      const freeTrialPlan = {
-        id: "free-trial",
-        planDuration: "7 Days",
-        planName: "7-Day Free Trial",
-        description: "7 Days",
-        monthlyPrice: "Free",
-        totalPrice: "0",
-        yearlyPrice: "Free",
-        billPrice: "0",
-        features: "All Features Included",
-        mostPopular: false,
-        iconBg: "linear-gradient(135deg, #AD46FF 0%, #9810FA 100%)",
-        buttonText: "Start Free Trial",
-      };
-
-      setPlans([freeTrialPlan, ...activePlans]);
-
-      // auto select highlighted
       const highlighted =
-        activePlans.find((p) => p.highlight === "True") || activePlans[0];
+        activePlans.find((p) => p.highlight === "True") ||
+        activePlans.find((p) => p.isTrial) ||
+        activePlans[0];
 
       setPlan(highlighted);
     } catch (err) {
@@ -78,11 +66,8 @@ export default function PartnerRegistrationStep1({
 
     let matchedPlan = null;
 
-    // 🔥 Case 1: Free Trial
     if (routePlanId === "free-trial") {
-      matchedPlan = plans.find(
-        (plan) => plan.id?.toLowerCase() === "free-trial",
-      );
+      matchedPlan = plans.find((plan) => plan.isTrial);
     }
     // 🔥 Case 2: Numeric Plan ID
     else if (!isNaN(routePlanId)) {

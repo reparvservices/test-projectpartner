@@ -1,298 +1,291 @@
-import React, { useState, useEffect } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination } from "swiper/modules";
-import { X, Tag, CheckCircle2, AlertCircle, CreditCard, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  X,
+  CheckCircle2,
+  CreditCard,
+  Loader2,
+  Shield,
+  Lock,
+} from "lucide-react";
 import { useAuth } from "../../store/auth";
-import { handlePayment } from "../../utils/payment.js";
+import FormatPrice from "../FormatPrice";
+import {
+  loadRazorpayScript,
+  createPartnerSubscriptionSession,
+  openRazorpaySubscriptionCheckout,
+  confirmPartnerSubscription,
+} from "../../utils/subscriptionAutopay.js";
+import {
+  activatePartnerTrial,
+  isTrialPlan,
+} from "../../lib/partnerSubscription.js";
 
-import "swiper/css";
-import "swiper/css/pagination";
-import { getImageURI } from "../../utils/helper.js";
+const ROLE_SLUG = {
+  "Project Partner": "project",
+  "Sales Partner": "sales",
+  "Territory Partner": "territory",
+};
 
-const SubscriptionPlan = ({ plan }) => {
-  const [amount, setAmount] = useState(plan?.totalPrice);
-  const { URI, user, showSubscription, setShowSubscription, setSuccessScreen } = useAuth();
-  const user_id = user?.id + user?.contact.slice(8);
-
-  const [coupon, setCoupon] = useState("");
-  const [isUsedCoupon, setIsUsedCoupon] = useState(false);
-  const [error, setError] = useState("");
-  const [isApplying, setIsApplying] = useState(false);
+export default function SubscriptionPlan({ plan }) {
+  const {
+    URI,
+    user,
+    showSubscription,
+    setShowSubscription,
+    refreshSubscription,
+  } = useAuth();
+  const navigate = useNavigate();
   const [isPaying, setIsPaying] = useState(false);
 
-  const images = [plan?.firstImage, plan?.secondImage, plan?.thirdImage].filter(Boolean);
-  const features = plan?.features?.split(",") || [];
+  const features =
+    typeof plan?.features === "string"
+      ? plan.features.split(",").map((f) => f.trim()).filter(Boolean)
+      : Array.isArray(plan?.features)
+        ? plan.features
+        : [];
 
-  const isCouponSuccess = error === "Coupon applied Successfully";
-
-  const loadRazorpayScript = () =>
-    new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
+  const handleClose = () => setShowSubscription(false);
 
   const handlePayNow = async () => {
-    setIsPaying(true);
-    const scriptLoaded = await loadRazorpayScript();
-    if (!scriptLoaded) {
-      alert("Failed to load Razorpay. Please check your internet.");
-      setIsPaying(false);
+    if (!user?.id) {
+      alert("Please log in again to subscribe.");
       return;
     }
+    if (!plan?.id) {
+      alert("Invalid plan. Refresh the page and try again.");
+      return;
+    }
+
+    const roleSlug = ROLE_SLUG[user?.role] || "project";
+    const total = Math.max(0, parseInt(plan.totalPrice, 10) || 0);
+    const trial = isTrialPlan(plan);
+
+    setIsPaying(true);
     try {
-      await handlePayment(
-        user_id,
-        plan?.planName,
-        plan?.id,
-        plan?.planDuration,
-        coupon,
-        isUsedCoupon,
-        "projectpartnerid",
-        amount,
-        user?.email,
-        user?.id,
-        "projectpartner",
-        "id",
-        setSuccessScreen
-      );
-    } catch (paymentError) {
-      console.error("Payment Error:", paymentError.message);
-      alert("Payment failed. Please contact support.");
+      if (trial) {
+        const result = await activatePartnerTrial(URI, user, {
+          planId: Number(plan.id),
+        });
+        if (!result.success) {
+          throw new Error(result.message || "Could not start trial");
+        }
+        setShowSubscription(false);
+        await refreshSubscription();
+        navigate("/app/dashboard", { replace: true });
+        return;
+      }
+
+      const loaded = await loadRazorpayScript();
+      if (!loaded) {
+        alert("Failed to load Razorpay. Check your network.");
+        return;
+      }
+
+      const session = await createPartnerSubscriptionSession({
+        api: URI,
+        role: roleSlug,
+        userId: user.id,
+        planId: plan.id,
+        discountAmount: 0,
+        finalAmount: total,
+      });
+
+      const keyId = session.key || import.meta.env.VITE_RAZORPAY_KEY_ID || "";
+      if (!keyId) {
+        throw new Error("Missing Razorpay key. Set VITE_RAZORPAY_KEY_ID in .env");
+      }
+
+      const response = await openRazorpaySubscriptionCheckout({
+        keyId,
+        subscriptionId: session.razorpay_subscription_id,
+        name: "Reparv",
+        description: `${plan.planName || "Partner"} — autopay`,
+        email: user?.email,
+        contact: user?.contact,
+      });
+
+      await confirmPartnerSubscription({
+        api: URI,
+        role: roleSlug,
+        userId: user.id,
+        planId: plan.id,
+        paymentId: response.razorpay_payment_id,
+        subscriptionId: response.razorpay_subscription_id,
+        signature: response.razorpay_signature,
+        email: user?.email,
+        discountAmount: 0,
+        finalAmount: total,
+      });
+
+      setShowSubscription(false);
+      await refreshSubscription();
+      navigate("/app/dashboard", { replace: true });
+    } catch (err) {
+      const msg = err?.message || err?.error?.description || "Payment failed";
+      if (msg !== "Checkout closed") {
+        console.error(err);
+        alert(msg);
+      }
     } finally {
       setIsPaying(false);
     }
   };
-
-  const handleApplyCoupon = async () => {
-    if (!coupon.trim()) return;
-    setIsApplying(true);
-    try {
-      const response = await fetch(`${URI}/api/redeem/apply`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          coupon,
-          planId: plan.id,
-          partnerType: "Project Partner",
-          user_id,
-        }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setError("Coupon applied Successfully");
-        setIsUsedCoupon(true);
-        setAmount((prev) => parseInt(prev) - parseInt(data.discount));
-      } else {
-        setError(data.message);
-      }
-    } catch (err) {
-      console.error("Error:", err);
-      setError("Something went wrong. Try again.");
-    } finally {
-      setIsApplying(false);
-    }
-  };
-
-  const handleClose = () => {
-    setShowSubscription(false);
-    setCoupon("");
-    setError("");
-  };
-
-  useEffect(() => {
-    setAmount(plan?.totalPrice);
-  }, [plan?.totalPrice]);
 
   if (!showSubscription) return null;
 
   return (
     <>
-      {/* Backdrop */}
       <div
-        className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 z-[60] bg-[#1a1033]/50 backdrop-blur-md"
         onClick={handleClose}
+        aria-hidden
       />
 
-      {/* Modal */}
-      <div className="fixed inset-0 z-[61] flex items-end md:items-center justify-center p-0 md:p-6">
-        <div className="w-full md:max-w-[520px] max-h-[90vh] overflow-y-auto scrollbar-hide bg-white md:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col">
-
-          {/* Header */}
-          <div className="relative bg-gradient-to-br from-[#5E23DC] to-[#8B5CF6] px-6 pt-8 pb-6 text-white rounded-t-2xl shrink-0">
-            <button
-              onClick={handleClose}
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition"
-            >
-              <X size={16} />
-            </button>
-            <p className="text-xs font-semibold uppercase tracking-widest text-purple-200 mb-1">
-              Subscription Plan
-            </p>
-            <h2 className="text-2xl font-bold">{plan?.planName}</h2>
-            <span className="inline-block mt-2 text-xs bg-white/20 px-3 py-1 rounded-full font-medium">
-              {plan?.planDuration}
-            </span>
+      <div className="fixed inset-0 z-[61] flex items-end md:items-center justify-center p-0 md:p-6 pointer-events-none">
+        <div
+          className="pointer-events-auto w-full md:max-w-[480px] max-h-[92dvh] flex flex-col bg-white md:rounded-3xl rounded-t-3xl shadow-2xl shadow-[#5E23DC]/20 overflow-hidden border border-gray-100"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="md:hidden flex justify-center pt-3 pb-1 shrink-0">
+            <span className="h-1 w-10 rounded-full bg-gray-200" aria-hidden />
           </div>
 
-          {/* Body */}
-          <div className="px-6 py-6 flex flex-col gap-6">
-
-            {/* Image Slider */}
-            {images?.length > 0 && (
-              <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                <Swiper
-                  modules={[Autoplay, Pagination]}
-                  autoplay={{ delay: 2500, disableOnInteraction: false }}
-                  pagination={{ clickable: true }}
-                  loop={true}
-                  spaceBetween={0}
-                  slidesPerView={1}
-                >
-                  {images?.map((url, index) => (
-                    <SwiperSlide key={index}>
-                      <img
-                        src={getImageURI(url)}
-                        alt={`Banner ${index + 1}`}
-                        className="w-full h-44 object-cover"
-                      />
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
-            )}
-
-            {/* Features */}
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
-                What's included
-              </p>
-              <ul className="space-y-2">
-                {features?.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                    <CheckCircle2 size={15} className="text-[#5E23DC] mt-[2px] shrink-0" />
-                    {feature.trim()}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Price Summary */}
-            <div className="bg-purple-50 border border-purple-100 rounded-xl p-4">
-              <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
-                <span>Plan Price</span>
-                <span>₹{plan?.totalPrice?.toLocaleString?.() ?? plan?.totalPrice}</span>
-              </div>
-              {isUsedCoupon && (
-                <div className="flex justify-between items-center text-sm text-green-600 mb-2">
-                  <span>Coupon Discount</span>
-                  <span>− ₹{(parseInt(plan?.totalPrice) - parseInt(amount)).toLocaleString()}</span>
-                </div>
-              )}
-              <div className="border-t border-purple-200 pt-2 flex justify-between items-center font-bold text-gray-900">
-                <span>Total Payable</span>
-                <span className="text-[#5E23DC] text-lg">
-                  ₹{parseInt(amount).toLocaleString()}
-                </span>
-              </div>
-            </div>
-
-            {/* Coupon */}
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest mb-2">
-                <Tag size={12} />
-                {isCouponSuccess ? (
-                  <span className="text-green-600">Coupon Applied!</span>
-                ) : error && coupon ? (
-                  <span className="text-red-500">Invalid Coupon</span>
-                ) : (
-                  <span className="text-gray-400">Apply Coupon</span>
-                )}
-              </label>
-
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    placeholder="Enter coupon code"
-                    value={coupon}
-                    disabled={isUsedCoupon}
-                    onChange={(e) => {
-                      setCoupon(e.target.value);
-                      setError("");
-                    }}
-                    className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition ${
-                      isCouponSuccess
-                        ? "border-green-400 bg-green-50 focus:ring-green-300"
-                        : error && coupon
-                        ? "border-red-400 bg-red-50 focus:ring-red-300"
-                        : "border-gray-200 focus:ring-[#5E23DC]/30"
-                    } disabled:opacity-60 disabled:cursor-not-allowed`}
-                  />
-                  {isCouponSuccess && (
-                    <CheckCircle2
-                      size={16}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"
-                    />
-                  )}
-                  {error && coupon && !isCouponSuccess && (
-                    <AlertCircle
-                      size={16}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-red-400"
-                    />
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleApplyCoupon}
-                  disabled={isUsedCoupon || isApplying || !coupon.trim()}
-                  className="px-4 py-2.5 bg-[#5E23DC] text-white text-sm font-semibold rounded-xl hover:bg-[#4c1bb5] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
-                >
-                  {isApplying ? <Loader2 size={14} className="animate-spin" /> : "Apply"}
-                </button>
-              </div>
-
-              {error && coupon && !isCouponSuccess && (
-                <p className="text-xs text-red-500 mt-1.5">{error}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Footer Actions */}
-          <div className="px-6 pb-8 pt-2 flex gap-3 shrink-0">
+          <div
+            className="relative shrink-0 px-6 pt-7 pb-6 text-white overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(135deg, #5E23DC 0%, #7c3aed 50%, #a855f7 100%)",
+            }}
+          >
+            <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition"
+              className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/25 transition"
+              aria-label="Close"
             >
-              Cancel
+              <X size={18} />
             </button>
+            <p className="relative text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70 mb-2">
+              Secure checkout
+            </p>
+            <h2 className="relative text-2xl font-bold tracking-tight pr-10">
+              {plan?.planName}
+            </h2>
+            <div className="relative mt-3 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium bg-white/20 px-3 py-1 rounded-full">
+                {plan?.planDuration}
+              </span>
+              {plan?.billing_cycle && (
+                <span className="text-xs font-medium bg-white/10 px-3 py-1 rounded-full capitalize">
+                  {plan.billing_cycle} billing
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 min-h-0">
+            {features.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
+                  Included in this plan
+                </p>
+                <ul className="space-y-2.5">
+                  {features.map((feature, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-2.5 text-sm text-gray-700"
+                    >
+                      <CheckCircle2
+                        size={16}
+                        className="text-[#5E23DC] mt-0.5 shrink-0"
+                      />
+                      <span className="leading-snug">{String(feature).trim()}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="rounded-2xl bg-gradient-to-br from-[#f8f6ff] to-[#f3efff] border border-[#5E23DC]/10 p-4 space-y-2">
+              {(plan?.basePrice > 0 || plan?.gstAmount > 0) && (
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>Base price</span>
+                  <span>
+                    <FormatPrice price={plan.basePrice || Math.round((plan?.totalPrice || 0) / 1.18)} />
+                  </span>
+                </div>
+              )}
+              {(plan?.gstAmount > 0 || plan?.basePrice > 0) && (
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>GST (18%)</span>
+                  <span>
+                    <FormatPrice
+                      price={
+                        plan.gstAmount ||
+                        (plan?.totalPrice || 0) - Math.round((plan?.totalPrice || 0) / 1.18)
+                      }
+                    />
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between items-end gap-4 pt-1 border-t border-[#5E23DC]/10">
+                <div>
+                  <p className="text-xs text-gray-500">Total due today</p>
+                  <p className="text-3xl font-extrabold text-gray-900 tracking-tight mt-0.5">
+                    <FormatPrice price={plan?.totalPrice} />
+                  </p>
+                </div>
+                <p className="text-[11px] text-gray-500 text-right max-w-[140px] leading-snug">
+                  Recurring via Razorpay autopay per your plan cycle
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="shrink-0 px-6 pb-6 pt-2 border-t border-gray-100 bg-white">
+            <div className="flex items-center justify-center gap-4 text-[11px] text-gray-400 mb-3">
+              <span className="inline-flex items-center gap-1">
+                <Shield size={12} /> PCI secure
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <Lock size={12} /> Encrypted
+              </span>
+            </div>
             <button
               type="button"
               onClick={handlePayNow}
               disabled={isPaying}
-              className="flex-2 w-full py-3 rounded-xl bg-[#5E23DC] text-white text-sm font-semibold hover:bg-[#4c1bb5] transition active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl text-white text-sm font-semibold transition active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-[#5E23DC]/25"
+              style={{
+                background: "linear-gradient(135deg, #5E23DC 0%, #7c3aed 100%)",
+              }}
             >
               {isPaying ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Processing...
+                  <Loader2 size={18} className="animate-spin" />
+                  {isTrialPlan(plan) ? "Starting trial…" : "Opening Razorpay…"}
                 </>
+              ) : isTrialPlan(plan) ? (
+                <>Start free trial</>
               ) : (
                 <>
-                  <CreditCard size={16} />
-                  Pay ₹{parseInt(amount).toLocaleString()}
+                  <CreditCard size={18} />
+                  Continue to payment
                 </>
               )}
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="w-full mt-2 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 transition"
+            >
+              Cancel
             </button>
           </div>
         </div>
       </div>
     </>
   );
-};
-
-export default SubscriptionPlan;
+}

@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import { handlePayment } from "../../utils/payment";
 import { useAuth } from "../../store/auth";
 import { useNavigate } from "react-router-dom";
@@ -17,18 +18,35 @@ export default function PartnerPaymentStep3({
   const taxableAmount = Number(gstAmount + originalAmount).toFixed(2);
   const subtotalWithGST = Number(originalAmount + gstAmount).toFixed(2);
   const totalWithGST = Number(subtotalWithGST - discountAmount);
-  const registrationPrice =
-    totalWithGST === 0 ? 1 : Number(totalWithGST.toFixed(0));
+  const isTrialPlan =
+    selectedPlan?.isTrial === true ||
+    String(selectedPlan?.plan_type || selectedPlan?.planType || "").toLowerCase() ===
+      "trial" ||
+    Number(selectedPlan?.totalPrice) === 0;
+  const registrationPrice = isTrialPlan
+    ? 0
+    : totalWithGST === 0
+      ? 1
+      : Number(totalWithGST.toFixed(0));
 
   const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const scriptLoaded = await loadRazorpayScript();
 
-    if (!scriptLoaded) {
-      alert("Failed to load Razorpay. Please check your internet.");
+    if (isTrialPlan && !selectedPlan?.id) {
+      alert("Please select a trial plan.");
       return;
     }
+
+    if (!isTrialPlan) {
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        alert("Failed to load Razorpay. Please check your internet.");
+        return;
+      }
+    }
+
     try {
       const response = await fetch(`${URI}/admin/projectpartner/add`, {
         method: "POST",
@@ -41,6 +59,17 @@ export default function PartnerPaymentStep3({
 
       if (response.ok) {
         const res = await response.json();
+
+        if (isTrialPlan) {
+          setSuccessScreen({
+            show: true,
+            label: "Registration Successful",
+            description:
+              "You are now registered as a Project Partner! Your free trial will start shortly.",
+          });
+          await startTrial(res.Id);
+          return;
+        }
 
         setSuccessScreen({
           show: true,
@@ -108,14 +137,39 @@ export default function PartnerPaymentStep3({
   };
 
   const startTrial = async (userId) => {
+    if (!selectedPlan?.id) {
+      alert("Please select a trial plan.");
+      return;
+    }
     try {
       const res = await axios.post(
         `${URI}/projectpartner/subscription/activate-trial/${userId}`,
         {
-          username: newPartner.username,
-          password: newPartner.password,
+          plan_id: Number(selectedPlan.id),
+          username: user?.username,
+          password: user?.password,
         },
       );
+
+      // #region agent log
+      fetch("http://127.0.0.1:7873/ingest/e030798b-abf2-42c8-b0a1-b6795e79c4b6", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ab9682" },
+        body: JSON.stringify({
+          sessionId: "ab9682",
+          runId: "post-fix",
+          hypothesisId: "F",
+          location: "Step3.jsx:startTrial:response",
+          message: "startTrial response",
+          data: {
+            success: !!res.data?.success,
+            status: res.status,
+            planId: selectedPlan?.id,
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
 
       if (res.data.success) {
         alert(
@@ -125,12 +179,25 @@ export default function PartnerPaymentStep3({
         alert(res.data.message || "Unable to start trial");
       }
     } catch (err) {
+      // #region agent log
+      fetch("http://127.0.0.1:7873/ingest/e030798b-abf2-42c8-b0a1-b6795e79c4b6", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ab9682" },
+        body: JSON.stringify({
+          sessionId: "ab9682",
+          runId: "post-fix",
+          hypothesisId: "F",
+          location: "Step3.jsx:startTrial:error",
+          message: "startTrial failed",
+          data: { errName: err?.name, errMsg: err?.message },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       console.error(err);
       alert("Something went wrong while starting trial");
     }
   };
-  console.log(selectedPlan);
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -306,7 +373,9 @@ export default function PartnerPaymentStep3({
                 onClick={handleSubmit}
                 className="w-full mt-4 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 text-white font-semibold shadow-md hover:opacity-95 transition"
               >
-                Pay ₹{registrationPrice} →
+                {isTrialPlan
+                  ? "Start free trial →"
+                  : `Pay ₹${registrationPrice} →`}
               </button>
             </div>
           </div>

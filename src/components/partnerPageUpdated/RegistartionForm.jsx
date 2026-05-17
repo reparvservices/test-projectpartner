@@ -61,13 +61,18 @@ const RegistrationForm = ({ plan }) => {
   };
 
   const startTrial = async (userId) => {
+    if (!plan?.id) {
+      alert("Please select a trial plan first.");
+      return;
+    }
     try {
       const res = await axios.post(
         `${URI}/projectpartner/subscription/activate-trial/${userId}`,
         {
+          plan_id: Number(plan.id),
           username: newPartner.username,
           password: newPartner.password,
-        }
+        },
       );
 
       if (res.data.success) {
@@ -111,8 +116,11 @@ const RegistrationForm = ({ plan }) => {
 
       const res = await response.json();
 
-      // Free plan: start trial
-      if (parseFloat(registrationPrice) === 0) {
+      const isTrial =
+        String(plan?.plan_type || plan?.planType || "").toLowerCase() === "trial" ||
+        Number(plan?.totalPrice) === 0;
+
+      if (isTrial) {
         setSuccessScreen({
           show: true,
           label: "Registration Successful",

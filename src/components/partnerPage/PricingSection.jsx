@@ -44,13 +44,14 @@ export default function PricingSection({ auth }) {
     try {
       setLoading(true);
       const res = await axios.get(
-        `${URI}/admin/subscription/pricing/plans/Project%20Partner`,
-        { headers: { Authorization: `Bearer ${auth?.token}` } },
+        `${URI}/api/subscription/partner-plans/${encodeURIComponent("Project Partner")}`,
       );
 
-      const activePlans = res.data.filter(
-        (p) => p.partnerType === "Project Partner" && p.status === "Active",
-      );
+      const rows = Array.isArray(res.data) ? res.data : [];
+      const activePlans = rows.map((p) => ({
+        ...p,
+        partnerType: "Project Partner",
+      }));
 
       const uniquePlansMap = new Map();
       activePlans.forEach((plan) => {
@@ -64,26 +65,32 @@ export default function PricingSection({ auth }) {
 
       let formattedPlans = Array.from(uniquePlansMap.values()).map(
         (item, index) => {
+          const isTrial =
+            String(item.plan_type || item.planType || "").toLowerCase() === "trial";
           const features = item.features
             ? item.features.split(",").map((f) => f.trim())
             : [];
           return {
             id: item.id,
+            plan_type: item.plan_type || item.planType,
+            isTrial,
             name: item.planName,
             description: `${item.planDuration} `,
-            monthlyPrice: `₹${item.totalPrice}`,
-            totalPrice: `${item.totalPrice}`,
-            yearlyPrice: `₹${Math.round(
-              (item.totalPrice / parseInt(item.planDuration)) * 12,
-            )}`,
-            billPrice: `${item.totalPrice}`,
+            monthlyPrice: isTrial ? "Free" : `₹${item.totalPrice}`,
+            totalPrice: isTrial ? "0" : `${item.totalPrice}`,
+            yearlyPrice: isTrial
+              ? "Free"
+              : `₹${Math.round(
+                  (item.totalPrice / parseInt(item.planDuration)) * 12,
+                )}`,
+            billPrice: isTrial ? "0" : `${item.totalPrice}`,
             features,
             mostPopular: item.highlight === "True",
             iconBg:
               index === 1
                 ? "linear-gradient(135deg, #5E23DC 0%, #854DFB 100%)"
                 : "linear-gradient(135deg, #AD46FF 0%, #9810FA 100%)",
-            buttonText: "Choose Plan",
+            buttonText: isTrial ? "Start Free Trial" : "Choose Plan",
             buttonClass:
               item.highlight === "True"
                 ? "bg-[#5E23DC] text-white"
@@ -103,37 +110,8 @@ export default function PricingSection({ auth }) {
         },
       );
 
-      // Add Free Trial Plan
-      const freeTrialPlan = {
-        id: "free-trial",
-        name: "7-Day Free Trial",
-        description: "7 Days",
-        monthlyPrice: "Free",
-        totalPrice: "0",
-        yearlyPrice: "Free",
-        billPrice: "0",
-        features: ["All Features Included"],
-        mostPopular: false,
-        iconBg: "linear-gradient(135deg, #AD46FF 0%, #9810FA 100%)",
-        buttonText: "Start Free Trial",
-        buttonClass:
-          "border border-[#5E23DC] text-[#5E23DC] hover:bg-[#5E23DC] hover:text-white",
-        icons: (
-          <svg
-            width="24"
-            height="24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="12" cy="12" r="10" stroke="#ffffff" strokeWidth="2.9" />
-          </svg>
-        ),
-      };
-
-      formattedPlans.unshift(freeTrialPlan);
-
-      // Order: Free → Most Popular → Rest
-      const freePlan = formattedPlans.find((p) => p.totalPrice === "0");
+      // Order: Trial → Most Popular → Rest
+      const freePlan = formattedPlans.find((p) => p.isTrial || p.totalPrice === "0");
       const mostPopularPlan = formattedPlans.find(
         (p) => p.mostPopular && p.totalPrice !== "0",
       );

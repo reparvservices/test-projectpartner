@@ -41,7 +41,14 @@ const roles = [
 ];
 
 function Login() {
-  const { storeTokenInCookie, URI, setLoading } = useAuth();
+  const {
+    storeTokenInCookie,
+    URI,
+    setLoading,
+    setUser,
+    setRole,
+    refreshSubscription,
+  } = useAuth();
 
   const [selectedRole, setSelectedRole] = useState("project-partner");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -84,13 +91,13 @@ function Login() {
       const token = response.data[activeRole.tokenKey] || response.data.token;
 
       if (token) {
-        localStorage.setItem(
-          activeRole.userKey,
-          JSON.stringify(response.data.user),
-        );
-        storeTokenInCookie(token);
+        const loggedInUser = response.data.user;
+        localStorage.setItem(activeRole.userKey, JSON.stringify(loggedInUser));
+        storeTokenInCookie(token, selectedRole);
+        setUser(loggedInUser);
+        setRole(loggedInUser?.role || null);
+        await refreshSubscription(loggedInUser);
         navigate(activeRole.redirect, { replace: true });
-        window.location.reload();
       } else {
         setErrorMessage("Invalid login credentials.");
       }

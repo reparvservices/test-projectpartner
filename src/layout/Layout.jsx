@@ -1,7 +1,8 @@
 import { useAuth } from "../store/auth";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Outlet, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import SubscriptionOutlet from "../components/subscription/SubscriptionOutlet";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import reparvMainLogo from "../assets/layout/reparvMainLogo.svg";
@@ -284,7 +285,7 @@ export default function Layout() {
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Outlet />
+          <SubscriptionOutlet />
         </motion.main>
 
         {/* Mobile Bottom Bar */}

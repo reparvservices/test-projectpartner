@@ -109,10 +109,8 @@ function PageLoader() {
 
 // ── Protected route guard ─────────────────────────────────────────────────────
 function RequireAuth() {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) return <PageLoader />;
-  if (!user) return <Navigate to="/" replace />;
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
   return <Outlet />;
 }
 
@@ -178,11 +176,11 @@ const App = () => (
         <Route element={<Layout />}>
           {/* Default redirect */}
           <Route index element={<Navigate to="dashboard" replace />} />
-          {/* Mobile Menu */}
-          <Route path="menu" element={<Menu />} />
+            {/* Mobile Menu */}
+            <Route path="menu" element={<Menu />} />
 
-          {/* Dashboard & Feed */}
-          <Route path="dashboard" element={<Dashboard />} />
+            {/* Dashboard & Feed */}
+            <Route path="dashboard" element={<Dashboard />} />
           <Route path="feed" element={<Feed />} />
           <Route path="community" element={<Community />} />
           <Route path="network" element={<Network />} />
@@ -241,17 +239,17 @@ const App = () => (
           <Route path="tickets/add" element={<AddTicket />} />
           <Route path="tickets/update/:id" element={<AddTicket />} />
 
-          {/* Subscription */}
-          <Route path="subscription" element={<Subscription />} />
-          <Route path="subscription/compare-plans" element={<ComparePlans />} />
-
-          {/* Profile */}
-          <Route path="profile" element={<Profile />} />
-          <Route path="edit-profile" element={<EditProfile />} />
+            {/* Profile */}
+            <Route path="profile" element={<Profile />} />
+            <Route path="edit-profile" element={<EditProfile />} />
 
           {/* Refer Screen */}
           <Route path="invite" element={<Refer />} />
           <Route path="refer-screen" element={<ReferScreen />} />
+
+          {/* Subscription — unlocked in SubscriptionOutlet */}
+          <Route path="subscription" element={<Subscription />} />
+          <Route path="subscription/compare-plans" element={<ComparePlans />} />
         </Route>
       </Route>
 

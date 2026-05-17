@@ -1,21 +1,54 @@
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import Cookies from "js-cookie";
+import axios from "axios";
+import { fetchPartnerSubscription } from "../lib/partnerSubscription";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [accessToken, setAccessToken] = useState(Cookies.get("accessToken"));
+  const [accessToken, setAccessToken] = useState(() => {
+    return (
+      Cookies.get("accessToken") ||
+      Cookies.get("projectPartnerToken") ||
+      Cookies.get("salesToken") ||
+      Cookies.get("territoryToken") ||
+      null
+    );
+  });
 
-  let isLoggedIn = !!accessToken;
+  let isLoggedIn = !!(
+    accessToken ||
+    Cookies.get("projectPartnerToken") ||
+    Cookies.get("salesToken") ||
+    Cookies.get("territoryToken")
+  );
 
-  const storeTokenInCookie = (token) => {
-    Cookies.set("accessToken", token);
+  const storeTokenInCookie = (token, loginRoleId = null) => {
+    const roleToCookie = {
+      "project-partner": "projectPartnerToken",
+      "sales-partner": "salesToken",
+      "territory-partner": "territoryToken",
+    };
+    const cookieName = loginRoleId ? roleToCookie[loginRoleId] : null;
+    if (cookieName) {
+      Cookies.set(cookieName, token, { sameSite: "lax", path: "/" });
+    }
+    Cookies.set("accessToken", token, { sameSite: "lax", path: "/" });
     setAccessToken(Cookies.get("accessToken"));
   };
 
   const delTokenInCookie = () => {
     setAccessToken();
-    Cookies.remove("accessToken");
+    Cookies.remove("accessToken", { path: "/" });
+    Cookies.remove("projectPartnerToken", { path: "/" });
+    Cookies.remove("salesToken", { path: "/" });
+    Cookies.remove("territoryToken", { path: "/" });
 
     localStorage.removeItem("projectPartnerUser");
     localStorage.removeItem("salesUser");
@@ -23,10 +56,13 @@ export const AuthProvider = ({ children }) => {
 
     setUser(null);
     setRole(null);
+    setSubscription(null);
+    setIsActiveSubacription(false);
+    setSubscriptionReady(true);
   };
 
-  //const URI = "http://localhost:3000";
-  const URI = "https://aws-api.reparv.in";
+  const URI = "http://localhost:3000";
+  // const URI = "https://aws-api.reparv.in";
 
   const getStoredUser = () => {
     const keys = ["projectPartnerUser", "salesUser", "territoryUser"];
@@ -55,6 +91,45 @@ export const AuthProvider = ({ children }) => {
   });
   const [moreOpen, setMoreOpen] = useState(false);
   const [isActiveSubscription, setIsActiveSubacription] = useState(false);
+  const [subscription, setSubscription] = useState(null);
+  const [subscriptionReady, setSubscriptionReady] = useState(false);
+
+  const refreshSubscription = useCallback(async (overrideUser, options = {}) => {
+    const silent = options?.silent === true;
+    const currentUser = overrideUser || user || getStoredUser();
+    if (!currentUser?.id) {
+      setSubscription(null);
+      setIsActiveSubacription(false);
+      setSubscriptionReady(true);
+      return { active: false };
+    }
+
+    if (!silent) setSubscriptionReady(false);
+    try {
+      const status = await fetchPartnerSubscription(URI, currentUser);
+      setSubscription(status);
+      setIsActiveSubacription(Boolean(status.active));
+      return status;
+    } catch {
+      const fallback = { active: false };
+      setSubscription(fallback);
+      setIsActiveSubacription(false);
+      return fallback;
+    } finally {
+      setSubscriptionReady(true);
+    }
+  }, [URI, user?.id, user?.role]);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setSubscription(null);
+      setIsActiveSubacription(false);
+      setSubscriptionReady(true);
+      return;
+    }
+    refreshSubscription();
+  }, [user?.id, user?.role, refreshSubscription]);
+
   const [showSubscription, setShowSubscription] = useState(false);
   const [dashboardFilter, setDashboardFilter] = useState("Booked");
   const [showProfile, setShowProfile] = useState(false);
@@ -148,6 +223,9 @@ export const AuthProvider = ({ children }) => {
         setShowProfile,
         isActiveSubscription,
         setIsActiveSubacription,
+        subscription,
+        subscriptionReady,
+        refreshSubscription,
         showRoleForm,
         setShowRoleForm,
         showDepartmentForm,
