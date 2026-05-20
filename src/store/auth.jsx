@@ -4,84 +4,27 @@ import {
   useState,
   useEffect,
   useCallback,
+  useMemo,
 } from "react";
-import Cookies from "js-cookie";
-import axios from "axios";
 import { fetchPartnerSubscription } from "../lib/partnerSubscription";
+import {
+  clearPartnerSession,
+  getStoredPartnerSession,
+  logoutPartner,
+  persistPartnerSession,
+  validatePartnerSession,
+} from "../lib/partnerAuth";
+import { registerUnauthorizedHandler } from "../lib/apiClient";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [accessToken, setAccessToken] = useState(() => {
-    return (
-      Cookies.get("accessToken") ||
-      Cookies.get("projectPartnerToken") ||
-      Cookies.get("salesToken") ||
-      Cookies.get("territoryToken") ||
-      null
-    );
-  });
+  const URI = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
-  let isLoggedIn = !!(
-    accessToken ||
-    Cookies.get("projectPartnerToken") ||
-    Cookies.get("salesToken") ||
-    Cookies.get("territoryToken")
-  );
-
-  const storeTokenInCookie = (token, loginRoleId = null) => {
-    const roleToCookie = {
-      "project-partner": "projectPartnerToken",
-      "sales-partner": "salesToken",
-      "territory-partner": "territoryToken",
-    };
-    const cookieName = loginRoleId ? roleToCookie[loginRoleId] : null;
-    if (cookieName) {
-      Cookies.set(cookieName, token, { sameSite: "lax", path: "/" });
-    }
-    Cookies.set("accessToken", token, { sameSite: "lax", path: "/" });
-    setAccessToken(Cookies.get("accessToken"));
-  };
-
-  const delTokenInCookie = () => {
-    setAccessToken();
-    Cookies.remove("accessToken", { path: "/" });
-    Cookies.remove("projectPartnerToken", { path: "/" });
-    Cookies.remove("salesToken", { path: "/" });
-    Cookies.remove("territoryToken", { path: "/" });
-
-    localStorage.removeItem("projectPartnerUser");
-    localStorage.removeItem("salesUser");
-    localStorage.removeItem("territoryUser");
-
-    setUser(null);
-    setRole(null);
-    setSubscription(null);
-    setIsActiveSubacription(false);
-    setSubscriptionReady(true);
-  };
-
-  const URI = "http://localhost:3000";
-  // const URI = "https://aws-api.reparv.in";
-
-  const getStoredUser = () => {
-    const keys = ["projectPartnerUser", "salesUser", "territoryUser"];
-
-    for (let key of keys) {
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        const parsedUser = JSON.parse(stored);
-        return parsedUser; // role already inside
-      }
-    }
-
-    return null;
-  };
-
-  const storedUser = getStoredUser();
-
-  const [user, setUser] = useState(storedUser);
-  const [role, setRole] = useState(storedUser?.role || null);
+  const initialSession = getStoredPartnerSession();
+  const [user, setUser] = useState(initialSession?.user ?? null);
+  const [role, setRole] = useState(initialSession?.user?.role ?? null);
+  const [authReady, setAuthReady] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [successScreen, setSuccessScreen] = useState({
@@ -94,41 +37,123 @@ export const AuthProvider = ({ children }) => {
   const [subscription, setSubscription] = useState(null);
   const [subscriptionReady, setSubscriptionReady] = useState(false);
 
-  const refreshSubscription = useCallback(async (overrideUser, options = {}) => {
-    const silent = options?.silent === true;
-    const currentUser = overrideUser || user || getStoredUser();
-    if (!currentUser?.id) {
-      setSubscription(null);
-      setIsActiveSubacription(false);
-      setSubscriptionReady(true);
-      return { active: false };
+  const handleUnauthorized = useCallback(() => {
+    clearPartnerSession();
+    setUser(null);
+    setRole(null);
+    setSubscription(null);
+    setIsActiveSubacription(false);
+    setSubscriptionReady(true);
+    if (!window.location.pathname.startsWith("/login")) {
+      window.location.replace("/login");
     }
+  }, []);
 
-    if (!silent) setSubscriptionReady(false);
-    try {
-      const status = await fetchPartnerSubscription(URI, currentUser);
-      setSubscription(status);
-      setIsActiveSubacription(Boolean(status.active));
-      return status;
-    } catch {
-      const fallback = { active: false };
-      setSubscription(fallback);
-      setIsActiveSubacription(false);
-      return fallback;
-    } finally {
-      setSubscriptionReady(true);
-    }
-  }, [URI, user?.id, user?.role]);
+  const logout = useCallback(async () => {
+    await logoutPartner(URI, user);
+    setUser(null);
+    setRole(null);
+    setSubscription(null);
+    setIsActiveSubacription(false);
+    setSubscriptionReady(true);
+  }, [URI, user]);
 
   useEffect(() => {
-    if (!user?.id) {
-      setSubscription(null);
-      setIsActiveSubacription(false);
-      setSubscriptionReady(true);
+    registerUnauthorizedHandler(handleUnauthorized);
+  }, [handleUnauthorized]);
+
+  /** Bootstrap: validate stored user against server session */
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      const stored = getStoredPartnerSession();
+      if (!stored?.user?.id) {
+        if (!cancelled) {
+          setUser(null);
+          setRole(null);
+          setAuthReady(true);
+        }
+        return;
+      }
+
+      const result = await validatePartnerSession(
+        URI,
+        stored.roleId,
+        stored.user,
+      );
+
+      if (cancelled) return;
+
+      if (result.ok) {
+        setUser(result.user);
+        setRole(result.user.role);
+        persistPartnerSession(stored.roleId, result.user);
+      } else {
+        clearPartnerSession();
+        setUser(null);
+        setRole(null);
+      }
+      setAuthReady(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [URI]);
+
+  const refreshSubscription = useCallback(
+    async (overrideUser, options = {}) => {
+      const silent = options?.silent === true;
+      const currentUser = overrideUser || user || getStoredPartnerSession()?.user;
+      if (!currentUser?.id) {
+        setSubscription(null);
+        setIsActiveSubacription(false);
+        setSubscriptionReady(true);
+        return { active: false };
+      }
+
+      if (!silent) setSubscriptionReady(false);
+      try {
+        const status = await fetchPartnerSubscription(URI, currentUser);
+        setSubscription(status);
+        setIsActiveSubacription(Boolean(status.active));
+        return status;
+      } catch {
+        const fallback = { active: false };
+        setSubscription(fallback);
+        setIsActiveSubacription(false);
+        return fallback;
+      } finally {
+        setSubscriptionReady(true);
+      }
+    },
+    [URI, user?.id, user?.role],
+  );
+
+  useEffect(() => {
+    if (!authReady || !user?.id) {
+      if (authReady) {
+        setSubscription(null);
+        setIsActiveSubacription(false);
+        setSubscriptionReady(true);
+      }
       return;
     }
     refreshSubscription();
-  }, [user?.id, user?.role, refreshSubscription]);
+  }, [authReady, user?.id, user?.role, refreshSubscription]);
+
+  const loginPartner = useCallback((roleId, loggedInUser, _token) => {
+    const normalized = persistPartnerSession(roleId, loggedInUser);
+    setUser(normalized);
+    setRole(normalized?.role ?? null);
+    return normalized;
+  }, []);
+
+  const isLoggedIn = useMemo(
+    () => Boolean(authReady && user?.id),
+    [authReady, user?.id],
+  );
 
   const [showSubscription, setShowSubscription] = useState(false);
   const [dashboardFilter, setDashboardFilter] = useState("Booked");
@@ -193,7 +218,6 @@ export const AuthProvider = ({ children }) => {
   const [showAddMobileImage, setShowAddMobileImage] = useState(false);
   const [showContentUploadForm, setShowContentUploadForm] = useState(false);
 
-  // Partners Page
   const [projectPartner, setProjectPartners] = useState([]);
   const [currentProjectPartner, setCurrentProjectPartner] = useState(null);
   const [showInquiryForm, setShowInquiryForm] = useState(false);
@@ -204,23 +228,21 @@ export const AuthProvider = ({ children }) => {
         URI,
         user,
         setUser,
+        role,
+        setRole,
+        authReady,
         loading,
         setLoading,
         isLoggedIn,
+        loginPartner,
+        logout,
         successScreen,
         setSuccessScreen,
         moreOpen,
         setMoreOpen,
         showSubscription,
         setShowSubscription,
-        storeTokenInCookie,
-        delTokenInCookie,
-        accessToken,
-        setAccessToken,
-        action,
-        setAction,
-        showProfile,
-        setShowProfile,
+        delTokenInCookie: clearPartnerSession,
         isActiveSubscription,
         setIsActiveSubacription,
         subscription,
@@ -334,16 +356,12 @@ export const AuthProvider = ({ children }) => {
         setShowAddMobileImage,
         showContentUploadForm,
         setShowContentUploadForm,
-
-        // partners page
         projectPartner,
         setProjectPartners,
         currentProjectPartner,
         setCurrentProjectPartner,
         showInquiryForm,
         setShowInquiryForm,
-        role,
-        setRole,
       }}
     >
       {children}

@@ -109,17 +109,30 @@ function PageLoader() {
 
 // ── Protected route guard ─────────────────────────────────────────────────────
 function RequireAuth() {
-  const { user } = useAuth();
-  if (!user) return <Navigate to="/login" replace />;
+  const { user, authReady } = useAuth();
+
+  if (!authReady) {
+    return <PageLoader />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <Outlet />;
 }
 
 function RequireRole({ allowedRoles }) {
-  const { user } = useAuth();
+  const { user, authReady } = useAuth();
 
-  if (!user) return <Navigate to="/" replace />;
+  if (!authReady) {
+    return <PageLoader />;
+  }
 
-  // role comes from your stored user
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   if (!allowedRoles.includes(user.role)) {
     return <Navigate to="/app/dashboard" replace />;
   }

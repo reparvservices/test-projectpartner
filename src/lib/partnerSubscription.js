@@ -1,7 +1,10 @@
+import { normalizePartnerRole } from "./partnerAuth";
+
 /** Partner role → API path + DB role slug */
 export const PARTNER_ROLE_SLUG = {
   "Project Partner": "project",
   "Sales Partner": "sales",
+  "Sales Person": "sales",
   "Territory Partner": "territory",
 };
 
@@ -34,7 +37,7 @@ export function isTrialPlan(plan) {
 }
 
 export function getSubscriptionTrialPath(user) {
-  const slug = PARTNER_ROLE_SLUG[user?.role];
+  const slug = PARTNER_ROLE_SLUG[normalizePartnerRole(user?.role)];
   if (!slug || !user?.id) return null;
   const base = SUBSCRIPTION_TRIAL_PATH[slug];
   return base ? `${base}/${user.id}` : null;
@@ -60,14 +63,14 @@ export async function activatePartnerTrial(apiBase, user, { planId }) {
 }
 
 export function getSubscriptionPath(user) {
-  const slug = PARTNER_ROLE_SLUG[user?.role];
+  const slug = PARTNER_ROLE_SLUG[normalizePartnerRole(user?.role)];
   if (!slug || !user?.id) return null;
   const base = SUBSCRIPTION_USER_PATH[slug];
   return base ? `${base}/${user.id}` : null;
 }
 
 export function getSubscriptionCancelPath(user) {
-  const slug = PARTNER_ROLE_SLUG[user?.role];
+  const slug = PARTNER_ROLE_SLUG[normalizePartnerRole(user?.role)];
   if (!slug || !user?.id) return null;
   const base = SUBSCRIPTION_CANCEL_PATH[slug];
   return base ? `${base}/${user.id}` : null;

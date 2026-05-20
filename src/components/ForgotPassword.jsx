@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { IoMail } from "react-icons/io5";
 import { IoArrowBack } from "react-icons/io5";
-import axios from "axios";
+import axios from "../lib/apiClient";
 import { useAuth } from "../store/auth";
+import { PARTNER_ROLE_CONFIG } from "../lib/partnerAuth";
 import Loader from "../components/Loader";
 
-function ForgotPassword({ setShowForgotPassword }) {
+function ForgotPassword({ setShowForgotPassword, roleId = "project-partner" }) {
   const { URI, setLoading } = useAuth();
+  const roleConfig = PARTNER_ROLE_CONFIG[roleId] || PARTNER_ROLE_CONFIG["project-partner"];
   const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-  useEffect(() => {
-    axios.defaults.withCredentials = true;
-  }, []);
 
   const gateNewPassword = async (e) => {
     e.preventDefault();
@@ -34,7 +32,7 @@ function ForgotPassword({ setShowForgotPassword }) {
     try {
       setLoading(true);
       const response = await axios.post(
-        `${URI}/project-partner/login/forgot-password`,
+        `${URI}${roleConfig.forgotPasswordEndpoint}`,
         { email },
         { withCredentials: true }
       );

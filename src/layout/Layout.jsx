@@ -1,6 +1,5 @@
 import { useAuth } from "../store/auth";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { NavLink } from "react-router-dom";
 import SubscriptionOutlet from "../components/subscription/SubscriptionOutlet";
 import { useState } from "react";
@@ -33,7 +32,7 @@ import {
 
 export default function Layout() {
   const navigate = useNavigate();
-  const { delTokenInCookie, URI, role, user } = useAuth();
+  const { logout, role, user } = useAuth();
   const { moreOpen, setMoreOpen } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -57,7 +56,7 @@ export default function Layout() {
       label: "Builders",
       to: "/app/builders",
       icon: <PiBuildingsFill size={18} />,
-      hide: user.role !== "Project Partner" ? true : false,
+      hide: user?.role !== "Project Partner",
     },
     {
       label: "Customers",
@@ -69,13 +68,13 @@ export default function Layout() {
       label: "Sales Partners",
       to: "/app/sales-partners",
       icon: <FaHandshake size={18} />,
-      hide: user.role !== "Project Partner" ? true : false,
+      hide: user?.role !== "Project Partner",
     },
     {
       label: "Territory Partners",
       to: "/app/territory-partners",
       icon: <FaUserTie size={18} />,
-      hide: user.role !== "Project Partner" ? true : false,
+      hide: user?.role !== "Project Partner",
     },
     {
       label: "Tickets",
@@ -120,18 +119,8 @@ export default function Layout() {
     }`;
 
   const userLogout = async () => {
-    try {
-      await axios.post(
-        URI + "/project-partner/logout",
-        {},
-        { withCredentials: true },
-      );
-      delTokenInCookie();
-      localStorage.removeItem("projectPartnerUser");
-      navigate("/", { replace: true });
-    } catch (error) {
-      console.log("Logout failed:", error);
-    }
+    await logout();
+    navigate("/", { replace: true });
   };
 
   return (
@@ -303,7 +292,7 @@ export default function Layout() {
 
             <NavLink
               to={
-                user.role === "Project Partner"
+                user?.role === "Project Partner"
                   ? "/app/property/add"
                   : "/app/enquiry/add"
               }

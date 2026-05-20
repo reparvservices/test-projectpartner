@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { MdLocationOn, MdOutlineMap } from "react-icons/md";
+import { MdOutlineMap } from "react-icons/md";
 import { FaHandshake, FaBriefcase } from "react-icons/fa";
 import { IoEye, IoEyeOff, IoMailOutline } from "react-icons/io5";
 import { LuLockKeyhole, LuSparkles } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../lib/apiClient";
 import { useAuth } from "../store/auth";
+import { PARTNER_ROLE_CONFIG } from "../lib/partnerAuth";
 import Loader from "../components/Loader";
 import ForgotPassword from "../components/ForgotPassword";
 import LoginBackImage from "../assets/login/LoginBackImage.svg";
@@ -15,39 +16,38 @@ const roles = [
     id: "project-partner",
     label: "Project Partner",
     icon: FaBriefcase,
-    endpoint: "/project-partner/login",
-    tokenKey: "projectPartnerToken",
-    userKey: "projectPartnerUser",
     redirect: "/app/dashboard",
   },
   {
     id: "sales-partner",
     label: "Sales Partner",
     icon: FaHandshake,
-    endpoint: "/sales/login",
-    tokenKey: "salesToken",
-    userKey: "salesUser",
     redirect: "/app/dashboard",
   },
   {
     id: "territory-partner",
     label: "Territory Partner",
     icon: MdOutlineMap,
-    endpoint: "/territory-partner/login",
-    tokenKey: "territoryToken",
-    userKey: "territoryUser",
     redirect: "/app/dashboard",
   },
 ];
 
+function AuthGateLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-10 h-10 rounded-full border-4 border-violet-200 border-t-violet-600 animate-spin" />
+    </div>
+  );
+}
+
 function Login() {
   const {
-    storeTokenInCookie,
     URI,
     setLoading,
-    setUser,
-    setRole,
+    loginPartner,
     refreshSubscription,
+    authReady,
+    isLoggedIn,
   } = useAuth();
 
   const [selectedRole, setSelectedRole] = useState("project-partner");
@@ -59,16 +59,19 @@ function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.defaults.withCredentials = true;
-  }, []);
+    if (authReady && isLoggedIn) {
+      navigate("/app/dashboard", { replace: true });
+    }
+  }, [authReady, isLoggedIn, navigate]);
 
   const activeRole = roles.find((r) => r.id === selectedRole);
+  const roleConfig = PARTNER_ROLE_CONFIG[selectedRole];
 
   const userLogin = async (e) => {
     e.preventDefault();
     setErrorMessage("");
 
-    if (!selectedRole) {
+    if (!selectedRole || !roleConfig) {
       setErrorMessage("Please select a role to continue.");
       return;
     }
@@ -80,23 +83,19 @@ function Login() {
     try {
       setLoading(true);
       const response = await axios.post(
-        `${URI}${activeRole.endpoint}`,
+        `${URI}${roleConfig.loginEndpoint}`,
         { emailOrUsername, password },
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" },
-        },
+        { headers: { "Content-Type": "application/json" } },
       );
 
-      const token = response.data[activeRole.tokenKey] || response.data.token;
+      const loggedInUser = response.data?.user;
+      const token = response.data?.token;
 
-      if (token) {
-        const loggedInUser = response.data.user;
-        localStorage.setItem(activeRole.userKey, JSON.stringify(loggedInUser));
-        storeTokenInCookie(token, selectedRole);
-        setUser(loggedInUser);
-        setRole(loggedInUser?.role || null);
-        await refreshSubscription(loggedInUser);
+      if (loggedInUser?.id) {
+        loginPartner(selectedRole, loggedInUser, token);
+        await refreshSubscription(
+          { ...loggedInUser, role: loggedInUser.role || roleConfig.displayRole },
+        );
         navigate(activeRole.redirect, { replace: true });
       } else {
         setErrorMessage("Invalid login credentials.");
@@ -110,6 +109,10 @@ function Login() {
     }
   };
 
+  if (!authReady) {
+    return <AuthGateLoader />;
+  }
+
   return (
     <div
       className="w-full min-w-0 min-h-screen flex items-center justify-center overflow-hidden"
@@ -118,16 +121,14 @@ function Login() {
         backgroundSize: "cover",
       }}
     >
-      {/* Card */}
       <div className="relative z-10 w-full max-w-115 mx-4 my-8">
         {!showForgotPassword ? (
-          <div
+          <form
+            onSubmit={userLogin}
             className="bg-white rounded-3xl overflow-hidden"
             style={{ boxShadow: "0 25px 60px rgba(80, 30, 180, 0.35)" }}
           >
-            {/* Body */}
             <div className="px-5 sm:px-8 py-6 sm:py-8">
-              {/* Header */}
               <div className="flex items-start justify-between mb-6">
                 <div>
                   <h1 className="text-[26px] font-bold text-gray-900 leading-tight">
@@ -142,14 +143,12 @@ function Login() {
                 </div>
               </div>
 
-              {/* Error */}
               {errorMessage && (
                 <div className="mb-4 bg-red-50 border border-red-200 text-red-500 text-xs px-4 py-2.5 rounded-xl">
                   {errorMessage}
                 </div>
               )}
 
-              {/* Role Selector — 3 equal columns */}
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {roles.map((role) => {
                   const Icon = role.icon;
@@ -186,7 +185,6 @@ function Login() {
                 })}
               </div>
 
-              {/* Email Input */}
               <div
                 className={`flex items-center border-2 rounded-2xl px-4 h-[54px] mb-3 transition-all duration-200
                   ${emailOrUsername ? "border-[#6C35DE]" : "border-gray-200 focus-within:border-[#6C35DE]"}`}
@@ -205,7 +203,6 @@ function Login() {
                 />
               </div>
 
-              {/* Password Input */}
               <div
                 className={`flex items-center border-2 rounded-2xl px-4 h-[54px] mb-3 transition-all duration-200
                   ${password ? "border-[#6C35DE]" : "border-gray-200 focus-within:border-[#6C35DE]"}`}
@@ -241,7 +238,6 @@ function Login() {
                 </button>
               </div>
 
-              {/* Forgot Password + Loader row */}
               <div className="flex items-center justify-between mb-6">
                 <Loader />
                 <button
@@ -253,9 +249,8 @@ function Login() {
                 </button>
               </div>
 
-              {/* Submit Button */}
               <button
-                onClick={userLogin}
+                type="submit"
                 className="w-full h-[54px] bg-[#6C35DE] text-white rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:bg-[#5a28c4] active:scale-[0.98]"
                 style={{ boxShadow: "0 8px 24px rgba(108, 53, 222, 0.35)" }}
               >
@@ -263,10 +258,13 @@ function Login() {
                 <span className="text-base">→</span>
               </button>
             </div>
-          </div>
+          </form>
         ) : (
           <div className="rounded-3xl overflow-hidden shadow-2xl">
-            <ForgotPassword setShowForgotPassword={setShowForgotPassword} />
+            <ForgotPassword
+              setShowForgotPassword={setShowForgotPassword}
+              roleId={selectedRole}
+            />
           </div>
         )}
       </div>

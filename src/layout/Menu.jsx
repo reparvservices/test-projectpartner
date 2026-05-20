@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../store/auth";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { ArrowLeft } from "lucide-react";
+import { getApiPrefixForRole } from "../lib/partnerAuth";
 
 // ── Icons (inline SVG components to avoid extra deps) ──────────────────────
 const QRIcon = () => (
@@ -422,7 +422,7 @@ function Section({ title, children }) {
 
 // ── Main Menu Page ─────────────────────────────────────────────────────────
 export default function Menu() {
-  const { URI, delTokenInCookie } = useAuth();
+  const { URI, logout, user: authUser } = useAuth();
   const navigate = useNavigate();
 
   const [user, setUser] = useState({
@@ -435,10 +435,13 @@ export default function Menu() {
   });
   const [fetching, setFetching] = useState(true);
 
+  const profilePrefix = getApiPrefixForRole(authUser?.role);
+
   const fetchProfile = async () => {
+    if (!authUser?.id) return;
     try {
       setFetching(true);
-      const r = await fetch(`${URI}/project-partner/profile`, {
+      const r = await fetch(`${URI}${profilePrefix}/profile`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -454,21 +457,11 @@ export default function Menu() {
 
   useEffect(() => {
     fetchProfile();
-  }, []);
+  }, [authUser?.id, authUser?.role, URI]);
 
   const handleLogout = async () => {
-    try {
-      await axios.post(
-        URI + "/project-partner/logout",
-        {},
-        { withCredentials: true },
-      );
-      delTokenInCookie();
-      localStorage.removeItem("projectPartnerUser");
-      navigate("/", { replace: true });
-    } catch (error) {
-      console.log("Logout failed:", error);
-    }
+    await logout();
+    navigate("/", { replace: true });
   };
 
   return (
