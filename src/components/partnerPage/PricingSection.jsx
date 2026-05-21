@@ -1,40 +1,172 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { FiArrowUpLeft } from "react-icons/fi";
-import RegistrationForm from "../partnerPageUpdated/RegistartionForm";
-import { planIcons } from "../../utils";
-import PricingCard from "../partnerPageUpdated/PricingCard";
+import {
+  Check,
+  Sparkles,
+  Shield,
+  Zap,
+  ChevronLeft,
+  ChevronRight,
+  Crown,
+  ArrowLeft,
+} from "lucide-react";
 import { useAuth } from "../../store/auth";
-import ContactForm from "./ContactForm";
+import { planIcons } from "../../utils";
+import RegistrationForm from "../partnerPageUpdated/RegistartionForm";
 
-export default function PricingSection({ auth }) {
-  const { URI, setSuccessScreen } = useAuth();
+const DEFAULT_FEATURES = [
+  "Leads Included",
+  "Site Visits",
+  "CRM & Follow-up",
+  "AI Lead Filtration",
+];
+
+const TRUST_ITEMS = [
+  { icon: Zap, label: "Razorpay autopay" },
+  { icon: Shield, label: "Secure billing" },
+  { icon: Sparkles, label: "Full platform access" },
+];
+
+function parseFeatures(plan) {
+  if (typeof plan?.features === "string" && plan.features.trim()) {
+    return plan.features.split(",").map((f) => f.trim()).filter(Boolean);
+  }
+  if (Array.isArray(plan?.features) && plan.features.length) {
+    return plan.features;
+  }
+  return DEFAULT_FEATURES;
+}
+
+function recommendedPlanIndex(plans) {
+  if (!plans?.length) return -1;
+  const byHighlight = plans.findIndex((p) => p?.mostPopular === true);
+  if (byHighlight >= 0) return byHighlight;
+  return Math.min(1, plans.length - 1);
+}
+
+function gridClass(count) {
+  if (count <= 1) return "max-w-md mx-auto grid-cols-1";
+  if (count === 2) return "max-w-3xl mx-auto grid-cols-1 md:grid-cols-2";
+  return "max-w-6xl mx-auto grid-cols-1 md:grid-cols-2 xl:grid-cols-3";
+}
+
+function PlanCardSkeleton() {
+  return (
+    <div className="rounded-3xl border border-gray-100 bg-white p-7 animate-pulse min-h-[380px] flex flex-col">
+      <div className="h-4 bg-gray-100 rounded w-2/3 mb-4" />
+      <div className="h-10 bg-gray-100 rounded w-1/2 mb-8" />
+      <div className="space-y-3 flex-1">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-3 bg-gray-50 rounded w-full" />
+        ))}
+      </div>
+      <div className="h-11 bg-gray-100 rounded-xl mt-6" />
+    </div>
+  );
+}
+
+function PlanCard({ plan, index, isRecommended, onChoose }) {
+  const features = parseFeatures(plan);
+  const visible = features.slice(0, 5);
+  const extra = features.length - 5;
+
+  return (
+    <article
+      className={`relative flex flex-col h-full rounded-3xl bg-white transition-all duration-300 ${
+        isRecommended
+          ? "ring-2 ring-[#5E23DC] shadow-xl shadow-[#5E23DC]/15 scale-[1.02] z-[1]"
+          : "border border-gray-200/80 shadow-sm hover:shadow-lg hover:border-[#5E23DC]/20"
+      }`}
+      style={{
+        animation: `fadeSlideUp 0.4s ease both`,
+        animationDelay: `${index * 70}ms`,
+      }}
+    >
+      {isRecommended && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+          <span className="inline-flex items-center gap-1.5 text-white text-[11px] font-bold px-4 py-1.5 rounded-full shadow-md bg-gradient-to-r from-[#5E23DC] to-[#7c3aed]">
+            <Sparkles size={12} />
+            Most popular
+          </span>
+        </div>
+      )}
+
+      {plan.isTrial && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+          <span className="inline-flex items-center gap-1.5 text-white text-[11px] font-bold px-4 py-1.5 rounded-full shadow-md bg-emerald-500">
+            <Crown size={12} />
+            Free trial
+          </span>
+        </div>
+      )}
+
+      <div className="p-7 pt-9 flex flex-col flex-1">
+        <div className="mb-1 flex items-center gap-2">
+          {plan.icons && (
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: plan.iconBg }}>
+              {plan.icons}
+            </span>
+          )}
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 tracking-tight leading-tight">
+              {plan.name}
+            </h3>
+            <p className="text-xs text-gray-400 capitalize">{plan.description}</p>
+          </div>
+        </div>
+
+        <div className="my-5 pb-5 border-b border-gray-100">
+          <div className="flex items-baseline gap-1">
+            <span className="text-4xl font-extrabold text-gray-900 tracking-tight">
+              {plan.isTrial ? "Free" : `₹${Number(plan.totalPrice).toLocaleString("en-IN")}`}
+            </span>
+          </div>
+          {!plan.isTrial && (
+            <p className="text-xs text-gray-400 mt-1">per billing cycle · incl. 18% GST</p>
+          )}
+        </div>
+
+        <ul className="space-y-3 mb-7 flex-1">
+          {visible.map((feature, i) => (
+            <li key={i} className="flex items-start gap-2.5 text-[13px] text-gray-600">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#EDE9FE]">
+                <Check size={12} className="text-[#5E23DC]" strokeWidth={3} />
+              </span>
+              <span className="leading-snug pt-0.5">{String(feature)}</span>
+            </li>
+          ))}
+          {extra > 0 && (
+            <li className="text-xs text-[#5E23DC] font-medium pl-7">
+              + {extra} more features
+            </li>
+          )}
+        </ul>
+
+        <button
+          type="button"
+          onClick={() => onChoose(plan)}
+          className={`mt-auto w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-[0.98] ${
+            isRecommended
+              ? "text-white shadow-md hover:shadow-lg bg-gradient-to-r from-[#5E23DC] to-[#7c3aed]"
+              : plan.isTrial
+              ? "bg-emerald-600 text-white hover:bg-emerald-700"
+              : "bg-gray-900 text-white hover:bg-gray-800"
+          }`}
+        >
+          {plan.isTrial ? "Start Free Trial" : "Choose Plan"}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+export default function PricingSection() {
+  const { URI } = useAuth();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [expandedPlans, setExpandedPlans] = useState({});
-  const [activeIndex, setActiveIndex] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [couponState, setCouponState] = useState({});
-  const [redeemConfirm, setRedeemConfirm] = useState(null);
-  const [showContactForm, setShowContactForm] = useState(false);
-  const [showScheduleForm, setShowScheduleForm] = useState(false);
-  // structure: { plan, code, discount }
-
+  const [activeIndex, setActiveIndex] = useState(0);
   const sliderRef = useRef(null);
-
-  const toggleFeatures = (id) => {
-    setExpandedPlans((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const updateCouponState = (planId, newState) => {
-    setCouponState((prev) => ({
-      ...prev,
-      [planId]: { ...prev[planId], ...newState },
-    }));
-  };
 
   useEffect(() => {
     fetchPlans();
@@ -46,409 +178,247 @@ export default function PricingSection({ auth }) {
       const res = await axios.get(
         `${URI}/api/subscription/partner-plans/${encodeURIComponent("Project Partner")}`,
       );
-
       const rows = Array.isArray(res.data) ? res.data : [];
-      const activePlans = rows.map((p) => ({
-        ...p,
-        partnerType: "Project Partner",
-      }));
 
-      const uniquePlansMap = new Map();
-      activePlans.forEach((plan) => {
-        if (
-          !uniquePlansMap.has(plan.planDuration) ||
-          plan.highlight === "True"
-        ) {
-          uniquePlansMap.set(plan.planDuration, plan);
-        }
-      });
+      const formatted = rows.map((item, index) => {
+        const isTrial =
+          String(item.plan_type || item.planType || "").toLowerCase() === "trial";
+        const features = item.features
+          ? item.features.split(",").map((f) => f.trim())
+          : DEFAULT_FEATURES;
 
-      let formattedPlans = Array.from(uniquePlansMap.values()).map(
-        (item, index) => {
-          const isTrial =
-            String(item.plan_type || item.planType || "").toLowerCase() === "trial";
-          const features = item.features
-            ? item.features.split(",").map((f) => f.trim())
-            : [];
-          return {
-            id: item.id,
-            plan_type: item.plan_type || item.planType,
-            isTrial,
-            name: item.planName,
-            description: `${item.planDuration} `,
-            monthlyPrice: isTrial ? "Free" : `₹${item.totalPrice}`,
-            totalPrice: isTrial ? "0" : `${item.totalPrice}`,
-            yearlyPrice: isTrial
-              ? "Free"
-              : `₹${Math.round(
-                  (item.totalPrice / parseInt(item.planDuration)) * 12,
-                )}`,
-            billPrice: isTrial ? "0" : `${item.totalPrice}`,
-            features,
-            mostPopular: item.highlight === "True",
-            iconBg:
-              index === 1
-                ? "linear-gradient(135deg, #5E23DC 0%, #854DFB 100%)"
-                : "linear-gradient(135deg, #AD46FF 0%, #9810FA 100%)",
-            buttonText: isTrial ? "Start Free Trial" : "Choose Plan",
-            buttonClass:
-              item.highlight === "True"
-                ? "bg-[#5E23DC] text-white"
-                : "border border-[#5E23DC] text-[#5E23DC] hover:bg-[#5E23DC] hover:text-white",
-            icons: planIcons[item.planDuration] || (
-              <svg width="24" height="24" fill="none">
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="9"
-                  stroke="white"
-                  strokeWidth="2.5"
-                />
-              </svg>
-            ),
-          };
-        },
-      );
-
-      // Order: Trial → Most Popular → Rest
-      const freePlan = formattedPlans.find((p) => p.isTrial || p.totalPrice === "0");
-      const mostPopularPlan = formattedPlans.find(
-        (p) => p.mostPopular && p.totalPrice !== "0",
-      );
-      const remainingPlans = formattedPlans.filter(
-        (p) => p !== freePlan && p !== mostPopularPlan,
-      );
-      const orderedPlans = [
-        ...(freePlan ? [freePlan] : []),
-        ...(mostPopularPlan ? [mostPopularPlan] : []),
-        ...remainingPlans,
-      ];
-
-      setPlans(orderedPlans);
-
-      // Initialize coupon state
-      const initialCouponState = {};
-      orderedPlans.forEach((plan) => {
-        initialCouponState[plan.id] = {
-          redeemCode: "",
-          couponMsg: "",
-          isApplying: false,
+        return {
+          id: item.id,
+          plan_type: item.plan_type || item.planType,
+          isTrial,
+          name: item.planName,
+          description: item.planDuration || "",
+          totalPrice: isTrial ? "0" : `${item.totalPrice}`,
+          billPrice: isTrial ? "0" : `${item.totalPrice}`,
+          basePrice: item.basePrice,
+          gstAmount: item.gstAmount,
+          features,
+          mostPopular: item.highlight === "True",
+          iconBg:
+            index % 2 === 1
+              ? "linear-gradient(135deg, #5E23DC 0%, #854DFB 100%)"
+              : "linear-gradient(135deg, #AD46FF 0%, #9810FA 100%)",
+          icons: planIcons[item.planDuration] || (
+            <svg width="20" height="20" fill="none">
+              <circle cx="10" cy="10" r="7.5" stroke="white" strokeWidth="2" />
+            </svg>
+          ),
         };
       });
-      setCouponState(initialCouponState);
+
+      // Order: Trial first → Most popular → Rest
+      const trialPlans = formatted.filter((p) => p.isTrial);
+      const popularPlans = formatted.filter((p) => p.mostPopular && !p.isTrial);
+      const rest = formatted.filter((p) => !p.isTrial && !p.mostPopular);
+      setPlans([...trialPlans, ...popularPlans, ...rest]);
     } catch (err) {
       console.error(err);
+      setPlans([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const generateUniqueId = () => {
-    return Math.floor(1000 + Math.random() * 9000);
+  const scrollPlans = (dir) => {
+    const el = sliderRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth * 0.88, behavior: "smooth" });
   };
 
-  const handleRedeem = async (plan, code) => {
-    if (!code.trim()) {
-      window.alert("Enter a redeem code");
-      return;
-    }
+  const recIndex = recommendedPlanIndex(plans);
 
-    let userId = localStorage.getItem("userId");
-    if (!userId) {
-      userId = Math.floor(1000 + Math.random() * 9000);
-      localStorage.setItem("userId", userId);
-    }
-
-    updateCouponState(plan.id, { isApplying: true, couponMsg: "" });
-
-    try {
-      const res = await axios.post(
-        `${URI}/projectpartner/subscription/validate`,
-        {
-          user_id: userId,
-          code: code.trim(),
-          planid: plan.id,
-        },
-      );
-
-      if (res.data.success) {
-        const discount = Number(res.data.discount || 0);
-
-        // 👉 OPEN CONFIRM POPUP (do NOT apply yet)
-        setRedeemConfirm({
-          plan,
-          code,
-          discount,
-        });
-      } else {
-        updateCouponState(plan.id, {
-          couponMsg: res.data.message || "Invalid Code",
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      updateCouponState(plan.id, { couponMsg: "Something went wrong" });
-    } finally {
-      updateCouponState(plan.id, { isApplying: false });
-    }
-  };
-  const confirmRedeem = () => {
-    if (!redeemConfirm) return;
-
-    const { plan, discount } = redeemConfirm;
-
-    const originalPrice = Number(plan.billPrice);
-    const discountedPrice = Number(originalPrice - discount, 0);
-
-    const updatedPlan = {
-      ...plan,
-      totalPrice: discountedPrice,
-      billPrice: discountedPrice,
-      monthlyPrice: `₹${discountedPrice}`,
-    };
-
-    // Update plans list
-    setPlans((prev) => prev.map((p) => (p.id === plan.id ? updatedPlan : p)));
-
-    // Update selected plan AFTER continue
-    setSelectedPlan(updatedPlan);
-
-    updateCouponState(plan.id, {
-      couponMsg: `Coupon Applied: ₹${discount} OFF`,
-    });
-
-    setRedeemConfirm(null); // close popup
-  };
-  const cancelRedeem = () => {
-    setRedeemConfirm(null);
-  };
-
-  const handleChoosePlan = (plan) => setSelectedPlan(plan);
-
-  // Selected plan registration
+  // Registration view
   if (selectedPlan) {
     return (
-      <div className="bg-white min-h-screen w-full py-10 sm:py-10">
-        <div className="w-full sm:max-w-6xl mx-auto bg-white px-0 sm:px-6">
-          <div className="flex flex-col items-center text-center mb-6 px-4 sm:px-0">
+      <section className="w-full bg-white min-h-screen py-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col items-center text-center mb-8">
             <button
               type="button"
               onClick={() => setSelectedPlan(null)}
-              className="max-w-[220px] flex gap-1 items-center justify-center mb-4 bg-[#5E23DC] px-4 pl-5 py-1.5 rounded-full text-white cursor-pointer transition hover:scale-105 active:scale-95"
+              className="flex items-center gap-2 mb-5 text-sm font-semibold text-[#5E23DC] border border-[#5E23DC]/30 bg-[#faf8ff] hover:bg-[#ede9fe] px-5 py-2 rounded-full transition"
             >
-              <span className="font-semibold">Go Back to Plans</span>
-              <FiArrowUpLeft className="w-5 h-5" />
+              <ArrowLeft size={16} />
+              Back to Plans
             </button>
 
-            <h2 className="text-lg sm:text-xl lg:text-3xl font-bold text-black mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               You selected the{" "}
               <span className="text-[#5E23DC]">{selectedPlan.name}</span> plan
             </h2>
-
-            <p className="text-gray-600 text-sm sm:text-base mb-1">
+            <p className="text-gray-500 text-sm sm:text-base mb-1">
               Fill out the form below to register as a Project Partner
             </p>
-
-            <p className="text-center text-black font-semibold text-sm sm:text-base">
-              Duration: {selectedPlan.description} | Price: ₹
-              {selectedPlan.billPrice}
+            <p className="text-gray-800 font-semibold text-sm">
+              Duration: {selectedPlan.description}
+              {!selectedPlan.isTrial && ` · Price: ₹${Number(selectedPlan.billPrice).toLocaleString("en-IN")}`}
             </p>
-
-            <div className="w-16 sm:w-20 h-1 bg-[#5E23DC] mx-auto mt-3 rounded" />
+            <div className="w-16 h-1 bg-[#5E23DC] mx-auto mt-4 rounded-full" />
           </div>
 
-          <div className="w-full">
-            <RegistrationForm plan={selectedPlan} />
-          </div>
+          <RegistrationForm plan={selectedPlan} />
         </div>
-      </div>
+      </section>
     );
   }
 
+  // Pricing view
   return (
-    <section id="pricing" className="w-full bg-[#F8FAFF] py-20 px-4">
-      <div className="max-w-6xl mx-auto text-center">
-        <h2 className="text-4xl md:text-5xl font-bold text-[#0F172A]">
-          Choose Your Plan
-        </h2>
-        <p className="mt-2 text-gray-600 text-sm lg:text-lg">
-          Flexible pricing designed to scale with your business
-        </p>
+    <>
+      <style>{`
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
 
-        {/* MOBILE SLIDER */}
-        <div className="mt-10 md:hidden">
-          {loading ? (
-            <div className="flex gap-4 overflow-x-auto">
-              {[1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="min-w-[85%] bg-white rounded-2xl p-8 border animate-pulse"
-                />
+      <section id="pricing" className="relative w-full bg-[#faf9fc] py-20 px-4 overflow-hidden">
+        {/* Ambient blobs */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-[#5E23DC]/[0.07] rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-[350px] h-[350px] bg-[#a855f7]/[0.05] rounded-full blur-3xl" />
+        </div>
+
+        <div className="relative max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="text-center max-w-2xl mx-auto mb-10 md:mb-14">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#5E23DC]/15 bg-white px-4 py-1.5 text-xs font-semibold text-[#5E23DC] shadow-sm mb-5">
+              Project Partner Plans
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
+              Choose Your Plan
+            </h2>
+            <p className="mt-3 text-gray-500 text-base sm:text-lg leading-relaxed">
+              Flexible pricing designed to scale with your business
+            </p>
+
+            {/* Trust badges */}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+              {TRUST_ITEMS.map(({ icon: Icon, label }) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white border border-gray-200/80 px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm"
+                >
+                  <Icon size={14} className="text-[#5E23DC]" />
+                  {label}
+                </span>
               ))}
             </div>
-          ) : (
-            <>
-              <div
-                className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-                ref={sliderRef}
-                onScroll={(e) => {
-                  const index = Math.round(
-                    e.target.scrollLeft / e.target.clientWidth,
-                  );
-                  setActiveIndex(index);
-                }}
-              >
-                {plans.map((plan) => (
-                  <div
-                    key={plan.id}
-                    className="w-[98%] snap-center flex-shrink-0"
-                  >
-                    <PricingCard
-                      plan={plan}
-                      expandedPlans={expandedPlans}
-                      toggleFeatures={toggleFeatures}
-                      redeemCode={couponState[plan.id]?.redeemCode || ""}
-                      couponMsg={couponState[plan.id]?.couponMsg || ""}
-                      isApplying={couponState[plan.id]?.isApplying || false}
-                      setRedeemCode={(val) =>
-                        updateCouponState(plan.id, { redeemCode: val })
-                      }
-                      setCouponMsg={(val) =>
-                        updateCouponState(plan.id, { couponMsg: val })
-                      }
-                      setIsApplying={(val) =>
-                        updateCouponState(plan.id, { isApplying: val })
-                      }
-                      onChoose={handleChoosePlan}
-                      handleRedeem={handleRedeem}
-                    />
-                  </div>
-                ))}
-              </div>
+          </div>
 
-              {/* DOTS */}
-              <div className="flex justify-center gap-2 mt-4">
+          {/* Mobile carousel */}
+          <div className="lg:hidden relative -mx-4 sm:mx-0">
+            <div className="flex justify-end gap-2 mb-3 px-4 sm:px-0">
+              <button
+                type="button"
+                onClick={() => scrollPlans(-1)}
+                aria-label="Previous plan"
+                className="w-9 h-9 rounded-full border border-gray-200 bg-white shadow-sm flex items-center justify-center text-gray-600"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollPlans(1)}
+                aria-label="Next plan"
+                className="w-9 h-9 rounded-full border border-gray-200 bg-white shadow-sm flex items-center justify-center text-gray-600"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+            <div
+              ref={sliderRef}
+              className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 px-4 scroll-smooth scrollbar-hide"
+              onScroll={(e) => {
+                const idx = Math.round(
+                  e.target.scrollLeft / (e.target.clientWidth * 0.88),
+                );
+                setActiveIndex(idx);
+              }}
+            >
+              {loading
+                ? [1, 2, 3].map((i) => (
+                    <div key={i} className="snap-center shrink-0 w-[min(88vw,340px)]">
+                      <PlanCardSkeleton />
+                    </div>
+                  ))
+                : plans.map((plan, index) => (
+                    <div
+                      key={plan.id ?? index}
+                      className="snap-center shrink-0 w-[min(88vw,340px)]"
+                    >
+                      <PlanCard
+                        plan={plan}
+                        index={index}
+                        isRecommended={plan.mostPopular || index === recIndex}
+                        onChoose={setSelectedPlan}
+                      />
+                    </div>
+                  ))}
+            </div>
+            {!loading && plans.length > 1 && (
+              <div className="flex justify-center gap-2 mt-3">
                 {plans.map((_, i) => (
                   <span
                     key={i}
                     className={`h-2 rounded-full transition-all ${
-                      i === activeIndex
-                        ? "bg-[#5E23DC] w-6"
-                        : "bg-[#D6C8FA] w-2"
+                      i === activeIndex ? "bg-[#5E23DC] w-6" : "bg-[#D6C8FA] w-2"
                     }`}
                   />
                 ))}
               </div>
-            </>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* DESKTOP GRID */}
-        <div className="hidden md:grid mt-10 grid-cols-1 md:grid-cols-3 gap-8">
-          {loading
-            ? [1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="bg-white rounded-2xl p-8 border animate-pulse"
-                />
-              ))
-            : plans.map((plan) => (
-                <PricingCard
-                  key={plan.id}
+          {/* Desktop grid */}
+          {loading ? (
+            <div className={`hidden lg:grid gap-6 ${gridClass(3)}`}>
+              {[1, 2, 3].map((i) => (
+                <PlanCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : plans.length === 0 ? (
+            <div className="text-center py-20 px-6 max-w-md mx-auto rounded-3xl bg-white border border-gray-100 shadow-sm">
+              <p className="text-gray-900 font-semibold text-lg">No plans available</p>
+              <p className="text-gray-500 text-sm mt-2 leading-relaxed">
+                No active plans for Project Partner. Please contact your admin.
+              </p>
+            </div>
+          ) : (
+            <div className={`hidden lg:grid gap-6 ${gridClass(plans.length)}`}>
+              {plans.map((plan, index) => (
+                <PlanCard
+                  key={plan.id ?? index}
                   plan={plan}
-                  expandedPlans={expandedPlans}
-                  toggleFeatures={toggleFeatures}
-                  redeemCode={couponState[plan.id]?.redeemCode || ""}
-                  couponMsg={couponState[plan.id]?.couponMsg || ""}
-                  isApplying={couponState[plan.id]?.isApplying || false}
-                  setRedeemCode={(val) =>
-                    updateCouponState(plan.id, { redeemCode: val })
-                  }
-                  setCouponMsg={(val) =>
-                    updateCouponState(plan.id, { couponMsg: val })
-                  }
-                  setIsApplying={(val) =>
-                    updateCouponState(plan.id, { isApplying: val })
-                  }
-                  onChoose={handleChoosePlan}
-                  handleRedeem={handleRedeem}
+                  index={index}
+                  isRecommended={plan.mostPopular || index === recIndex}
+                  onChoose={setSelectedPlan}
                 />
               ))}
-        </div>
-
-        {redeemConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="bg-white rounded-3xl p-7 w-[92%] max-w-sm text-center shadow-2xl animate-[scaleIn_0.2s_ease-out]">
-              {/* ICON */}
-              <div className="w-14 h-14 mx-auto mb-4 flex items-center justify-center rounded-full bg-[#EEE6FF]">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M20 7L10 17L5 12"
-                    stroke="#5E23DC"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-
-              {/* TITLE */}
-              <h3 className="text-xl font-bold text-gray-900 mb-1">
-                Confirm Coupon
-              </h3>
-
-              <p className="text-gray-500 text-sm mb-5">
-                You’re about to apply a discount
-              </p>
-
-              {/* DISCOUNT INFO */}
-              <div className="bg-[#F5F2FF] rounded-xl p-4 mb-6">
-                <p className="text-sm text-gray-600">You will save</p>
-
-                <p className="text-2xl font-bold text-[#5E23DC] mt-1">
-                  ₹{redeemConfirm.discount}
-                </p>
-
-                <p className="text-xs text-gray-500 mt-1">
-                  on this subscription plan
-                </p>
-              </div>
-
-              {/* ACTION BUTTONS */}
-              <div className="flex gap-3">
-                <button
-                  onClick={cancelRedeem}
-                  className="w-1/2 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  onClick={confirmRedeem}
-                  className="w-1/2 py-2.5 rounded-xl bg-[#5E23DC] text-white font-semibold hover:bg-[#4b1bb4] transition shadow-md"
-                >
-                  Continue
-                </button>
-              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <p className="mt-12 text-gray-700 text-sm">
-          Need a custom plan for your organization?
-        </p>
-        <button
-          onClick={() => {
-            setShowContactForm(true);
-          }}
-          className="mt-3 inline-flex items-center justify-center w-[295px] h-[46px] bg-[#5E23DC] rounded-[11px] text-white font-semibold hover:bg-[#4b1bb4]"
-        >
-          Contact Reparv Sales →
-        </button>
-      </div>
-      {showContactForm && (
-        <ContactForm onClose={() => setShowContactForm(false)} />
-      )}
-    </section>
+          {/* Bottom CTA */}
+          {!loading && plans.length > 0 && (
+            <div className="mt-14 text-center">
+              <p className="text-sm text-gray-500 mb-2">
+                Need a custom plan for your organization?
+              </p>
+              <a
+                href="mailto:sales@reparv.in"
+                className="inline-flex items-center gap-2 px-8 py-3 rounded-2xl text-sm font-semibold border-2 border-[#5E23DC]/30 text-[#5E23DC] bg-white hover:bg-[#faf8ff] transition shadow-sm"
+              >
+                Contact Reparv Sales →
+              </a>
+            </div>
+          )}
+        </div>
+      </section>
+    </>
   );
 }

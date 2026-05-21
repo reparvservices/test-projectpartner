@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../store/auth";
-import { handlePayment } from "../../utils/payment.js";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; 
 
 const RegistrationForm = ({ plan }) => {
-  const { URI, setSuccessScreen } = useAuth();
-  const registrationPrice = plan?.totalPrice;
+  const navigate = useNavigate(); 
+  const { URI } = useAuth();
 
   const [newPartner, setNewPartner] = useState({
     fullname: "",
@@ -21,6 +21,8 @@ const RegistrationForm = ({ plan }) => {
 
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const fetchStates = async () => {
     try {
@@ -38,150 +40,18 @@ const RegistrationForm = ({ plan }) => {
 
   const fetchCities = async () => {
     try {
-      const response = await fetch(`${URI}/admin/cities/${newPartner.state}`, {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await fetch(
+        `${URI}/admin/cities/${newPartner.state}`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
       const data = await response.json();
       setCities(data);
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
-  const startTrial = async (userId) => {
-    if (!plan?.id) {
-      alert("Please select a trial plan first.");
-      return;
-    }
-    try {
-      const res = await axios.post(
-        `${URI}/projectpartner/subscription/activate-trial/${userId}`,
-        {
-          plan_id: Number(plan.id),
-          username: newPartner.username,
-          password: newPartner.password,
-        },
-      );
-
-      if (res.data.success) {
-        alert(
-          "🎉 Success! Your free trial has started. Login details sent to your email."
-        );
-      } else {
-        alert(res.data.message || "Unable to start trial");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong while starting trial");
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Free plan: ensure username & password
-
-    if (!newPartner.username || !newPartner.password) {
-      alert("Please provide username and password for free plan");
-      return;
-    }
-
-    try {
-      // Submit registration data first
-      const response = await fetch(`${URI}/admin/projectpartner/add`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newPartner),
-      });
-
-      if (!response.ok) {
-        const errorRes = await response.json();
-        console.error("Submission Error:", errorRes);
-        alert(errorRes.message || "Failed to Submit Data. Please try again.");
-        return;
-      }
-
-      const res = await response.json();
-
-      const isTrial =
-        String(plan?.plan_type || plan?.planType || "").toLowerCase() === "trial" ||
-        Number(plan?.totalPrice) === 0;
-
-      if (isTrial) {
-        setSuccessScreen({
-          show: true,
-          label: "Registration Successful",
-          description:
-            "You are now registered as a Project Partner! Your free trial will start shortly.",
-        });
-
-        await startTrial(res.Id);
-
-        setNewPartner({
-          fullname: "",
-          contact: "",
-          email: "",
-          state: "",
-          city: "",
-          intrest: "",
-          refrence: "",
-          username: "",
-          password: "",
-        });
-        return;
-      }
-
-      // Paid plan: proceed with Razorpay
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        alert("Failed to load Razorpay. Please check your internet.");
-        return;
-      }
-
-      setSuccessScreen({
-        show: true,
-        label: "Your Data Sent Successfully",
-        description: `Pay Rs ${registrationPrice} to join as a Project Partner`,
-      });
-
-      await handlePayment(
-        newPartner,
-        "Project Partner",
-        "https://projectpartner.reparv.in",
-        registrationPrice,
-        res.Id,
-        "projectpartner",
-        "id",
-        setSuccessScreen
-      );
-
-      setNewPartner({
-        fullname: "",
-        contact: "",
-        email: "",
-        state: "",
-        city: "",
-        intrest: "",
-        refrence: "",
-        username: "",
-        password: "",
-      });
-    } catch (err) {
-      console.error("Error:", err);
-      alert("Something went wrong. Please try again.");
     }
   };
 
@@ -192,6 +62,67 @@ const RegistrationForm = ({ plan }) => {
   useEffect(() => {
     if (newPartner.state) fetchCities();
   }, [newPartner.state]);
+
+  const isTrial =
+    String(plan?.plan_type || plan?.planType || "").toLowerCase() === "trial" ||
+    Number(plan?.totalPrice) === 0;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!newPartner.username || !newPartner.password) {
+      setError("Please provide a username and password.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      // Step 1: Register the partner
+      const response = await fetch(`${URI}/admin/projectpartner/add`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newPartner),
+      });
+
+      if (!response.ok) {
+        const errorRes = await response.json();
+        setError(errorRes.message || "Registration failed. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+
+      const res = await response.json();
+      const userId = res.Id;
+
+      // Step 2: If trial plan, activate it
+      if (isTrial && plan?.id) {
+        try {
+          await axios.post(
+            `${URI}/projectpartner/subscription/activate-trial/${userId}`,
+            {
+              plan_id: Number(plan.id),
+              username: newPartner.username,
+              password: newPartner.password,
+            },
+          );
+        } catch (trialErr) {
+          console.error("Trial activation error:", trialErr);
+          // Non-blocking — registration already succeeded, redirect anyway
+        }
+      }
+
+      // Step 3: Redirect to login page
+      navigate("/login");
+    } catch (err) {
+      console.error("Error:", err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const inputClass = `
     w-full h-[52px]
@@ -236,20 +167,47 @@ const RegistrationForm = ({ plan }) => {
               Become a Project Partner
             </h3>
             <p className="text-sm sm:text-base opacity-90 mt-2 max-w-xl">
-              Fill in your details and proceed to secure payment to unlock your
-              partnership benefits.
+              {isTrial
+                ? "Fill in your details to start your free trial instantly."
+                : `Fill in your details to register for the ${plan?.name || "selected"} plan.`}
             </p>
           </div>
         </div>
 
-        {/* FORM */}
+        {/* FORM BODY */}
         <div className="p-6 sm:p-10 space-y-8">
+
+          {/* Error banner */}
+          {error && (
+            <div className="flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+              <span className="mt-0.5 shrink-0">⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Plan summary pill */}
+          {plan?.name && (
+            <div className="flex items-center gap-3 rounded-xl bg-[#faf8ff] border border-[#5E23DC]/20 px-4 py-3">
+              <span className="text-sm text-gray-600">
+                Selected plan:
+              </span>
+              <span className="font-semibold text-[#5E23DC] text-sm">
+                {plan.name}
+              </span>
+              {plan.description && (
+                <span className="text-xs text-gray-400">· {plan.description}</span>
+              )}
+              <span className="ml-auto text-sm font-bold text-gray-800">
+                {isTrial ? "Free" : `₹${Number(plan.totalPrice).toLocaleString("en-IN")}`}
+              </span>
+            </div>
+          )}
+
           {/* PERSONAL */}
           <div className="space-y-4">
             <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">
               Personal Information
             </h4>
-
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <input
                 type="text"
@@ -261,7 +219,6 @@ const RegistrationForm = ({ plan }) => {
                 }
                 className={inputClass}
               />
-
               <input
                 type="text"
                 required
@@ -277,7 +234,6 @@ const RegistrationForm = ({ plan }) => {
                 className={inputClass}
               />
             </div>
-
             <input
               type="email"
               required
@@ -295,7 +251,6 @@ const RegistrationForm = ({ plan }) => {
             <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">
               Location Details
             </h4>
-
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <select
                 required
@@ -312,7 +267,6 @@ const RegistrationForm = ({ plan }) => {
                   </option>
                 ))}
               </select>
-
               <select
                 required
                 value={newPartner.city}
@@ -331,13 +285,11 @@ const RegistrationForm = ({ plan }) => {
             </div>
           </div>
 
-          {/* FREE PLAN: USERNAME & PASSWORD */}
-
+          {/* CREDENTIALS */}
           <div className="space-y-4">
             <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">
               Account Credentials
             </h4>
-
             <input
               type="text"
               required
@@ -348,7 +300,6 @@ const RegistrationForm = ({ plan }) => {
               }
               className={inputClass}
             />
-
             <input
               type="password"
               required
@@ -360,12 +311,12 @@ const RegistrationForm = ({ plan }) => {
               className={inputClass}
             />
           </div>
+
           {/* INTENT */}
           <div className="space-y-4">
             <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">
               Partnership Intent
             </h4>
-
             <select
               required
               value={newPartner.intrest}
@@ -402,24 +353,15 @@ const RegistrationForm = ({ plan }) => {
                 Interest in Sustainable and Smart Projects
               </option>
             </select>
-
-            <input
-              type="text"
-              placeholder="Referral Code (optional)"
-              value={newPartner.refrence}
-              onChange={(e) =>
-                setNewPartner({ ...newPartner, refrence: e.target.value })
-              }
-              className={inputClass}
-            />
           </div>
 
           {/* CTA */}
-          <div className="flex flex-col items-center gap-4 pt-6">
+          <div className="flex flex-col items-center gap-4 pt-4">
             <button
               type="submit"
+              disabled={submitting}
               className="
-                w-[260px]
+                w-[280px]
                 bg-gradient-to-r from-[#5E23DC] to-[#7C3AED]
                 text-white
                 py-3.5 rounded-2xl
@@ -428,17 +370,44 @@ const RegistrationForm = ({ plan }) => {
                 transition-all duration-300
                 hover:scale-105 hover:shadow-xl
                 active:scale-95
+                disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100
+                flex items-center justify-center gap-2
               "
             >
-              {parseFloat(registrationPrice) === 0
-                ? "Register & Start Free Trial"
-                : "Proceed to Secure Payment"}
+              {submitting ? (
+                <>
+                  <svg
+                    className="animate-spin h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                  Registering…
+                </>
+              ) : isTrial ? (
+                "Register & Start Free Trial"
+              ) : (
+                "Complete Registration"
+              )}
             </button>
-
             <p className="text-xs text-slate-500 text-center max-w-md">
-              {parseFloat(registrationPrice) === 0
-                ? "Your free trial starts immediately after registration."
-                : "You will be redirected to a secure Razorpay gateway. Your information is encrypted and protected."}
+              {isTrial
+                ? "Your free trial starts immediately after registration. Login credentials will be sent to your email."
+                : "After registration you'll be redirected to login. Your information is encrypted and protected."}
             </p>
           </div>
         </div>
