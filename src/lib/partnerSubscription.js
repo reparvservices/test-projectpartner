@@ -1,12 +1,8 @@
-import { normalizePartnerRole } from "./partnerAuth";
+import { getSubscriptionSlugForUser } from "./partnerAuth";
 
-/** Partner role → API path + DB role slug */
-export const PARTNER_ROLE_SLUG = {
-  "Project Partner": "project",
-  "Sales Partner": "sales",
-  "Sales Person": "sales",
-  "Territory Partner": "territory",
-};
+function resolveSubscriptionSlug(user) {
+  return getSubscriptionSlugForUser(user);
+}
 
 const SUBSCRIPTION_USER_PATH = {
   project: "/project-partner/subscription/user",
@@ -29,15 +25,25 @@ const SUBSCRIPTION_TRIAL_PATH = {
 
 export function isTrialPlan(plan) {
   if (!plan) return false;
+  const type = String(plan.plan_type || plan.planType || "").toLowerCase();
+  const name = String(
+    plan.planName || plan.plan_name || plan.name || "",
+  ).toLowerCase();
+  const price = Number(plan.totalPrice ?? plan.price ?? NaN);
+
   return (
     plan.isTrial === true ||
-    String(plan.plan_type || plan.planType || "").toLowerCase() === "trial" ||
-    String(plan.id) === "free-trial"
+    type === "trial" ||
+    String(plan.id) === "free-trial" ||
+    /trial|trail/.test(name) ||
+    (Number.isFinite(price) &&
+      price <= 0 &&
+      /free|trial|trail/.test(name))
   );
 }
 
 export function getSubscriptionTrialPath(user) {
-  const slug = PARTNER_ROLE_SLUG[normalizePartnerRole(user?.role)];
+  const slug = resolveSubscriptionSlug(user);
   if (!slug || !user?.id) return null;
   const base = SUBSCRIPTION_TRIAL_PATH[slug];
   return base ? `${base}/${user.id}` : null;
@@ -53,24 +59,27 @@ export async function activatePartnerTrial(apiBase, user, { planId }) {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ plan_id: planId }),
+    body: JSON.stringify({ plan_id: Number(planId) }),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    return { success: false, message: data.message || "Failed to start trial" };
+  if (!res.ok || data?.success === false) {
+    return {
+      success: false,
+      message: data?.message || "Failed to start free trial",
+    };
   }
-  return data;
+  return { success: true, ...data };
 }
 
 export function getSubscriptionPath(user) {
-  const slug = PARTNER_ROLE_SLUG[normalizePartnerRole(user?.role)];
+  const slug = resolveSubscriptionSlug(user);
   if (!slug || !user?.id) return null;
   const base = SUBSCRIPTION_USER_PATH[slug];
   return base ? `${base}/${user.id}` : null;
 }
 
 export function getSubscriptionCancelPath(user) {
-  const slug = PARTNER_ROLE_SLUG[normalizePartnerRole(user?.role)];
+  const slug = resolveSubscriptionSlug(user);
   if (!slug || !user?.id) return null;
   const base = SUBSCRIPTION_CANCEL_PATH[slug];
   return base ? `${base}/${user.id}` : null;

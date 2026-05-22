@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../store/auth";
+import { isTrialPlan } from "../../lib/partnerSubscription";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; 
 
@@ -63,9 +64,7 @@ const RegistrationForm = ({ plan }) => {
     if (newPartner.state) fetchCities();
   }, [newPartner.state]);
 
-  const isTrial =
-    String(plan?.plan_type || plan?.planType || "").toLowerCase() === "trial" ||
-    Number(plan?.totalPrice) === 0;
+  const isTrial = isTrialPlan(plan);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

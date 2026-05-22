@@ -88,6 +88,31 @@ export function getApiPrefixForRole(role) {
   return "/project-partner";
 }
 
+/** Label for GET /api/subscription/partner-plans/:partnerType */
+export function getPartnerPlansLabel(userOrRole) {
+  if (userOrRole && typeof userOrRole === "object") {
+    const config = getRoleConfigById(getRoleIdFromUser(userOrRole));
+    if (config?.displayRole) return config.displayRole;
+    userOrRole = userOrRole.role;
+  }
+
+  const normalized = normalizePartnerRole(userOrRole);
+  if (normalized === "Territory Partner") return "Territory Partner";
+  if (normalized === "Sales Partner") return "Sales Partner";
+  return "Project Partner";
+}
+
+/** API slug for subscription checkout and user subscription routes */
+export function getSubscriptionSlugForUser(user) {
+  const config = getRoleConfigById(getRoleIdFromUser(user));
+  if (config?.subscriptionSlug) return config.subscriptionSlug;
+
+  const normalized = normalizePartnerRole(user?.role);
+  if (normalized === "Territory Partner") return "territory";
+  if (normalized === "Sales Partner") return "sales";
+  return "project";
+}
+
 export function getLogoutEndpointForUser(user) {
   const roleId = getRoleIdFromUser(user);
   const config = roleId ? getRoleConfigById(roleId) : null;

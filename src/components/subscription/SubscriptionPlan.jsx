@@ -7,6 +7,7 @@ import {
   Loader2,
   Shield,
   Lock,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "../../store/auth";
 import FormatPrice from "../FormatPrice";
@@ -20,12 +21,7 @@ import {
   activatePartnerTrial,
   isTrialPlan,
 } from "../../lib/partnerSubscription.js";
-
-const ROLE_SLUG = {
-  "Project Partner": "project",
-  "Sales Partner": "sales",
-  "Territory Partner": "territory",
-};
+import { getSubscriptionSlugForUser } from "../../lib/partnerAuth.js";
 
 export default function SubscriptionPlan({ plan }) {
   const {
@@ -37,6 +33,7 @@ export default function SubscriptionPlan({ plan }) {
   } = useAuth();
   const navigate = useNavigate();
   const [isPaying, setIsPaying] = useState(false);
+  const [showTrialConfirm, setShowTrialConfirm] = useState(false);
 
   const features =
     typeof plan?.features === "string"
@@ -45,36 +42,53 @@ export default function SubscriptionPlan({ plan }) {
         ? plan.features
         : [];
 
-  const handleClose = () => setShowSubscription(false);
+  const trial = isTrialPlan(plan);
 
-  const handlePayNow = async () => {
+  const handleClose = () => {
+    setShowTrialConfirm(false);
+    setShowSubscription(false);
+  };
+
+  const validateCheckout = () => {
     if (!user?.id) {
       alert("Please log in again to subscribe.");
-      return;
+      return null;
     }
     if (!plan?.id) {
       alert("Invalid plan. Refresh the page and try again.");
+      return null;
+    }
+    const planId = Number(plan.id);
+    const userId = Number(user.id);
+    if (!Number.isFinite(planId) || planId <= 0) {
+      alert("Invalid plan. Refresh the page and try again.");
+      return null;
+    }
+    if (!Number.isFinite(userId) || userId <= 0) {
+      alert("Invalid user session. Please log in again.");
+      return null;
+    }
+    return {
+      roleSlug: getSubscriptionSlugForUser(user),
+      planId,
+      userId,
+      total: Math.max(0, Number(plan.totalPrice) || 0),
+    };
+  };
+
+  const handlePayNow = async () => {
+    const ctx = validateCheckout();
+    if (!ctx) return;
+
+    if (trial) {
+      setShowTrialConfirm(true);
       return;
     }
 
-    const roleSlug = ROLE_SLUG[user?.role] || "project";
-    const total = Math.max(0, parseInt(plan.totalPrice, 10) || 0);
-    const trial = isTrialPlan(plan);
+    const { roleSlug, planId, userId, total } = ctx;
 
     setIsPaying(true);
     try {
-      if (trial) {
-        const result = await activatePartnerTrial(URI, user, {
-          planId: Number(plan.id),
-        });
-        if (!result.success) {
-          throw new Error(result.message || "Could not start trial");
-        }
-        setShowSubscription(false);
-        await refreshSubscription();
-        navigate("/app/dashboard", { replace: true });
-        return;
-      }
 
       const loaded = await loadRazorpayScript();
       if (!loaded) {
@@ -85,8 +99,8 @@ export default function SubscriptionPlan({ plan }) {
       const session = await createPartnerSubscriptionSession({
         api: URI,
         role: roleSlug,
-        userId: user.id,
-        planId: plan.id,
+        userId,
+        planId,
         discountAmount: 0,
         finalAmount: total,
       });
@@ -108,8 +122,8 @@ export default function SubscriptionPlan({ plan }) {
       await confirmPartnerSubscription({
         api: URI,
         role: roleSlug,
-        userId: user.id,
-        planId: plan.id,
+        userId,
+        planId,
         paymentId: response.razorpay_payment_id,
         subscriptionId: response.razorpay_subscription_id,
         signature: response.razorpay_signature,
@@ -132,12 +146,43 @@ export default function SubscriptionPlan({ plan }) {
     }
   };
 
+  const handleConfirmTrial = async () => {
+    const ctx = validateCheckout();
+    if (!ctx) return;
+
+    setIsPaying(true);
+    try {
+      const result = await activatePartnerTrial(URI, user, {
+        planId: ctx.planId,
+      });
+      if (!result.success) {
+        throw new Error(result.message || "Could not start trial");
+      }
+      setShowTrialConfirm(false);
+      setShowSubscription(false);
+      const status = await refreshSubscription(user, { silent: true });
+      if (!status?.active) {
+        alert(
+          result.message ||
+            "Trial started. Refresh the page if the dashboard is still locked.",
+        );
+      }
+      navigate("/app/dashboard", { replace: true });
+    } catch (err) {
+      const msg = err?.message || "Could not start trial";
+      console.error(err);
+      alert(msg);
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
   if (!showSubscription) return null;
 
   return (
     <>
       <div
-        className="fixed inset-0 z-[60] bg-[#1a1033]/50 backdrop-blur-md"
+        className="fixed inset-0 z-[60] bg-[#1a1033]/50 backdrop-blur-md cursor-pointer"
         onClick={handleClose}
         aria-hidden
       />
@@ -162,13 +207,13 @@ export default function SubscriptionPlan({ plan }) {
             <button
               type="button"
               onClick={handleClose}
-              className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/25 transition"
+              className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/25 transition cursor-pointer"
               aria-label="Close"
             >
               <X size={18} />
             </button>
             <p className="relative text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70 mb-2">
-              Secure checkout
+              {trial ? "Free trial" : "Secure checkout"}
             </p>
             <h2 className="relative text-2xl font-bold tracking-tight pr-10">
               {plan?.planName}
@@ -177,7 +222,7 @@ export default function SubscriptionPlan({ plan }) {
               <span className="text-xs font-medium bg-white/20 px-3 py-1 rounded-full">
                 {plan?.planDuration}
               </span>
-              {plan?.billing_cycle && (
+              {!trial && plan?.billing_cycle && (
                 <span className="text-xs font-medium bg-white/10 px-3 py-1 rounded-full capitalize">
                   {plan.billing_cycle} billing
                 </span>
@@ -238,7 +283,9 @@ export default function SubscriptionPlan({ plan }) {
                   </p>
                 </div>
                 <p className="text-[11px] text-gray-500 text-right max-w-[140px] leading-snug">
-                  Recurring via Razorpay autopay per your plan cycle
+                  {isTrialPlan(plan)
+                    ? "No payment required — instant access"
+                    : "Recurring via Razorpay autopay per your plan cycle"}
                 </p>
               </div>
             </div>
@@ -257,7 +304,7 @@ export default function SubscriptionPlan({ plan }) {
               type="button"
               onClick={handlePayNow}
               disabled={isPaying}
-              className="w-full py-3.5 rounded-xl text-white text-sm font-semibold transition active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-[#5E23DC]/25"
+              className="w-full py-3.5 rounded-xl text-white text-sm font-semibold transition active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-[#5E23DC]/25"
               style={{
                 background: "linear-gradient(135deg, #5E23DC 0%, #7c3aed 100%)",
               }}
@@ -279,13 +326,90 @@ export default function SubscriptionPlan({ plan }) {
             <button
               type="button"
               onClick={handleClose}
-              className="w-full mt-2 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 transition"
+              className="w-full mt-2 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 transition cursor-pointer"
             >
               Cancel
             </button>
           </div>
         </div>
       </div>
+
+      {showTrialConfirm && trial && (
+        <div
+          className="fixed inset-0 z-[62] flex items-center justify-center p-4 bg-[#1a1033]/60 backdrop-blur-sm cursor-pointer"
+          onClick={() => !isPaying && setShowTrialConfirm(false)}
+          role="presentation"
+        >
+          <div
+            className="w-full max-w-[400px] rounded-2xl bg-white p-6 shadow-2xl shadow-[#5E23DC]/20 border border-gray-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <span
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #5E23DC 0%, #7c3aed 100%)",
+                }}
+              >
+                <Sparkles size={20} className="text-white" />
+              </span>
+              <div>
+                <h3
+                  id="trial-confirm-title"
+                  className="text-lg font-bold text-gray-900"
+                >
+                  Start free trial?
+                </h3>
+                <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+                  You are about to activate{" "}
+                  <span className="font-medium text-gray-800">
+                    {plan?.planName}
+                  </span>{" "}
+                  for{" "}
+                  <span className="font-medium text-gray-800">
+                    {plan?.planDuration || "the trial period"}
+                  </span>
+                  . No payment is required.
+                </p>
+              </div>
+            </div>
+
+            <ul className="text-xs text-gray-600 space-y-1.5 mb-5 rounded-xl bg-[#f8f6ff] border border-[#5E23DC]/10 px-4 py-3">
+              <li>• Full access starts immediately after you confirm</li>
+              <li>• Free trial can only be used once per account</li>
+              <li>• You can upgrade to a paid plan anytime later</li>
+            </ul>
+
+            <button
+              type="button"
+              disabled={isPaying}
+              onClick={handleConfirmTrial}
+              className="w-full py-3 rounded-xl text-sm font-semibold text-white transition disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+              style={{
+                background: "linear-gradient(135deg, #5E23DC 0%, #7c3aed 100%)",
+              }}
+            >
+              {isPaying ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Starting trial…
+                </>
+              ) : (
+                "Yes, start my free trial"
+              )}
+            </button>
+            <button
+              type="button"
+              disabled={isPaying}
+              onClick={() => setShowTrialConfirm(false)}
+              className="w-full mt-2 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 disabled:opacity-50 cursor-pointer"
+            >
+              Not now
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

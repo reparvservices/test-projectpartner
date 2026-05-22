@@ -105,7 +105,7 @@ export default function Layout() {
       dashboardPaths.includes(itemPath) &&
       dashboardPaths.some((path) => location.pathname.startsWith(path));
 
-    return `flex items-center gap-3 px-4 py-2.5 rounded-full text-sm transition
+    return `flex items-center gap-3 px-4 py-2.5 rounded-full text-sm transition cursor-pointer
     ${
       isActive || isCustomActive
         ? "bg-[linear-gradient(93.29deg,#5E23DC_5.34%,#8B5CF6_102.64%)] text-white font-semibold shadow-sm"
@@ -114,7 +114,7 @@ export default function Layout() {
   };
 
   const mobileTabClass = ({ isActive }) =>
-    `flex flex-col items-center text-[11px] ${
+    `flex flex-col items-center text-[11px] cursor-pointer ${
       isActive ? "text-[#5323DC]" : "text-[#8F86A8]"
     }`;
 
@@ -178,7 +178,7 @@ export default function Layout() {
 
         <button
           onClick={() => setMoreOpen(true)}
-          className="mx-4 mb-4 mt-2 flex items-center gap-3 px-4 py-2.5 rounded-full text-sm text-[#7C3AED] hover:bg-[#F3EDFF]"
+          className="mx-4 mb-4 mt-2 flex items-center gap-3 px-4 py-2.5 rounded-full text-sm text-[#7C3AED] hover:bg-[#F3EDFF] cursor-pointer"
         >
           <IoMdMenu className="w-5 h-5" />
           More

@@ -60,7 +60,7 @@ function StatusPopup({ row, onClose, onChangeStatus }) {
   const statuses = ["Open", "Closed", "Resolved", "Pending", "In Progress"];
   return (
     <>
-      <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm cursor-pointer" onClick={onClose} />
       <div className="md:hidden fixed inset-x-0 bottom-0 z-[71] bg-white rounded-t-3xl shadow-2xl">
         <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
         <StatusPopupContent row={row} onClose={onClose} onChangeStatus={onChangeStatus} />

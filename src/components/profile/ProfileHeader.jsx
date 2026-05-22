@@ -131,7 +131,7 @@ export default function ProfileHeader({
                     : navigate("/app/network");
                 }}
                 key={l}
-                className="text-center sm:text-left"
+                className="text-center sm:text-left cursor-pointer"
               >
                 <p className="text-sm font-semibold text-[#0F1724]">{v}</p>
                 <p className="text-xs text-[#9CA3AF]">{l}</p>

@@ -76,8 +76,7 @@ function CitySelectPopup({ cities, selectedCity, onSelect, onClose }) {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 z-[900] backdrop-blur-[2px]"
-        onClick={onClose}
+        className="fixed inset-0 bg-black/40 z-[900] backdrop-blur-[2px] cursor-pointer" onClick={onClose}
       />
 
       {/* Bottom sheet */}

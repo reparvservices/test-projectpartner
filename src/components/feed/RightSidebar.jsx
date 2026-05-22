@@ -25,7 +25,7 @@ function SideCard({ title, children, action, icon }) {
   return (
     <div
       onClick={goToPage}
-      className="bg-white rounded-lg border overflow-hidden"
+      className="bg-white rounded-lg border overflow-hidden cursor-pointer"
     >
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-2">

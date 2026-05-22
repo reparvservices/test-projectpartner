@@ -73,8 +73,8 @@ const EmployeeFilter = ({
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-[9]"
-            onClick={() => setIsOpen(false)}
+            className="fixed inset-0 z-[9] cursor-pointer"
+          onClick={() => setIsOpen(false)}
           />
           <div className="absolute top-[42px] right-0 w-[240px] bg-white shadow-lg border border-[#0000001A] rounded-[12px] overflow-hidden z-10">
             {/* Tabs */}

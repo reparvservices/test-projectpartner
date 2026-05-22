@@ -7,7 +7,7 @@ const GRADIENT = "linear-gradient(110.73deg, #5E23DC 0%, #7C3AED 100%)";
 function FilterPopup({ title, options, value, onChange, onClose }) {
   return (
     <>
-      <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm cursor-pointer" onClick={onClose} />
       {/* Mobile */}
       <div className="md:hidden fixed inset-x-0 bottom-0 z-[71] bg-white rounded-t-3xl shadow-2xl">
         <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>

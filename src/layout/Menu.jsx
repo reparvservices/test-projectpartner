@@ -384,7 +384,7 @@ function MenuItem({ icon, label, subtitle, onClick, danger = false }) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[#F6F7FB] transition-colors duration-150 group"
+      className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[#F6F7FB] transition-colors duration-150 group cursor-pointer"
     >
       <span className="w-10 h-10 rounded-xl bg-[#EEE9FF] flex items-center justify-center flex-shrink-0">
         {icon}

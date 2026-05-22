@@ -154,7 +154,7 @@ function NotFound() {
         onClick={() => {
           navigate(-1);
         }}
-        className="mt-2 px-6 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors"
+        className="mt-2 px-6 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors cursor-pointer"
       >
         Go Back
       </div>

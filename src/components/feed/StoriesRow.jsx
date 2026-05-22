@@ -15,13 +15,11 @@ function StoryViewer({ groups, gIdx, sIdx, onAdvance, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95"
-      onClick={onClose}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 cursor-pointer" onClick={onClose}
     >
       <div
         className="relative bg-black overflow-hidden"
-        style={{ width: "min(100vw,390px)", height: "100dvh", maxHeight: 820 }}
-        onClick={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
       >
         {/* Progress bars */}
         <div className="absolute top-3 inset-x-3 flex gap-1 z-20">
@@ -166,12 +164,11 @@ function StoryUploadModal({ actor, onClose, onUploaded }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4"
-      onClick={onClose}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4 cursor-pointer" onClick={onClose}
     >
       <div
         className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -423,7 +420,7 @@ export default function StoriesRow({ actor }) {
                 e.stopPropagation(); //prevent opening story
                 setShowUpload(true);
               }}
-              className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-violet-600 flex items-center justify-center border-2 border-white"
+              className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-violet-600 flex items-center justify-center border-2 border-white cursor-pointer"
             >
               <Icon name="plus" size={10} className="text-white" />
             </div>

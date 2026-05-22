@@ -115,7 +115,8 @@ function ActionMenu({ row, onAction }) {
       </button>
       {open && (
         <>
-          <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm cursor-pointer"
+          onClick={() => setOpen(false)} />
           <div className="md:hidden fixed inset-x-0 bottom-0 z-[71] bg-white rounded-t-3xl shadow-2xl">
             <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
             <ActionPopupContent row={row} onClose={() => setOpen(false)} onAction={onAction} navigate={navigate} />

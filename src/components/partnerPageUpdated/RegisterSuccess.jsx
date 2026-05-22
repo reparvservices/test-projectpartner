@@ -19,8 +19,7 @@ export default function RegistrationSuccessModal({
 
   return ReactDOM.createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4"
-      onClick={onClose}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4 cursor-pointer" onClick={onClose}
     >
       {/* MODAL */}
       <div
@@ -33,7 +32,7 @@ export default function RegistrationSuccessModal({
           p-6 sm:p-10
           text-center
           animate-scaleIn
-        "
+         cursor-pointer"
       >
         
         {/* SUCCESS ICON */}

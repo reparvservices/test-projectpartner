@@ -14,6 +14,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/auth";
 import { planIcons } from "../../utils";
+import { isTrialPlan } from "../../lib/partnerSubscription";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -208,7 +209,7 @@ function PlanCard({ plan, index, isRecommended }) {
                 <button
                   type="button"
                   onClick={() => setFlipped(true)}
-                  className="mt-5 flex items-center gap-1.5 text-[13px] font-semibold group transition-colors w-fit"
+                  className="mt-5 flex items-center gap-1.5 text-[13px] font-semibold group transition-colors w-fit cursor-pointer"
                   style={{ color: accentColor }}
                 >
                   <span className="underline underline-offset-2 group-hover:no-underline">
@@ -304,7 +305,7 @@ function PlanCard({ plan, index, isRecommended }) {
               <button
                 type="button"
                 onClick={() => setFlipped(false)}
-                className="text-[12px] font-semibold flex items-center gap-1 transition-colors"
+                className="text-[12px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                 style={{ color: accentColor }}
               >
                 ← Back to plan overview
@@ -340,8 +341,11 @@ export default function PricingSection() {
       const rows = Array.isArray(res.data) ? res.data : [];
 
       const formatted = rows.map((item, index) => {
-        const isTrial =
-          String(item.plan_type || item.planType || "").toLowerCase() === "trial";
+        const isTrial = isTrialPlan({
+          ...item,
+          planName: item.planName,
+          totalPrice: item.totalPrice,
+        });
         const features = item.features
           ? item.features.split(",").map((f) => f.trim())
           : DEFAULT_FEATURES;

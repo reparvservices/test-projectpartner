@@ -20,7 +20,7 @@ function SuccessScreen() {
   return (
     <div 
       onClick={() => setSuccessScreen({ ...successScreen, show: false })}
-      className="successScreen w-full h-screen flex items-center justify-center fixed z-[1000] bg-white"
+      className="successScreen w-full h-screen flex items-center justify-center fixed z-[1000] bg-white cursor-pointer"
     >
       <div className="successMessage w-[90%] sm:w-[70%] max-w-4xl py-8 sm:py-15 rounded-xl bg-gradient-to-r from-[#076300] to-[#0BB501] flex sm:gap-8 gap-4 flex-col items-center justify-center text-white">
         <div className="rightIcon w-12 h-12 flex items-center justify-center rounded-full bg-white text-[#0BB501]">

@@ -38,8 +38,7 @@ export default function NoteModal({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
+        className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm cursor-pointer" onClick={onClose}
       />
 
       {/* Modal — slides up from bottom on mobile, centered on desktop */}

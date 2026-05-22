@@ -24,7 +24,7 @@ export const PRIORITY_STYLE = {
 function FilterPopup({ onClose, children }) {
   return (
     <>
-      <div className="fixed inset-0 z-[70] bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 z-[70] bg-black/30 backdrop-blur-sm cursor-pointer" onClick={onClose} />
       <div className="md:hidden fixed inset-x-0 bottom-0 z-[71] bg-white rounded-t-3xl shadow-2xl max-h-[72vh] flex flex-col">
         <div className="flex justify-center pt-3 pb-1 shrink-0">
           <div className="w-10 h-1 rounded-full bg-gray-200" />

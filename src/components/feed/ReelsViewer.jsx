@@ -103,7 +103,7 @@ function ReelSlide({ post, actor, isActive, onLikeChange }) {
   };
 
   return (
-    <div className="relative w-full max-w-lg mx-auto flex-shrink-0" style={{ height: "100dvh" }} onClick={handleDoubleTap}>
+    <div className="relative w-full max-w-lg mx-auto flex-shrink-0 cursor-pointer" onClick={handleDoubleTap}>
       {/* Video */}
       <video
         ref={videoRef} src={videoUrl} loop muted={muted} playsInline
@@ -224,8 +224,10 @@ function ReelSlide({ post, actor, isActive, onLikeChange }) {
 
       {/* Comments bottom sheet */}
       {showComment && (
-        <div className="absolute inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl" style={{ height: "55vh" }}
-          onClick={e => e.stopPropagation()}>
+        <div
+          className="absolute inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-gray-100">
             <h3 className="text-sm font-bold text-gray-900">Comments</h3>
             <button onClick={() => setShowComment(false)} className="text-gray-400 hover:text-gray-600">

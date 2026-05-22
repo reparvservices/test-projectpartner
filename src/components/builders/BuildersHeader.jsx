@@ -26,7 +26,7 @@ function Toggle({ checked, onChange }) {
 function FilterPopup({ onClose, children }) {
   return (
     <>
-      <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm cursor-pointer" onClick={onClose} />
       {/* Mobile */}
       <div className="md:hidden fixed inset-x-0 bottom-0 z-[71] bg-white rounded-t-3xl shadow-2xl max-h-[75vh] flex flex-col">
         <div className="flex justify-center pt-3 pb-1 shrink-0">

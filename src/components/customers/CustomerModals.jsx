@@ -13,7 +13,7 @@ function Modal({ show, onClose, title, children, wide }) {
   if (!show) return null;
   return (
     <div className="fixed inset-0 z-[61] flex items-end md:items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm cursor-pointer" onClick={onClose} />
       <div className={`relative z-10 bg-white rounded-t-3xl md:rounded-2xl shadow-2xl w-full ${wide ? "md:max-w-2xl" : "md:max-w-md"} max-h-[90vh] overflow-y-auto scrollbar-hide`}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 sticky top-0 bg-white rounded-t-3xl md:rounded-t-2xl z-10">
           <h2 className="text-base font-semibold text-slate-900">{title}</h2>

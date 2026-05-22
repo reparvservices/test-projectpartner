@@ -1,7 +1,44 @@
 /**
  * Razorpay Subscriptions (autopay) checkout for partner apps.
- * Server: POST /api/subscription/payment/create-subscription + verify-subscription
+ * Canonical server routes (public, no JWT — uses body role + user_id):
+ *   POST /api/subscription/payment/create-subscription
+ *   POST /api/subscription/payment/verify-subscription
  */
+
+const CHECKOUT_BASE = "/api/subscription/payment";
+
+export function buildSubscriptionCheckoutBody({
+  role,
+  userId,
+  planId,
+  discountAmount = 0,
+  finalAmount = 0,
+  paymentType = "auto",
+}) {
+  return {
+    role: String(role || "").toLowerCase(),
+    user_id: Number(userId),
+    plan_id: Number(planId),
+    payment_type: paymentType === "manual" ? "manual" : "auto",
+    discount_amount: Number(discountAmount) || 0,
+    final_amount: Number(finalAmount) || 0,
+  };
+}
+
+async function parseJsonResponse(res) {
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const message =
+      data?.message ||
+      data?.error?.description ||
+      `Subscription request failed (${res.status})`;
+    const err = new Error(message);
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
 
 export function loadRazorpayScript() {
   return new Promise((resolve) => {
@@ -18,13 +55,7 @@ export function loadRazorpayScript() {
 }
 
 /**
- * @param {object} p
- * @param {string} p.api — e.g. http://localhost:3000
- * @param {'project'|'sales'|'territory'} p.role
- * @param {number} p.userId — projectpartner.id (or other partner user id)
- * @param {number} p.planId — subscription_plans.id
- * @param {number} [p.discountAmount]
- * @param {number} [p.finalAmount] — stored on user_subscriptions; Razorpay charges plan price
+ * Start Razorpay Subscriptions (recurring autopay) checkout.
  */
 export async function createPartnerSubscriptionSession({
   api,
@@ -34,31 +65,37 @@ export async function createPartnerSubscriptionSession({
   discountAmount = 0,
   finalAmount = 0,
 }) {
-  const res = await fetch(`${api}/api/subscription/payment/create-subscription`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      role,
-      user_id: userId,
-      plan_id: planId,
-      payment_type: "auto",
-      discount_amount: discountAmount,
-      final_amount: finalAmount,
-    }),
+  const body = buildSubscriptionCheckoutBody({
+    role,
+    userId,
+    planId,
+    discountAmount,
+    finalAmount,
+    paymentType: "auto",
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(data.message || "Could not start subscription checkout");
+
+  if (!body.role || !body.user_id || !body.plan_id) {
+    throw new Error("Invalid subscription checkout: role, user, and plan are required.");
   }
+
+  const res = await fetch(`${api}${CHECKOUT_BASE}/create-subscription`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  const data = await parseJsonResponse(res);
+
   if (!data.razorpay_subscription_id) {
     throw new Error(data.message || "Invalid response from subscription server");
   }
+
   return data;
 }
 
 /**
- * Opens Razorpay Checkout in subscription mode.
- * @returns {Promise<object>} response with razorpay_payment_id, razorpay_subscription_id, razorpay_signature
+ * Opens Razorpay Checkout in subscription mode (autopay mandate).
  */
 export function openRazorpaySubscriptionCheckout({
   keyId,
@@ -109,24 +146,26 @@ export async function confirmPartnerSubscription({
   discountAmount = 0,
   finalAmount = 0,
 }) {
-  const res = await fetch(`${api}/api/subscription/payment/verify-subscription`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  const body = {
+    ...buildSubscriptionCheckoutBody({
       role,
-      user_id: userId,
-      plan_id: planId,
-      razorpay_payment_id: paymentId,
-      razorpay_subscription_id: subscriptionId,
-      razorpay_signature: signature,
-      email: email || "",
-      discount_amount: discountAmount,
-      final_amount: finalAmount,
+      userId,
+      planId,
+      discountAmount,
+      finalAmount,
     }),
+    razorpay_payment_id: paymentId,
+    razorpay_subscription_id: subscriptionId,
+    razorpay_signature: signature,
+    email: email || "",
+  };
+
+  const res = await fetch(`${api}${CHECKOUT_BASE}/verify-subscription`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(data.message || "Could not confirm subscription");
-  }
-  return data;
+
+  return parseJsonResponse(res);
 }

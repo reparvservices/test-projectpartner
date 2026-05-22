@@ -16,7 +16,7 @@ const FOLLOWUP_OPTIONS = [
 function FilterPopup({ title, options, value, onChange, onClose }) {
   return (
     <>
-      <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm cursor-pointer" onClick={onClose} />
 
       {/* Mobile: bottom-sheet */}
       <div className="md:hidden fixed inset-x-0 bottom-0 z-[71] bg-white rounded-t-3xl shadow-2xl">

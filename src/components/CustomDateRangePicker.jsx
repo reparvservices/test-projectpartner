@@ -215,8 +215,7 @@ export default function CustomDateRangePicker({ range = [{}], setRange }) {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm"
-            onClick={cancel}
+            className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm cursor-pointer" onClick={cancel}
           />
 
           {/* Sheet */}
@@ -284,8 +283,7 @@ export default function CustomDateRangePicker({ range = [{}], setRange }) {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-[9998] bg-black/30 backdrop-blur-sm"
-            onClick={cancel}
+            className="fixed inset-0 z-[9998] bg-black/30 backdrop-blur-sm cursor-pointer" onClick={cancel}
           />
 
           {/* Centered popup */}

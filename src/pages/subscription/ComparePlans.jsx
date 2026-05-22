@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, X, ChevronDown, Sparkles } from "lucide-react";
 import { useAuth } from "../../store/auth";
 import SubscriptionPlan from "../../components/subscription/SubscriptionPlan";
+import { getPartnerPlansLabel } from "../../lib/partnerAuth";
 import FormatPrice from "../../components/FormatPrice";
 import {
   parsePlanFeatures,
@@ -161,14 +162,9 @@ function PlanDetailView({ plan, onSubscribe, onCompare }) {
 export default function ComparePlans() {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const { showSubscription, setShowSubscription, URI, role } = useAuth();
+  const { showSubscription, setShowSubscription, URI, user, role } = useAuth();
 
-  const partnerLabel =
-    role === "Territory Partner"
-      ? "Territory Partner"
-      : role === "Sales Partner"
-        ? "Sales Partner"
-        : "Project Partner";
+  const partnerLabel = getPartnerPlansLabel(user || role);
 
   const initialMode = state?.mode === "compare" ? "compare" : "detail";
   const [mode, setMode] = useState(initialMode);
@@ -186,7 +182,9 @@ export default function ComparePlans() {
     (async () => {
       try {
         const label = encodeURIComponent(partnerLabel);
-        const res = await fetch(`${URI}/api/subscription/partner-plans/${label}`);
+        const res = await fetch(`${URI}/api/subscription/partner-plans/${label}`, {
+          credentials: "include",
+        });
         const data = await res.json();
         if (!cancelled && res.ok && Array.isArray(data)) setPlans(data);
       } catch {

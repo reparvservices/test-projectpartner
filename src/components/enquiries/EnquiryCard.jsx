@@ -194,8 +194,8 @@ function ActionMenu({ row, onAction }) {
   return (
     <>
       <div
-        className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm"
-        onClick={() => setOpen(false)}
+        className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm cursor-pointer"
+          onClick={() => setOpen(false)}
       />
       {/* Mobile: bottom-sheet */}
       <div className="md:hidden fixed inset-x-0 bottom-0 z-[71] bg-white rounded-t-3xl shadow-2xl">
@@ -466,7 +466,7 @@ function DesktopCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
               </div>
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-2 shrink-0"
+                className="flex items-center gap-2 shrink-0 cursor-pointer"
               >
                 <StatusBadge status={item.status} />
                 <ActionMenu row={item} onAction={onAction} />

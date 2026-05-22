@@ -114,8 +114,7 @@ export default function PartnerRegistrationModal({
 
   return ReactDOM.createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4"
-      onClick={onClose}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4 cursor-pointer" onClick={onClose}
     >
       {/* MODAL CARD */}
       <div
@@ -130,8 +129,8 @@ export default function PartnerRegistrationModal({
 
     max-h-[90vh] overflow-y-auto   /* ✅ MOBILE SCROLL */
     sm:max-h-none sm:overflow-visible /* ✅ DESKTOP SAME AS BEFORE */
-  "
-        onClick={(e) => e.stopPropagation()}
+        "
+            onClick={(e) => e.stopPropagation()}
       >
         {/* CLOSE BUTTON */}
         <button

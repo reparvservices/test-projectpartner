@@ -19,6 +19,7 @@ import {
   cancelPartnerSubscription,
   isTrialPlan,
 } from "../../lib/partnerSubscription";
+import { getPartnerPlansLabel } from "../../lib/partnerAuth";
 import { motion } from "framer-motion";
 import { useAuth } from "../../store/auth";
 import { useNavigate } from "react-router-dom";
@@ -210,6 +211,7 @@ export default function Subscription() {
     URI,
     user,
     role,
+    authReady,
     setShowSubscription,
     subscription,
     subscriptionReady,
@@ -219,11 +221,7 @@ export default function Subscription() {
   const paywallLocked = subscriptionReady && !subscription?.active;
   const scrollRef = useRef(null);
 
-  const getPartnerTypeLabel = () => {
-    if (role === "Project Partner") return "Project Partner";
-    if (role === "Territory Partner") return "Territory Partner";
-    return "Sales Partner";
-  };
+  const partnerPlansLabel = getPartnerPlansLabel(user || role);
 
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState({});
@@ -268,10 +266,10 @@ export default function Subscription() {
   const fetchPlans = useCallback(async () => {
     try {
       setLoadingPlans(true);
-      const label = encodeURIComponent(getPartnerTypeLabel());
+      const label = encodeURIComponent(getPartnerPlansLabel(user || role));
       const response = await fetch(
         `${URI}/api/subscription/partner-plans/${label}`,
-        { method: "GET" },
+        { method: "GET", credentials: "include" },
       );
       const data = await response.json();
       setPlans(response.ok && Array.isArray(data) ? data : []);
@@ -280,12 +278,13 @@ export default function Subscription() {
     } finally {
       setLoadingPlans(false);
     }
-  }, [URI, role]);
+  }, [URI, user, role]);
 
   useEffect(() => {
+    if (!authReady) return;
     fetchPlans();
     refreshSubscription(undefined, { silent: true });
-  }, [fetchPlans, refreshSubscription]);
+  }, [authReady, fetchPlans, refreshSubscription]);
 
   const planTitle = activeData?.plan_name || activeData?.planName;
   const planDurationText = activeData?.planDuration;
@@ -332,7 +331,7 @@ export default function Subscription() {
             className="inline-flex items-center gap-2 rounded-full border border-[#5E23DC]/15 bg-white px-4 py-1.5 text-xs font-semibold text-[#5E23DC] shadow-sm mb-5"
           >
             <CreditCard size={14} />
-            {getPartnerTypeLabel()} plans
+            {partnerPlansLabel} plans
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 10 }}
@@ -579,7 +578,7 @@ export default function Subscription() {
               No plans available
             </p>
             <p className="text-gray-500 text-sm mt-2 leading-relaxed">
-              No active plans for {getPartnerTypeLabel()}. Ask your admin to add
+              No active plans for {partnerPlansLabel}. Ask your admin to add
               plans in Reparv Admin → Subscription Pricing.
             </p>
           </div>

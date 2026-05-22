@@ -40,7 +40,8 @@ function ActionMenu({ row, onAction }) {
       </button>
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-40 cursor-pointer"
+          onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-9 z-50 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 w-44">
             <button onClick={() => { onAction("view", row.enquirersid); setOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-violet-50 transition-colors">View Details</button>
             <button onClick={() => { onAction("addPayment", row.enquirersid); setOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-violet-50 transition-colors">Add Payment</button>
