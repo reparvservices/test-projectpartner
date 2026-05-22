@@ -51,7 +51,10 @@ function recommendedPlanIndex(plans) {
 
 function parseFeatures(plan) {
   if (typeof plan?.features === "string" && plan.features.trim()) {
-    return plan.features.split(",").map((f) => f.trim()).filter(Boolean);
+    return plan.features
+      .split(",")
+      .map((f) => f.trim())
+      .filter(Boolean);
   }
   if (Array.isArray(plan?.features) && plan.features.length) {
     return plan.features;
@@ -127,7 +130,9 @@ function PlanCard({
             {plan?.planName}
           </h3>
           <p className="text-xs text-gray-400 mt-0.5 capitalize">
-            {plan?.billing_cycle ? `${plan.billing_cycle} billing` : "Partner plan"}
+            {plan?.billing_cycle
+              ? `${plan.billing_cycle} billing`
+              : "Partner plan"}
             {plan?.planDuration ? ` · ${plan.planDuration}` : ""}
           </p>
         </div>
@@ -144,12 +149,17 @@ function PlanCard({
               <FormatPrice price={plan.gstAmount} />
             </p>
           )}
-          <p className="text-xs text-gray-400 mt-1">per billing cycle · total incl. 18% GST</p>
+          <p className="text-xs text-gray-400 mt-1">
+            per billing cycle · total incl. 18% GST
+          </p>
         </div>
 
         <ul className="space-y-3 mb-8 flex-1">
           {visible.map((feature, i) => (
-            <li key={i} className="flex items-start gap-2.5 text-[13px] text-gray-600">
+            <li
+              key={i}
+              className="flex items-start gap-2.5 text-[13px] text-gray-600"
+            >
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#EDE9FE]">
                 <Check size={12} className="text-[#5E23DC]" strokeWidth={3} />
               </span>
@@ -185,7 +195,9 @@ function PlanCard({
             onClick={() => onViewDetails(plan)}
             className="w-full text-center text-sm font-medium text-[#5E23DC] py-2 hover:underline underline-offset-2"
           >
-            {hasMore ? `View all ${features.length} features` : "View plan details"}
+            {hasMore
+              ? `View all ${features.length} features`
+              : "View plan details"}
           </button>
         </div>
       </div>
@@ -223,7 +235,9 @@ export default function Subscription() {
   const activeData = subscription?.raw || subscription;
   const isActive = Boolean(subscription?.active || activeData?.active);
   const currentPlanId = activeData?.plan_id;
-  const statusLower = String(activeData?.status || subscription?.status || "").toLowerCase();
+  const statusLower = String(
+    activeData?.status || subscription?.status || "",
+  ).toLowerCase();
   const canCancel =
     Boolean(activeData?.razorpay_subscription_id) &&
     ["active", "pending", "halted"].includes(statusLower);
@@ -233,7 +247,9 @@ export default function Subscription() {
     setCancelling(true);
     setCancelError("");
     try {
-      const result = await cancelPartnerSubscription(URI, user, { cancelAtCycleEnd });
+      const result = await cancelPartnerSubscription(URI, user, {
+        cancelAtCycleEnd,
+      });
       if (!result.success) {
         setCancelError(result.message || "Could not cancel subscription");
         return;
@@ -299,7 +315,10 @@ export default function Subscription() {
   return (
     <div className="min-h-screen bg-[#faf9fc]">
       {/* Ambient background */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden>
+      <div
+        className="pointer-events-none fixed inset-0 overflow-hidden"
+        aria-hidden
+      >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#5E23DC]/[0.07] rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#a855f7]/[0.05] rounded-full blur-3xl" />
       </div>
@@ -332,8 +351,8 @@ export default function Subscription() {
             transition={{ delay: 0.1 }}
             className="mt-4 text-gray-500 text-base sm:text-lg leading-relaxed"
           >
-            Pick a plan that fits your pipeline. Secure autopay via Razorpay — unlock
-            dashboard, properties, enquiries, and more.
+            Pick a plan that fits your pipeline. Secure autopay via Razorpay —
+            unlock dashboard, properties, enquiries, and more.
           </motion.p>
 
           <motion.div
@@ -363,8 +382,8 @@ export default function Subscription() {
           >
             <LockKeyhole size={18} className="shrink-0 mt-0.5 text-amber-600" />
             <p className="leading-relaxed">
-              Subscribe below to unlock the full partner panel. Locked pages show a
-              preview until your plan is active.
+              Subscribe below to unlock the full partner panel. Locked pages
+              show a preview until your plan is active.
             </p>
           </motion.div>
         )}
@@ -387,9 +406,13 @@ export default function Subscription() {
                       <p className="text-xs font-semibold uppercase tracking-wider text-[#5E23DC]">
                         Your subscription
                       </p>
-                      <h2 className="text-xl font-bold text-gray-900">{planTitle}</h2>
+                      <h2 className="text-xl font-bold text-gray-900">
+                        {planTitle}
+                      </h2>
                       {planDurationText && (
-                        <p className="text-sm text-gray-500">{planDurationText}</p>
+                        <p className="text-sm text-gray-500">
+                          {planDurationText}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -404,7 +427,9 @@ export default function Subscription() {
                       Amount
                     </p>
                     <p className="text-lg font-bold text-gray-900 mt-0.5">
-                      <FormatPrice price={parseFloat(activeData?.amount || 0)} />
+                      <FormatPrice
+                        price={parseFloat(activeData?.amount || 0)}
+                      />
                     </p>
                   </div>
                   <div>
@@ -420,7 +445,9 @@ export default function Subscription() {
                       <Calendar size={10} /> Renews
                     </p>
                     <p className="text-sm font-medium text-gray-800 mt-0.5 leading-snug">
-                      {activeData?.end_date || activeData?.next_billing_date || "—"}
+                      {activeData?.end_date ||
+                        activeData?.next_billing_date ||
+                        "—"}
                     </p>
                   </div>
                   <div className="col-span-2 sm:col-span-1 flex flex-col sm:flex-row gap-2 sm:justify-end">
@@ -450,23 +477,29 @@ export default function Subscription() {
           </motion.div>
         )}
 
-
         {showCancelModal && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50">
-            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" role="dialog">
+            <div
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+              role="dialog"
+            >
               <div className="flex items-start gap-3 mb-4">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50">
                   <AlertTriangle className="text-red-600" size={20} />
                 </span>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">Cancel subscription?</h3>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Cancel subscription?
+                  </h3>
                   <p className="text-sm text-gray-500 mt-1 leading-relaxed">
                     Autopay will stop. Choose when access should end.
                   </p>
                 </div>
               </div>
               {cancelError && (
-                <p className="text-sm text-red-600 mb-3 rounded-lg bg-red-50 px-3 py-2">{cancelError}</p>
+                <p className="text-sm text-red-600 mb-3 rounded-lg bg-red-50 px-3 py-2">
+                  {cancelError}
+                </p>
               )}
               <div className="space-y-2">
                 <button
@@ -475,12 +508,16 @@ export default function Subscription() {
                   onClick={() => handleCancelSubscription(true)}
                   className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-[#5E23DC] hover:bg-[#4c1bb5] disabled:opacity-50"
                 >
-                  {cancelling ? "Cancelling…" : "End of billing period (recommended)"}
+                  {cancelling
+                    ? "Cancelling…"
+                    : "End of billing period (recommended)"}
                 </button>
                 <p className="text-xs text-gray-500 px-1">
                   Keep access until{" "}
-                  {activeData?.end_date || activeData?.next_billing_date || "your renewal date"}.
-                  No further charges.
+                  {activeData?.end_date ||
+                    activeData?.next_billing_date ||
+                    "your renewal date"}
+                  . No further charges.
                 </p>
                 <button
                   type="button"
@@ -538,10 +575,12 @@ export default function Subscription() {
           </div>
         ) : plans.length === 0 ? (
           <div className="text-center py-20 px-6 max-w-md mx-auto rounded-3xl bg-white border border-gray-100 shadow-sm">
-            <p className="text-gray-900 font-semibold text-lg">No plans available</p>
+            <p className="text-gray-900 font-semibold text-lg">
+              No plans available
+            </p>
             <p className="text-gray-500 text-sm mt-2 leading-relaxed">
-              No active plans for {getPartnerTypeLabel()}. Ask your admin to add plans in
-              Reparv Admin → Subscription Pricing.
+              No active plans for {getPartnerTypeLabel()}. Ask your admin to add
+              plans in Reparv Admin → Subscription Pricing.
             </p>
           </div>
         ) : (
@@ -578,8 +617,12 @@ export default function Subscription() {
                     <PlanCard
                       plan={plan}
                       index={index}
-                      isRecommended={plan?.highlight === "True" || index === recIndex}
-                      isCurrent={isActive && String(plan.id) === String(currentPlanId)}
+                      isRecommended={
+                        plan?.highlight === "True" || index === recIndex
+                      }
+                      isCurrent={
+                        isActive && String(plan.id) === String(currentPlanId)
+                      }
                       onSubscribe={handleSubscribe}
                       onViewDetails={handleViewDetails}
                     />
@@ -595,8 +638,12 @@ export default function Subscription() {
                   key={plan.id ?? index}
                   plan={plan}
                   index={index}
-                  isRecommended={plan?.highlight === "True" || index === recIndex}
-                  isCurrent={isActive && String(plan.id) === String(currentPlanId)}
+                  isRecommended={
+                    plan?.highlight === "True" || index === recIndex
+                  }
+                  isCurrent={
+                    isActive && String(plan.id) === String(currentPlanId)
+                  }
                   onSubscribe={handleSubscribe}
                   onViewDetails={handleViewDetails}
                 />
@@ -613,7 +660,9 @@ export default function Subscription() {
             transition={{ delay: 0.25 }}
             className="mt-12 text-center"
           >
-            <p className="text-sm text-gray-500 mb-4">Not sure which plan fits?</p>
+            <p className="text-sm text-gray-500 mb-4">
+              Not sure which plan fits?
+            </p>
             <button
               type="button"
               onClick={goCompare}

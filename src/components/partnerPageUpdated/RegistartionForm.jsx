@@ -141,7 +141,7 @@ const RegistrationForm = ({ plan }) => {
   `;
 
   return (
-    <div className="min-h-screen w-full flex justify-center bg-white px-0 py-0 sm:px-4 sm:py-14">
+    <div className="min-h-screen w-full flex justify-center">
       <form
         onSubmit={handleSubmit}
         className="
@@ -153,8 +153,8 @@ const RegistrationForm = ({ plan }) => {
           backdrop-blur-xl
           border border-slate-200
           overflow-hidden
-          rounded-none
           shadow-none
+          rounded-2xl
           sm:rounded-3xl
           sm:shadow-[0_20px_60px_-20px_rgba(94,35,220,0.35)]
         "

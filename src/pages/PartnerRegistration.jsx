@@ -1,166 +1,161 @@
-import { useEffect, useState } from "react";
-import PartnerRegistrationStep1 from "../components/pricingPages/Step1";
-import PartnerRegistrationStep2 from "../components/pricingPages/Step2";
-import PartnerPaymentStep3 from "../components/pricingPages/Step3";
-import { useAuth } from "../store/auth";
-import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft, Shield, Zap, Sparkles, Crown, Star } from "lucide-react";
+import RegistrationForm from "../components/partnerPageUpdated/RegistartionForm";
 
-export default function PartnerRegistration() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [selectedPlan, setSelectedPlan] = useState(null);
-  const [couponState, setCouponState] = useState({});
-  const [redeemConfirm, setRedeemConfirm] = useState(null);
-  const { id } = useParams();
+// ─── Plan Summary Card ────────────────────────────────────────────────────────
 
-  const { URI } = useAuth();
-  const [user, setUser] = useState({
-    fullname: "",
-    contact: "",
-    email: "",
-    username: "",
-    password: "",
-    state: "",
-    city: "",
-    intrest: "",
-    refrence: "",
-  });
+function PlanSummary({ plan }) {
+  if (!plan) return null;
 
-  useEffect(() => {
-    if (id) {
-      setSelectedPlan((prev) => ({
-        ...prev,
-        id: Number(id),
-      }));
-    }
-  }, [id]);
-  const updateCouponState = (planId, newState) => {
-    setCouponState((prev) => ({
-      ...prev,
-      [planId]: { ...prev[planId], ...newState },
-    }));
-  };
-  const handleRedeem = async (plan, code) => {
-    if (!code?.trim()) {
-      window.alert("Enter a redeem code");
-      return;
-    }
-    let userId = localStorage.getItem("userId");
-    if (!userId) {
-      userId = Math.floor(1000 + Math.random() * 9000);
-      localStorage.setItem("userId", userId);
-    }
-    updateCouponState(plan.id, { isApplying: true, couponMsg: "" });
+  return (
+    <div
+      className="rounded-2xl overflow-hidden shadow-lg mb-8"
+      style={{
+        background: plan.isTrial
+          ? "linear-gradient(135deg, #059669 0%, #10b981 100%)"
+          : "linear-gradient(135deg, #5E23DC 0%, #7c3aed 100%)",
+      }}
+    >
+      <div className="p-6">
+        <div className="flex items-center gap-3 mb-4">
+          {plan.icons && (
+            <span
+              className="flex h-10 w-10 items-center justify-center rounded-xl"
+              style={{ background: "rgba(255,255,255,0.2)" }}
+            >
+              {plan.icons}
+            </span>
+          )}
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-white leading-tight">
+              {plan.name}
+            </h3>
+            <p className="text-white/65 text-xs capitalize">
+              {plan.description}
+            </p>
+          </div>
+          {plan.mostPopular && !plan.isTrial && (
+            <span className="inline-flex items-center gap-1 bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full">
+              <Star size={10} fill="currentColor" /> Popular
+            </span>
+          )}
+          {plan.isTrial && (
+            <span className="inline-flex items-center gap-1 bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full">
+              <Crown size={10} /> Free Trial
+            </span>
+          )}
+        </div>
 
-    try {
-      const res = await axios.post(
-        `${URI}/projectpartner/subscription/validate`,
-        {
-          user_id: userId,
-          code: code.trim(),
-          planid: plan.id,
-        },
-      );
+        <div className="flex items-baseline gap-2">
+          <span className="text-3xl font-extrabold text-white tracking-tight">
+            {plan.isTrial
+              ? "Free"
+              : `₹${Number(plan.billPrice).toLocaleString("en-IN")}`}
+          </span>
+          {!plan.isTrial && (
+            <span className="text-white/60 text-sm">/ billing cycle</span>
+          )}
+        </div>
+        {!plan.isTrial && (
+          <p className="text-white/45 text-xs mt-0.5">incl. 18% GST</p>
+        )}
+      </div>
+    </div>
+  );
+}
 
-      if (res.data.success) {
-        const discount = Number(res.data.discount || 0);
+// ─── Registration Page ────────────────────────────────────────────────────────
 
-        setRedeemConfirm({
-          plan,
-          code,
-          discount,
-        });
-      } else {
-        updateCouponState(plan.id, {
-          couponMsg: res.data.message || "Invalid Code",
-        });
-      }
-    } catch (err) {
-      updateCouponState(plan.id, { couponMsg: "Something went wrong" });
-    } finally {
-      updateCouponState(plan.id, { isApplying: false });
-    }
-  };
-  const confirmRedeem = () => {
-    if (!redeemConfirm || !selectedPlan) return;
+export default function PartnerRegistrationPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    const { discount } = redeemConfirm;
-    console.log(redeemConfirm);
+  // Plan can be passed via router state: navigate("/partner-registration", { state: { plan } })
+  const plan = location.state?.plan || null;
 
-    const originalPrice = Number(selectedPlan.totalPrice);
-    const discountedPrice = Number(originalPrice - discount, 0);
+  return (
+    <div className="min-h-screen bg-[#faf9fc]">
+      {/* Ambient blobs */}
+      <div
+        className="pointer-events-none fixed inset-0 overflow-hidden"
+        aria-hidden
+      >
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-[#5E23DC]/[0.06] rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-[#a855f7]/[0.05] rounded-full blur-3xl" />
+      </div>
 
-    const updatedPlan = {
-      ...selectedPlan,
-      discountApplied: discount,
-    };
-    console.log(updatedPlan, "update");
+      <div className="relative max-w-3xl mx-auto px-4 py-24 sm:py-27">
+        {/* Back button */}
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="hidden sm:inline-flex items-center gap-2 mb-4 sm:mb-8 text-xs sm:text-sm font-semibold text-[#5E23DC] border border-[#5E23DC]/25 bg-white hover:bg-[#ede9fe] px-2 sm:px-5 py-1 sm:py-2 rounded-full shadow-sm transition"
+        >
+          <ArrowLeft size={15} />
+          <span className="hidden sm:block">Back to Home</span>
+        </button>
 
-    setSelectedPlan(updatedPlan);
+        {/* Page header */}
+        <div className="w-full sm:mx-auto sm:text-center items-center justify-center mb-10">
+          <div className="w-full flex gap-3 ">
+            {/* Back button */}
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex sm:hidden items-center gap-2 mb-4 sm:mb-8 text-xs sm:text-sm font-semibold text-[#5E23DC] border border-[#5E23DC]/25 bg-white hover:bg-[#ede9fe] px-2 sm:px-5 py-1 sm:py-2 rounded-full shadow-sm transition"
+        >
+          <ArrowLeft size={15} />
+          <span className="hidden sm:block">Back to Home</span>
+        </button>
+          <div className="sm:mx-auto flex items-center justify-center gap-2 rounded-full border border-[#5E23DC]/15 bg-white px-4 py-1.5 text-xs sm:text-sm font-semibold text-[#5E23DC] shadow-sm mb-4">
+            Project Partner Registration
+          </div>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-[#0F172A] mb-2">
+            Complete Your Registration
+          </h1>
+          <p className="text-gray-500 text-sm sm:text-base">
+            Fill in your details below to get started as a Project Partner
+          </p>
 
-    updateCouponState(selectedPlan.id, {
-      couponMsg: `Coupon Applied: ₹${discount} OFF`,
-    });
+          {/* Trust badges */}
+          <div className="mt-5 flex flex-wrap items-center sm:justify-center gap-2">
+            {[
+              { icon: Zap, label: "Razorpay autopay" },
+              { icon: Shield, label: "Secure billing" },
+              { icon: Sparkles, label: "Full platform access" },
+            ].map(({ icon: Icon, label }) => (
+              <span
+                key={label}
+                className="inline-flex items-center gap-1.5 rounded-full bg-white border border-gray-200/80 px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm"
+              >
+                <Icon size={13} className="text-[#5E23DC]" />
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
 
-    setRedeemConfirm(null);
-  };
-  console.log(selectedPlan, "ss");
+        {/* Selected plan summary (if navigated with plan state) */}
+        {plan && <PlanSummary plan={plan} />}
 
-  const cancelRedeem = () => {
-    setRedeemConfirm(null);
-  };
+        {/* Registration form card */}
+        <RegistrationForm plan={plan} />
 
-  const nextStep = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, 3));
-  };
-
-  const prevStep = () => {
-    setCurrentStep((prev) => Number(prev - 1, 1));
-  };
-
-  const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <PartnerRegistrationStep1
-            nextStep={nextStep}
-            setPlan={setSelectedPlan}
-            selectedPlan={selectedPlan}
-            routePlanId={id}
-            handleRedeem={handleRedeem}
-            couponState={couponState}
-            redeemConfirm={redeemConfirm}
-            confirmRedeem={confirmRedeem}
-            cancelRedeem={cancelRedeem}
-            updateCouponState={updateCouponState}
-          />
-        );
-
-      case 2:
-        return (
-          <PartnerRegistrationStep2
-            nextStep={nextStep}
-            prevStep={prevStep}
-            selectedPlan={selectedPlan}
-            form={user}
-            setForm={setUser}
-          />
-        );
-
-      case 3:
-        return (
-          <PartnerPaymentStep3
-            prevStep={prevStep}
-            selectedPlan={selectedPlan}
-            user={user}
-            setForm={setUser}
-          />
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  return <div className="">{renderStep()}</div>;
+        {/* Footer note */}
+        <p className="text-center text-xs text-gray-400 mt-6">
+          By registering you agree to Reparv's{" "}
+          <a href="/terms" className="text-[#5E23DC] hover:underline">
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a href="/privacy" className="text-[#5E23DC] hover:underline">
+            Privacy Policy
+          </a>
+          .
+        </p>
+      </div>
+    </div>
+  );
 }
