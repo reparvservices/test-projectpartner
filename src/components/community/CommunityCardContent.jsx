@@ -13,7 +13,7 @@ export default function CommunityCardContent({ title, body, image, location, rep
         <img
           src={image}
           alt={title}
-          className="w-full h-44 object-cover rounded-xl"
+          className="w-full h-44 object-contain rounded-xl"
         />
       )}
 

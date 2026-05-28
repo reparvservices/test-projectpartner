@@ -355,7 +355,7 @@ export default function Layout() {
                 >
                   <FiBell /> Notifications
                 </Link>
-                <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
+                <button className="hidden lex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
                   <FiBookmark /> Saved
                 </button>
               </div>
@@ -363,9 +363,13 @@ export default function Layout() {
               <h4 className="text-xs text-gray-400 mt-5 mb-3">MANAGEMENT</h4>
 
               <div className="space-y-3">
-                <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
+                <Link to="/app/edit-profile"
+                  onClick={() => {
+                    setMoreOpen(false);
+                  }}
+                  className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
                   <FiSettings /> Settings
-                </button>
+                </Link>
                 <Link
                   to="/app/profile"
                   onClick={() => {
@@ -375,10 +379,10 @@ export default function Layout() {
                 >
                   <HiOutlineUserCircle /> Profile
                 </Link>
-                <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
+                <button className="hidden gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
                   <HiOutlineShieldCheck /> Permissions
                 </button>
-                <button className="flex gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
+                <button className="hidden gap-3 items-center w-full p-2 rounded-lg hover:bg-gray-100">
                   <HiOutlineChartBar /> Reports
                 </button>
                 <button

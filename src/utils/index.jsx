@@ -1,6 +1,7 @@
 export const services = [
   {
     title: "New Flat",
+    url: "/properties/type/new/category/NewFlat",
     icon: () => (
       <svg
         width="64"
@@ -107,6 +108,7 @@ export const services = [
   },
   {
     title: "New Plot",
+     url: "/properties/type/new/category/NewPlot",
     icon: () => (
       <svg
         width="63"
@@ -140,6 +142,7 @@ export const services = [
   },
   {
     title: "New Shop",
+    url: "/properties/type/new/category/NewShop",
     icon: () => (
       <svg
         width="64"
@@ -233,6 +236,7 @@ export const services = [
   },
   {
     title: "Rental",
+    url: "/properties/type/rental/category/RentalFlat",
     icon: () => (
       <svg
         width="64"
@@ -300,6 +304,7 @@ export const services = [
   },
   {
     title: "Resale",
+    url: "/properties/type/resale/category/Resale",
     icon: () => (
       <svg
         width="64"
@@ -372,6 +377,7 @@ export const services = [
   },
   {
     title: "Row House",
+    url: "/properties/type/new/category/RowHouse",
     icon: () => (
       <svg
         width="64"
@@ -518,6 +524,7 @@ export const services = [
   },
   {
     title: "Lease",
+    url: "/properties/type/new/category/Lease",
     icon: () => (
       <svg
         width="64"
@@ -655,6 +662,7 @@ export const services = [
   },
   {
     title: "Farm House",
+    url: "/properties/type/new/category/FarmHouse",
     icon: () => (
       <svg
         width="64"
@@ -738,6 +746,7 @@ export const services = [
   },
   {
     title: "Farm Land",
+    url: "/properties/type/new/category/FarmLand",
     icon: () => (
       <svg
         width="64"
@@ -831,6 +840,7 @@ export const services = [
   },
   {
     title: "Commercial Flat",
+    url: "/properties/type/new/category/CommercialFlat",
     icon: () => (
       <svg
         width="64"
@@ -986,6 +996,7 @@ export const services = [
   },
   {
     title: "Rental Office",
+    url: "/properties/type/rental/category/RentalOffice",
     icon: () => (
       <svg
         width="64"
@@ -1069,6 +1080,7 @@ export const services = [
   },
   {
     title: "Commercial Plot",
+    url: "/properties/type/new/category/CommercialPlot",
     icon: () => (
       <svg
         width="64"
@@ -1162,6 +1174,7 @@ export const services = [
   },
   {
     title: "Industrial Space",
+    url: "/properties/type/new/category/IndustrialSpace",
     icon: () => (
       <svg
         width="64"

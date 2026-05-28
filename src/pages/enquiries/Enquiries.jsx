@@ -698,7 +698,7 @@ export default function Enquiries() {
           </div>
 
           <div className="space-y-6 hidden xl:block">
-            <QuickStats counts={enquiryCounts} total={datas.length} />
+            <QuickStats counts={enquiryCounts} total={datas.length} setActiveTab={setEnquiryFilter} />
           </div>
         </div>
       </div>

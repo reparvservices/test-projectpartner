@@ -65,7 +65,9 @@ const ServicesSection = () => {
                       const IconComponent = service.icon;
 
                       return (
-                        <div key={idx} className="flex flex-col items-center">
+                        <div key={idx} onClick={()=>{
+                          window.open("https://www.reparv.in"+service.url, "_blank");
+                        }} className="flex flex-col items-center cursor-pointer">
                           <div className="bg-white w-[70px] h-[60px] rounded-xl flex items-center justify-center">
                             <div className="w-[36px] h-[36px] [&>svg]:w-full [&>svg]:h-full">
                               <IconComponent />
