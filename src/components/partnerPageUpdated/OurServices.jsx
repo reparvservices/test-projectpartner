@@ -120,7 +120,7 @@ const ServicesSection = () => {
         {/* CTA */}
         <div className="mt-12 hidden sm:block">
           <p className="text-sm text-[#6A7282] mb-3">
-            Can’t find what you’re looking for?
+            Can't find what you're looking for?
           </p>
 
           {!showAll && services.length > 10 && (
