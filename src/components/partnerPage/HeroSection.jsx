@@ -70,7 +70,7 @@ const HeroSection = () => {
           {/* Description */}
           <p className="mt-4 xl:mt-5 max-w-xl text-base xl:text-lg text-[#1F1B2E]">
             Connect with premium projects, grow your business, and earn more
-            with India’s most trusted partner network.
+            with India's most trusted partners network.
           </p>
 
           {/* Buttons */}
