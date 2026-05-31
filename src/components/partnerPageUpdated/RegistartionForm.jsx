@@ -2,15 +2,20 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../store/auth";
 import { isTrialPlan } from "../../lib/partnerSubscription";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; 
+import { useLocation, useNavigate } from "react-router-dom"; 
 
 const RegistrationForm = ({ plan }) => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const location = useLocation();
   const { URI } = useAuth();
+  const verifiedPhone = location.state?.verifiedPhone || "";
+  const prefilledName =
+    location.state?.fullname ||
+    [location.state?.firstName, location.state?.lastName].filter(Boolean).join(" ").trim();
 
   const [newPartner, setNewPartner] = useState({
-    fullname: "",
-    contact: "",
+    fullname: prefilledName,
+    contact: verifiedPhone,
     email: "",
     state: "",
     city: "",

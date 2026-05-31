@@ -10,6 +10,12 @@ export default defineConfig({
   base: '/',
   server: {
     allowedHosts: true,
+    proxy: {
+      "/partner-app": {
+        target: process.env.VITE_BACKEND_URL || "http://localhost:3000",
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: 'dist',

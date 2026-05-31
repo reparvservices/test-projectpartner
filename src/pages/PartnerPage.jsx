@@ -1,4 +1,5 @@
 import SEO from "../components/SEO";
+import { PartnerJoinProvider } from "../context/PartnerJoinContext";
 //import ProjectPartnerSection from "../components/NewProjectPartner/ExplainProjectPartner";
 import Reveal from "../components/common/Reveal";
 import FaqSection from "../components/partnerPage/FaqSection";
@@ -14,7 +15,7 @@ import StatsAndBenefits from "../components/partnerPageUpdated/StateSection";
 
 const PartnerPage = () => {
   return (
-    <>
+    <PartnerJoinProvider>
       <SEO
         title="Reparv Project Partner Program | Verified Leads & Real Estate Growth Platform"
         description="Join Reparv’s Project Partner Program to get verified buyer leads, premium projects, and a smart partner dashboard. Grow your real estate business across India."
@@ -56,7 +57,7 @@ const PartnerPage = () => {
           <FaqSection />
         </Reveal>
       </div>
-    </>
+    </PartnerJoinProvider>
   );
 };
 

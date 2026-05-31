@@ -23,7 +23,7 @@ import {
 } from "../../lib/partnerSubscription.js";
 import { getSubscriptionSlugForUser } from "../../lib/partnerAuth.js";
 
-export default function SubscriptionPlan({ plan }) {
+export default function SubscriptionPlan({ plan, trialUsed = false }) {
   const {
     URI,
     user,
@@ -81,6 +81,12 @@ export default function SubscriptionPlan({ plan }) {
     if (!ctx) return;
 
     if (trial) {
+      if (trialUsed) {
+        alert(
+          "Free trial has already been used on this account. Please choose a paid plan.",
+        );
+        return;
+      }
       setShowTrialConfirm(true);
       return;
     }

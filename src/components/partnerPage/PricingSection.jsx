@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/auth";
+import { usePartnerJoin } from "../../context/PartnerJoinContext";
 import { planIcons } from "../../utils";
 import { isTrialPlan } from "../../lib/partnerSubscription";
 
@@ -324,6 +325,7 @@ function PlanCard({ plan, index, isRecommended }) {
 export default function PricingSection() {
   const { URI }  = useAuth();
   const navigate = useNavigate();
+  const { openJoinModal } = usePartnerJoin();
 
   const [plans,       setPlans]       = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -520,7 +522,7 @@ export default function PricingSection() {
             <div className="mt-14 text-center space-y-4">
               <button
                 type="button"
-                onClick={() => navigate("/partner-registration")}
+                onClick={openJoinModal}
                 className="inline-flex items-center gap-2 px-10 py-3.5 rounded-2xl text-sm font-bold text-white shadow-lg transition hover:shadow-xl active:scale-[0.98]"
                 style={{ background: "linear-gradient(135deg,#5E23DC 0%,#7c3aed 100%)" }}
               >

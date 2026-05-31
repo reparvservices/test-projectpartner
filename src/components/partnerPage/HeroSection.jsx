@@ -5,7 +5,7 @@ import { FaUsers } from "react-icons/fa";
 
 import homeImg from "../../assets/home.png";
 import heroRightImg from "../../assets/laptophome.png";
-import { useNavigate } from "react-router-dom";
+import { usePartnerJoin } from "../../context/PartnerJoinContext";
 
 /* ---------- SMALL REUSABLE STAT ITEM ---------- */
 const StatItem = memo(({ icon: Icon, title, subtitle }) => (
@@ -22,7 +22,7 @@ const StatItem = memo(({ icon: Icon, title, subtitle }) => (
 ));
 
 const HeroSection = () => {
-  const navigate = useNavigate();
+  const { openJoinModal } = usePartnerJoin();
   const [showVideo, setShowVideo] = useState(false);
 
   const scrollToPricing = useCallback(() => {
@@ -77,7 +77,8 @@ const HeroSection = () => {
           <div className="mt-6 w-full xl:mt-8 flex flex-row gap-2 sm:gap-4 items-center">
             {/* JOIN AS PARTNER */}
             <button
-              onClick={() => navigate("/partner-registration")}
+              type="button"
+              onClick={openJoinModal}
               className="
               
       bg-[#5E23DC] text-white

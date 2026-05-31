@@ -23,6 +23,12 @@ const SUBSCRIPTION_TRIAL_PATH = {
   territory: "/territory-partner/subscription/activate-trial",
 };
 
+const SUBSCRIPTION_TRIAL_STATUS_PATH = {
+  project: "/projectpartner/subscription/trial-status",
+  sales: "/sales/subscription/trial-status",
+  territory: "/territory-partner/subscription/trial-status",
+};
+
 export function isTrialPlan(plan) {
   if (!plan) return false;
   const type = String(plan.plan_type || plan.planType || "").toLowerCase();
@@ -47,6 +53,40 @@ export function getSubscriptionTrialPath(user) {
   if (!slug || !user?.id) return null;
   const base = SUBSCRIPTION_TRIAL_PATH[slug];
   return base ? `${base}/${user.id}` : null;
+}
+
+export function getSubscriptionTrialStatusPath(user) {
+  const slug = resolveSubscriptionSlug(user);
+  if (!slug || !user?.id) return null;
+  const base = SUBSCRIPTION_TRIAL_STATUS_PATH[slug];
+  return base ? `${base}/${user.id}` : null;
+}
+
+/** @returns {Promise<{ trialUsed: boolean, trialActive: boolean, daysLeft: number }>} */
+export async function fetchPartnerTrialStatus(apiBase, user) {
+  const path = getSubscriptionTrialStatusPath(user);
+  if (!path) {
+    return { trialUsed: false, trialActive: false, daysLeft: 0 };
+  }
+
+  try {
+    const res = await fetch(`${apiBase}${path}`, {
+      method: "GET",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return { trialUsed: false, trialActive: false, daysLeft: 0 };
+    }
+    return {
+      trialUsed: Boolean(data.trialUsed ?? data.trial_used),
+      trialActive: Boolean(data.trialActive ?? data.trial_active),
+      daysLeft: Number(data.daysLeft ?? data.days_left) || 0,
+    };
+  } catch {
+    return { trialUsed: false, trialActive: false, daysLeft: 0 };
+  }
 }
 
 export async function activatePartnerTrial(apiBase, user, { planId }) {
@@ -129,6 +169,7 @@ export async function fetchPartnerSubscription(apiBase, user) {
     }
     return {
       active: Boolean(data?.active),
+      trial_used: Boolean(data?.trial_used ?? data?.trialUsed),
       plan_name: data?.plan_name || data?.planName,
       planDuration: data?.planDuration,
       amount: data?.amount,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Shield, Zap, Sparkles, Crown, Star } from "lucide-react";
 import RegistrationForm from "../components/partnerPageUpdated/RegistartionForm";
 
@@ -146,13 +146,13 @@ export default function PartnerRegistrationPage() {
         {/* Footer note */}
         <p className="text-center text-xs text-gray-400 mt-6">
           By registering you agree to Reparv's{" "}
-          <a href="/terms" className="text-[#5E23DC] hover:underline">
+          <Link to="/terms-and-conditions" className="text-[#5E23DC] hover:underline">
             Terms of Service
-          </a>{" "}
+          </Link>{" "}
           and{" "}
-          <a href="/privacy" className="text-[#5E23DC] hover:underline">
+          <Link to="/privacy-policy" className="text-[#5E23DC] hover:underline">
             Privacy Policy
-          </a>
+          </Link>
           .
         </p>
       </div>

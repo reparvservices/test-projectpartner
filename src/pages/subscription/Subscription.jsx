@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import {
   cancelPartnerSubscription,
+  fetchPartnerTrialStatus,
   isTrialPlan,
 } from "../../lib/partnerSubscription";
 import { getPartnerPlansLabel } from "../../lib/partnerAuth";
@@ -89,12 +90,15 @@ function PlanCard({
   index,
   isRecommended,
   isCurrent,
+  trialUsed,
   onSubscribe,
   onViewDetails,
 }) {
   const features = parseFeatures(plan);
   const visible = features.slice(0, 5);
   const hasMore = features.length > 5;
+  const trialPlan = isTrialPlan(plan);
+  const trialBlocked = trialPlan && trialUsed && !isCurrent;
 
   return (
     <motion.article
@@ -178,6 +182,15 @@ function PlanCard({
             >
               Active subscription
             </button>
+          ) : trialBlocked ? (
+            <button
+              type="button"
+              disabled
+              title="Free trial already used on this account"
+              className="w-full py-3 rounded-xl font-semibold text-sm bg-gray-100 text-gray-500 border border-gray-200 cursor-not-allowed"
+            >
+              Trial already used
+            </button>
           ) : (
             <button
               type="button"
@@ -188,7 +201,7 @@ function PlanCard({
                   : "bg-gray-900 text-white hover:bg-gray-800"
               }`}
             >
-              {isTrialPlan(plan) ? "Start free trial" : "Get started"}
+              {trialPlan ? "Start free trial" : "Get started"}
             </button>
           )}
           <button
@@ -229,8 +242,18 @@ export default function Subscription() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState("");
+  const [trialStatus, setTrialStatus] = useState({
+    trialUsed: false,
+    trialActive: false,
+    daysLeft: 0,
+  });
 
   const activeData = subscription?.raw || subscription;
+  const trialUsed = Boolean(
+    trialStatus.trialUsed ||
+      subscription?.trial_used ||
+      activeData?.trial_used,
+  );
   const isActive = Boolean(subscription?.active || activeData?.active);
   const currentPlanId = activeData?.plan_id;
   const statusLower = String(
@@ -261,7 +284,15 @@ export default function Subscription() {
     }
   };
 
-  const recIndex = useMemo(() => recommendedPlanIndex(plans), [plans]);
+  const displayPlans = useMemo(() => {
+    if (!trialUsed) return plans;
+    return plans.filter((plan) => !isTrialPlan(plan));
+  }, [plans, trialUsed]);
+
+  const recIndex = useMemo(
+    () => recommendedPlanIndex(displayPlans),
+    [displayPlans],
+  );
 
   const fetchPlans = useCallback(async () => {
     try {
@@ -279,6 +310,11 @@ export default function Subscription() {
       setLoadingPlans(false);
     }
   }, [URI, user, role]);
+
+  useEffect(() => {
+    if (!authReady || !user?.id) return;
+    fetchPartnerTrialStatus(URI, user).then(setTrialStatus);
+  }, [authReady, URI, user]);
 
   useEffect(() => {
     if (!authReady) return;
@@ -383,6 +419,20 @@ export default function Subscription() {
             <p className="leading-relaxed">
               Subscribe below to unlock the full partner panel. Locked pages
               show a preview until your plan is active.
+            </p>
+          </motion.div>
+        )}
+
+        {trialUsed && !trialStatus.trialActive && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 max-w-xl mx-auto flex items-start gap-3 rounded-2xl border border-violet-200/80 bg-violet-50/90 px-4 py-3.5 text-sm text-violet-900"
+          >
+            <AlertTriangle size={18} className="shrink-0 mt-0.5 text-violet-600" />
+            <p className="leading-relaxed">
+              You have already used your one-time free trial. Choose a paid plan
+              to continue.
             </p>
           </motion.div>
         )}
@@ -543,7 +593,7 @@ export default function Subscription() {
         )}
 
         {/* Section header */}
-        {!loadingPlans && plans.length > 0 && (
+        {!loadingPlans && displayPlans.length > 0 && (
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6 md:mb-8">
             <div>
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -572,14 +622,17 @@ export default function Subscription() {
               <PlanCardSkeleton key={i} />
             ))}
           </div>
-        ) : plans.length === 0 ? (
+        ) : displayPlans.length === 0 ? (
           <div className="text-center py-20 px-6 max-w-md mx-auto rounded-3xl bg-white border border-gray-100 shadow-sm">
             <p className="text-gray-900 font-semibold text-lg">
-              No plans available
+              {trialUsed && plans.length > 0
+                ? "Free trial already used"
+                : "No plans available"}
             </p>
             <p className="text-gray-500 text-sm mt-2 leading-relaxed">
-              No active plans for {partnerPlansLabel}. Ask your admin to add
-              plans in Reparv Admin → Subscription Pricing.
+              {trialUsed && plans.length > 0
+                ? "Your one-time free trial is no longer available. Choose a paid plan when your admin adds one."
+                : `No active plans for ${partnerPlansLabel}. Ask your admin to add plans in Reparv Admin → Subscription Pricing.`}
             </p>
           </div>
         ) : (
@@ -608,7 +661,7 @@ export default function Subscription() {
                 ref={scrollRef}
                 className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 px-4 scroll-smooth scrollbar-hide"
               >
-                {plans.map((plan, index) => (
+                {displayPlans.map((plan, index) => (
                   <div
                     key={plan.id ?? index}
                     className="snap-center shrink-0 w-[min(88vw,340px)]"
@@ -622,6 +675,7 @@ export default function Subscription() {
                       isCurrent={
                         isActive && String(plan.id) === String(currentPlanId)
                       }
+                      trialUsed={trialUsed}
                       onSubscribe={handleSubscribe}
                       onViewDetails={handleViewDetails}
                     />
@@ -631,8 +685,10 @@ export default function Subscription() {
             </div>
 
             {/* Desktop grid */}
-            <div className={`hidden lg:grid gap-6 ${gridClass(plans.length)}`}>
-              {plans.map((plan, index) => (
+            <div
+              className={`hidden lg:grid gap-6 ${gridClass(displayPlans.length)}`}
+            >
+              {displayPlans.map((plan, index) => (
                 <PlanCard
                   key={plan.id ?? index}
                   plan={plan}
@@ -643,6 +699,7 @@ export default function Subscription() {
                   isCurrent={
                     isActive && String(plan.id) === String(currentPlanId)
                   }
+                  trialUsed={trialUsed}
                   onSubscribe={handleSubscribe}
                   onViewDetails={handleViewDetails}
                 />
@@ -652,7 +709,7 @@ export default function Subscription() {
         )}
 
         {/* Bottom CTA */}
-        {!loadingPlans && plans.length > 1 && (
+        {!loadingPlans && displayPlans.length > 1 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -674,7 +731,7 @@ export default function Subscription() {
         )}
       </div>
 
-      <SubscriptionPlan plan={selectedPlan} />
+      <SubscriptionPlan plan={selectedPlan} trialUsed={trialUsed} />
     </div>
   );
 }
