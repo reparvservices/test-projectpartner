@@ -203,6 +203,31 @@ export function persistPartnerSession(roleId, user) {
   return normalizedUser;
 }
 
+async function fetchPartnerProfile(apiBase, config, fallbackUser) {
+  const profileRes = await fetch(`${apiBase}${config.apiPrefix}/profile`, {
+    method: "GET",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!profileRes.ok) {
+    return null;
+  }
+
+  const profile = await profileRes.json().catch(() => ({}));
+  return {
+    ok: true,
+    user: {
+      ...(fallbackUser || {}),
+      ...profile,
+      id: profile.id ?? fallbackUser?.id,
+      role:
+        normalizePartnerRole(profile.role || fallbackUser?.role) ||
+        config.displayRole,
+    },
+  };
+}
+
 /** Validate session with server (session cookie + express session) */
 export async function validatePartnerSession(apiBase, roleId, fallbackUser) {
   const config = getRoleConfigById(roleId);
@@ -210,12 +235,16 @@ export async function validatePartnerSession(apiBase, roleId, fallbackUser) {
     return { ok: false };
   }
 
+  let sessionStatus = null;
+
   try {
     const res = await fetch(`${apiBase}${config.sessionEndpoint}`, {
       method: "GET",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
     });
+
+    sessionStatus = res.status;
 
     if (res.ok) {
       const data = await res.json().catch(() => ({}));
@@ -230,46 +259,28 @@ export async function validatePartnerSession(apiBase, roleId, fallbackUser) {
       }
     }
 
-    if (res.status === 401) {
-      /* session may be missing while httpOnly JWT cookie is still valid */
-    }
-  } catch {
-    /* try profile fallback below */
-  }
-
-  try {
-    const profileRes = await fetch(`${apiBase}${config.apiPrefix}/profile`, {
-      method: "GET",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-    });
-    if (profileRes.ok) {
-      const profile = await profileRes.json().catch(() => ({}));
-      return {
-        ok: true,
-        user: {
-          ...(fallbackUser || {}),
-          ...profile,
-          id: profile.id ?? fallbackUser?.id,
-          role: normalizePartnerRole(profile.role || fallbackUser?.role) || config.displayRole,
-        },
-      };
-    }
-    if (profileRes.status === 401) {
+    if (res.status === 401 && !fallbackUser?.id) {
       return { ok: false };
     }
   } catch {
-    /* fall through */
+    /* try profile fallback below when a stored user exists */
   }
 
-  if (fallbackUser?.id) {
-    return {
-      ok: true,
-      user: {
-        ...fallbackUser,
-        role: normalizePartnerRole(fallbackUser.role) || config.displayRole,
-      },
-    };
+  if (sessionStatus === 401 && !fallbackUser?.id) {
+    return { ok: false };
+  }
+
+  if (!fallbackUser?.id) {
+    return { ok: false };
+  }
+
+  try {
+    const profileResult = await fetchPartnerProfile(apiBase, config, fallbackUser);
+    if (profileResult) {
+      return profileResult;
+    }
+  } catch {
+    /* no valid server session */
   }
 
   return { ok: false };

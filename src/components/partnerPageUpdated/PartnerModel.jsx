@@ -17,7 +17,6 @@ export default function PartnerRegistrationModal({
     setRole,
     projectPartner,
   } = useAuth();
-  console.log(currentProjectPartner, "currentProjectPartner");
 
   const [newPartner, setNewPartner] = useState({
     fullname: "",

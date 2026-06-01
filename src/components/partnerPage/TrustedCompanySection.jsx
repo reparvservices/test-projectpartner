@@ -126,7 +126,7 @@ export default function TrustedSection() {
                   modules={[Autoplay]}
                   autoplay={{ delay: 1500, disableOnInteraction: false }}
                   speed={600}
-                  loop
+                  loop={partners.length > 6}
                   centeredSlides={true}
                   slidesPerView={4.4}
                   spaceBetween={6}

@@ -230,13 +230,13 @@ export default function JoinPartnerModal({ isOpen, onClose }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 backdrop-blur-[2px] p-3 sm:p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 backdrop-blur-[2px] p-3 sm:p-4 animate-fadeIn"
       onClick={onClose}
       role="presentation"
     >
       {step === "phone" ? (
         <div
-          className="relative w-[calc(100%-1.25rem)] max-w-[400px] sm:max-w-[920px] max-h-[92vh] sm:max-h-[90vh] overflow-y-auto overflow-x-hidden rounded-2xl sm:rounded-[28px] bg-white shadow-2xl animate-fadeIn"
+          className="relative w-[calc(100%-1.25rem)] max-w-[400px] sm:max-w-[920px] max-h-[92vh] sm:max-h-[90vh] overflow-y-auto overflow-x-hidden rounded-2xl sm:rounded-[28px] bg-white shadow-2xl animate-screenPop"
           onClick={(e) => e.stopPropagation()}
           role="dialog"
           aria-modal="true"
@@ -366,7 +366,7 @@ export default function JoinPartnerModal({ isOpen, onClose }) {
         </div>
       ) : step === "otp" ? (
         <div
-          className="relative w-[calc(100%-1.25rem)] max-w-[400px] max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-[28px] bg-white px-4 py-6 sm:px-8 sm:py-10 shadow-2xl animate-fadeIn"
+          className="relative w-[calc(100%-1.25rem)] max-w-[400px] max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-[28px] bg-white px-4 py-6 sm:px-8 sm:py-10 shadow-2xl animate-screenPop"
           onClick={(e) => e.stopPropagation()}
           role="dialog"
           aria-modal="true"
@@ -457,7 +457,7 @@ export default function JoinPartnerModal({ isOpen, onClose }) {
         </div>
       ) : (
         <div
-          className="relative w-[calc(100%-1.25rem)] max-w-[400px] max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-[28px] bg-white px-4 py-6 sm:px-8 sm:py-10 shadow-2xl animate-fadeIn"
+          className="relative w-[calc(100%-1.25rem)] max-w-[400px] max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-[28px] bg-white px-4 py-6 sm:px-8 sm:py-10 shadow-2xl animate-screenPop"
           onClick={(e) => e.stopPropagation()}
           role="dialog"
           aria-modal="true"

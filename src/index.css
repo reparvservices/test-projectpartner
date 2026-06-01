@@ -137,10 +137,16 @@ body {
 .testimonial-swiper {
   padding-top: 20px;
   padding-bottom: 40px;
+  overflow: visible;
 }
 
 .testimonial-swiper .swiper-slide {
+  height: auto;
   transition: transform 0.4s ease;
+}
+
+.testimonial-swiper .swiper-wrapper {
+  align-items: stretch;
 }
 
 /* ─── Range Input ────────────────────────────────────────── */
