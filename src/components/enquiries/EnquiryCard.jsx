@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "../../store/auth";
 import {
   MapPin,
   Clock,
@@ -36,7 +37,11 @@ function fmtBudget(val) {
 const STATUS = {
   New: { bg: "#EEF2FF", color: "#6366F1", label: "New" },
   "Follow Up": { bg: "#FEE2E2", color: "#EF4444", label: "Follow Up" },
-  "Visit Scheduled": { bg: "#DCFCE7", color: "#16A34A", label: "Visit Scheduled" },
+  "Visit Scheduled": {
+    bg: "#DCFCE7",
+    color: "#16A34A",
+    label: "Visit Scheduled",
+  },
   Token: { bg: "#FEF9C3", color: "#CA8A04", label: "Token" },
   Cancelled: { bg: "#F1F5F9", color: "#94A3B8", label: "Cancelled" },
 };
@@ -80,7 +85,9 @@ function Avatar({ name, imageSrc, size = "md" }) {
 
   if (!imgError && imageSrc && imageSrc !== propertyPicture) {
     return (
-      <div className={`${sizeClass} rounded-full overflow-hidden shrink-0 border-2 border-slate-100`}>
+      <div
+        className={`${sizeClass} rounded-full overflow-hidden shrink-0 border-2 border-slate-100`}
+      >
         <img
           src={imageSrc}
           alt={name}
@@ -183,7 +190,10 @@ function ActionMenu({ row, onAction }) {
   if (!open) {
     return (
       <button
-        onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }}
         className="p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
       >
         <MoreVertical size={17} className="text-slate-600" />
@@ -195,20 +205,28 @@ function ActionMenu({ row, onAction }) {
     <>
       <div
         className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm cursor-pointer"
-          onClick={() => setOpen(false)}
+        onClick={() => setOpen(false)}
       />
       {/* Mobile: bottom-sheet */}
       <div className="md:hidden fixed inset-x-0 bottom-0 z-[71] bg-white rounded-t-3xl shadow-2xl">
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-slate-200" />
         </div>
-        <ActionList row={row} onClose={() => setOpen(false)} onAction={onAction} />
+        <ActionList
+          row={row}
+          onClose={() => setOpen(false)}
+          onAction={onAction}
+        />
         <div className="h-6" />
       </div>
       {/* Desktop: centered modal */}
       <div className="hidden md:flex fixed inset-0 z-[71] items-center justify-center px-4">
         <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
-          <ActionList row={row} onClose={() => setOpen(false)} onAction={onAction} />
+          <ActionList
+            row={row}
+            onClose={() => setOpen(false)}
+            onAction={onAction}
+          />
         </div>
       </div>
     </>
@@ -217,6 +235,7 @@ function ActionMenu({ row, onAction }) {
 
 /* ── Mobile Card ──────────────────────────────────────────── */
 function MobileCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
+  const hasSubscription = isActiveSubscription === true;
   const [showInteraction, setShowInteraction] = useState(false);
 
   let imageSrc = propertyPicture;
@@ -239,9 +258,11 @@ function MobileCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
   const timeStr = item.created_at?.trim() || "—";
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+    <div
+      className="w-full flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm"
+    >
       {/* Main content */}
-      <div className="p-4">
+      <div onClick={() => isActiveSubscription && (onAction("view", item.enquirersid, item))} className="p-4">
         {/* Top row: avatar + name + status + more */}
         <div className="flex items-start gap-3">
           <Avatar name={item.customer} imageSrc={imageSrc} size="lg" />
@@ -249,7 +270,7 @@ function MobileCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <h2 className="font-bold text-slate-900 text-base leading-tight truncate">
+                <h2 className="font-bold text-slate-900 text-sm sm:text-base leading-tight truncate">
                   {item.customer}
                 </h2>
                 <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5 flex-wrap">
@@ -259,10 +280,12 @@ function MobileCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
                   <span className="truncate">{timeStr}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex flex-col-reverse sm:flex-row items-end sm:items-center gap-1 shrink-0">
                 <StatusBadge status={item.status} />
                 <span onClick={(e) => e.stopPropagation()}>
-                  <ActionMenu row={item} onAction={onAction} />
+                  {hasSubscription && (
+                    <ActionMenu row={item} onAction={onAction} />
+                  )}
                 </span>
               </div>
             </div>
@@ -270,7 +293,9 @@ function MobileCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
             {/* Info row */}
             <div className="mt-3 grid grid-cols-3 gap-2">
               <div>
-                <p className="text-[10px] text-slate-400 mb-0.5">Interested In</p>
+                <p className="text-[10px] text-slate-400 mb-0.5">
+                  Interested In
+                </p>
                 <p className="font-bold text-slate-800 text-xs leading-tight truncate">
                   {item.category || "—"}
                 </p>
@@ -310,7 +335,7 @@ function MobileCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
       </div>
 
       {/* Action footer */}
-      {canAct && (
+      {canAct && hasSubscription && (
         <div className="border-t border-slate-100">
           {!isAssigned ? (
             <div className="px-4 py-3">
@@ -368,8 +393,14 @@ function MobileCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
             }}
             className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold text-violet-600 border-t border-slate-100 hover:bg-violet-50 transition-colors"
           >
-            {showInteraction ? "Hide Interaction Details" : "Show Interaction Details"}
-            {showInteraction ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {showInteraction
+              ? "Hide Interaction Details"
+              : "Show Interaction Details"}
+            {showInteraction ? (
+              <ChevronUp size={14} />
+            ) : (
+              <ChevronDown size={14} />
+            )}
           </button>
 
           {/* Interaction details expanded */}
@@ -378,7 +409,12 @@ function MobileCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
               {[
                 ["Status", item.status],
                 ["Property", item.propertyName],
-                ["Location", [item.location, item.city, item.state].filter(Boolean).join(", ")],
+                [
+                  "Location",
+                  [item.location, item.city, item.state]
+                    .filter(Boolean)
+                    .join(", "),
+                ],
                 ["Message", item.message],
               ]
                 .filter(([, v]) => v)
@@ -391,7 +427,9 @@ function MobileCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
                   </div>
                 ))}
               {!item.status && !item.message && (
-                <p className="text-xs text-slate-400 text-center py-2">No interaction details yet.</p>
+                <p className="text-xs text-slate-400 text-center py-2">
+                  No interaction details yet.
+                </p>
               )}
             </div>
           )}
@@ -403,6 +441,7 @@ function MobileCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
 
 /* ── Desktop Card (unchanged layout) ─────────────────────── */
 function DesktopCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
+  const hasSubscription = isActiveSubscription === true;
   let imageSrc = propertyPicture;
   try {
     const parsed = JSON.parse(item.frontView);
@@ -427,7 +466,7 @@ function DesktopCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
   return (
     <div className="bg-white rounded-md border border-slate-200 w-full min-w-0 max-w-full overflow-hidden">
       <div
-        onClick={() => onAction("view", item.enquirersid, item)}
+        onClick={() => hasSubscription && onAction("view", item.enquirersid, item)}
         className="w-full p-5 md:p-6 cursor-pointer"
       >
         {/* TOP ROW */}
@@ -458,7 +497,9 @@ function DesktopCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
                 </h2>
                 <div className="flex items-center gap-2 text-xs text-slate-400 mt-1 flex-wrap">
                   <MapPin size={11} className="shrink-0" />
-                  <span className="truncate max-w-40 md:max-w-none">{locationStr}</span>
+                  <span className="truncate max-w-40 md:max-w-none">
+                    {locationStr}
+                  </span>
                   <span className="text-slate-300">|</span>
                   <Clock size={11} className="shrink-0" />
                   <span>{timeStr}</span>
@@ -469,7 +510,9 @@ function DesktopCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
                 className="flex items-center gap-2 shrink-0 cursor-pointer"
               >
                 <StatusBadge status={item.status} />
-                <ActionMenu row={item} onAction={onAction} />
+                {hasSubscription && (
+                  <ActionMenu row={item} onAction={onAction} />
+                )}
               </div>
             </div>
           </div>
@@ -527,50 +570,48 @@ function DesktopCard({ item, onAction, isActiveSubscription, enquiryFilter }) {
           <div className="flex items-center gap-3">
             <button
               onClick={() => onAction("view", item.enquirersid, item)}
-              className="text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
+              className="text-white px-5 py-2.5 rounded-xl text-sm font-bold"
               style={{ background: GRADIENT }}
             >
               View Details
             </button>
-            {!isAssigned ? (
-              <button
-                onClick={() => onAction("assign", item.enquirersid, item)}
-                className="flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl font-medium transition-colors"
-                style={{ background: "#EEF2FF", color: "#6366F1" }}
-              >
-                <UserPlus size={15} /> Assign Partner
-              </button>
-            ) : (
+
+            {hasSubscription && (
               <>
-                <a
-                  onClick={(e) => e.stopPropagation()}
-                  href={`tel:${contact}`}
-                  className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 transition-colors"
-                >
-                  <Phone size={14} /> Call
-                </a>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAction("status", item.enquirersid, item);
-                  }}
-                  className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 transition-colors"
-                >
-                  <FileText size={14} /> Add Note
-                </button>
+                {!isAssigned ? (
+                  <button
+                    onClick={() => onAction("assign", item.enquirersid, item)}
+                  >
+                    Assign Partner
+                  </button>
+                ) : (
+                  <>
+                    <a href={`tel:${contact}`}>Call</a>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAction("status", item.enquirersid, item);
+                      }}
+                    >
+                      Add Note
+                    </button>
+                  </>
+                )}
               </>
             )}
           </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onAction("status", item.enquirersid, item);
-            }}
-            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 transition-colors"
-          >
-            {isAssigned ? "Schedule Visit" : "Quick View"}{" "}
-            <ArrowRight size={14} />
-          </button>
+          {hasSubscription && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAction("status", item.enquirersid, item);
+              }}
+            >
+              {isAssigned ? "Schedule Visit" : "Quick View"}
+              <ArrowRight size={14} />
+            </button>
+          )}
         </div>
       )}
     </div>

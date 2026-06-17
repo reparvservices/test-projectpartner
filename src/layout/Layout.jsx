@@ -1,7 +1,8 @@
 import { useAuth } from "../store/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { NavLink } from "react-router-dom";
-import SubscriptionOutlet from "../components/subscription/SubscriptionOutlet";
+import { Outlet } from "react-router-dom";
+//import SubscriptionOutlet from "../components/subscription/SubscriptionOutlet";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import reparvMainLogo from "../assets/layout/reparvMainLogo.svg";
@@ -269,13 +270,15 @@ export default function Layout() {
 
       {/* Main */}
       <div className="flex flex-1 flex-col min-w-0 bg-[radial-gradient(98.95%_98.95%_at_50%_1.05%,_#EEEAFF_0%,_#FFFFFF_36.12%)]">
-        <motion.main
+        {/* Remove SubscriptionOutlet Used Outlet */}
+          <motion.main
           className="flex-1 scroll-container overflow-y-auto pb-25 md:pb-0"
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <SubscriptionOutlet />
+          <Outlet />
         </motion.main>
+        
 
         {/* Mobile Bottom Bar */}
         <nav className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t z-40">
