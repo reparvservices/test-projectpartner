@@ -46,10 +46,10 @@ export default function QuickStats({ counts = {}, total = 0, setActiveTab }) {
         <span className="text-xs text-slate-400">Live</span>
       </div>
       <div className="grid grid-cols-1 gap-3">
-        {stats.map((s) => (
+        {stats?.map((s) => (
           <div
             key={s.label}
-            onClick={() => setActiveTab(stats?.filter)}
+            onClick={() => setActiveTab(s.filter)}
             className={`flex items-center justify-between bg-[#F2F4FF] rounded-md px-4 py-3 cursor-pointer`}
           >
             <p className="text-sm mt-0.5">{s.label}</p>
